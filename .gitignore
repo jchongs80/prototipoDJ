@@ -21,3 +21,34 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Configuración del editor
+.vscode/
+.idea/
+
+# Archivos temporales del sistema operativo
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Cachés varias
+.cache/
+.parcel-cache/
+.next/
+out/
+.tmp/
+
+# Reportes de pruebas
+jest-cache/
+jest-results.json
+
+# Archivos de lock opcionales (comenta si no quieres ignorarlos)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Archivos locales de desarrollo
+*.local
+*.tmp
+*.bak
+*.old

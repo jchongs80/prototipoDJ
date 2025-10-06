@@ -1,25 +1,39 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useState} from 'react';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LoginPage from './components/LoginPage';
+import Dashboard from './components/Dashboard';
+import InscripcionDJ from "./components/InscripcionDJ";
+import RegistrarDJ from "./components/RegistrarDJ";
+import DeclaracionExitosa from './components/declaracionExitosa';
+import ResumenPredios from './components/resumenPredio';
 import './App.css';
 
 function App() {
+
+  //const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Temporalmente, puedes cambiar esto a true para ver el Dashboard
+  // const [isAuthenticated, setIsAuthenticated] = useState(true);
+
+  //const handleLogin = () => {
+   // setIsAuthenticated(true);
+  //};
+
+  //const handleLogout = () => {
+   // setIsAuthenticated(false);
+  //};
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+   <BrowserRouter>
+  <Routes>
+    <Route path="/" element={<LoginPage />} />
+    <Route path="/dashboard" element={<Dashboard />} />
+    <Route path="/inscripcion-predial" element={<InscripcionDJ />} />
+    <Route path="/registrar-dj" element={<RegistrarDJ />} />
+    <Route path="/declaracion-exitosa" element={<DeclaracionExitosa />} />
+    <Route path="/resumen-predios" element={<ResumenPredios />} />
+  </Routes>
+</BrowserRouter>
   );
 }
 
