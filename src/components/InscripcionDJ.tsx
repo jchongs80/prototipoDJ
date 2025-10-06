@@ -350,7 +350,7 @@ const InscripcionDJ: React.FC<Props> = ({onLogout}) => {
             title="¿Qué documentos debes tener a mano?"
             color="#0d47a1"
             content={
-              Archivo escaneado de:
+              <p>Archivo escaneado de: </p>
               <ul style={{ textAlign: 'left', margin: 0, paddingLeft: '1.2rem' }}>
                 <li>Minuta o Escritura Pública del predio adquirido</li>
                 <li>Recibo de servicios de los últimos 3 meses</li>
