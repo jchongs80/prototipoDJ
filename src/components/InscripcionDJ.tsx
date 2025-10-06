@@ -329,7 +329,19 @@ const InscripcionDJ: React.FC<Props> = ({onLogout}) => {
                 <li>Prescripción Adquisitiva</li>
                 <li>Donación</li>
                 <li>Aumento de Capital</li>
+                <li>Alícuotas entre herederos</li>
+                <li>Alícuotas entre condóminos originarios</li>
+                <li>Contrato de Permuta</li>
+                <li>Contratos con dación en pago</li>
+                <li>Transf. Proc.Judiciales /Remate /Coactiva</li>
                 <li>Cesión de Derechos y Acciones</li>
+                <li>Aportes para la constitución de sociedades o personas jurídicas</li>
+                <li>Resolución de contrato por anticipo de legítima</li>
+                <li>Resolución de contrato celebrado entre condóminos originarios</li>
+                <li>Resolución de contrato antes de la cancelación del precio</li>
+                <li>Declaración de verdadero propietario</li>
+                <li>Derecho de superficie</li>
+                <li>Contrato de Fideicomiso</li>
                 <li>Posesión</li>
               </ul>
             }
@@ -338,21 +350,21 @@ const InscripcionDJ: React.FC<Props> = ({onLogout}) => {
             title="¿Qué documentos debes tener a mano?"
             color="#0d47a1"
             content={
+              Archivo escaneado de:
               <ul style={{ textAlign: 'left', margin: 0, paddingLeft: '1.2rem' }}>
-                <li>DNI o RUC del propietario</li>
-                <li>Documento que sustente la adquisición</li>
-                <li>Autovalúo del año anterior</li>
-                <li>Constancia de pago de alcabala (si aplica)</li>
+                <li>Minuta o Escritura Pública del predio adquirido</li>
+                <li>Recibo de servicios de los últimos 3 meses</li>
+                <li>PU del predio adquirido</li>
               </ul>
-            }
+            }            
           />
           <InfoButton
             title="¿Cuándo puedes registrarla?"
             color="#ffb300"
             content={
               <ul style={{ textAlign: 'left', margin: 0, paddingLeft: '1.2rem' }}>
-                <li>Dentro de los 30 días hábiles siguientes a la adquisición</li>
-                <li>Durante el año fiscal vigente</li>
+                <li>Puedes declarar hasta el último día hábil del mes de febrero del año siguiente a la adquisición del bien. De no hacerlo, incurrirás en infracción y se le sancionará con multa; sin embargo, al estar obligado al pago de los arbitrios del mes siguiente de producida la transferencia, se recomienda presentar su declaración jurada hasta antes del último día hábil del mes siguiente de ejecutada la transferencia.</li>
+                <li>Puedes realizar el registro virtual las 24 horas de los 7 días de la semana</li>
               </ul>
             }
           />
