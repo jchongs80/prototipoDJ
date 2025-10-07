@@ -323,26 +323,7 @@ const InscripcionDJ: React.FC<Props> = ({onLogout}) => {
             color="#1e88e5"
             content={
               <ul style={{ textAlign: 'left', margin: 0, paddingLeft: '1.2rem' }}>
-                <li>Compra</li>
-                <li>Sucesión Anticipo de Legítima</li>
-                <li>Adjudicación Fideicomiso Mutuo</li>
-                <li>Prescripción Adquisitiva</li>
-                <li>Donación</li>
-                <li>Aumento de Capital</li>
-                <li>Alícuotas entre herederos</li>
-                <li>Alícuotas entre condóminos originarios</li>
-                <li>Contrato de Permuta</li>
-                <li>Contratos con dación en pago</li>
-                <li>Transf. Proc.Judiciales /Remate /Coactiva</li>
-                <li>Cesión de Derechos y Acciones</li>
-                <li>Aportes para la constitución de sociedades o personas jurídicas</li>
-                <li>Resolución de contrato por anticipo de legítima</li>
-                <li>Resolución de contrato celebrado entre condóminos originarios</li>
-                <li>Resolución de contrato antes de la cancelación del precio</li>
-                <li>Declaración de verdadero propietario</li>
-                <li>Derecho de superficie</li>
-                <li>Contrato de Fideicomiso</li>
-                <li>Posesión</li>
+                <li>Cualquier predio del Cercado de Lima, adquirido como persona natural titular</li>
               </ul>
             }
           />
