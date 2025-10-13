@@ -1,5 +1,5 @@
 // src/components/Dashboard.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -116,6 +116,22 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
 
   const nuevosPredios = location.state?.nuevosPredios || 0;
 
+  // 🕒 Estado para fecha y hora
+    const [dateTime, setDateTime] = useState(new Date());
+    useEffect(() => {
+      const interval = setInterval(() => setDateTime(new Date()), 1000);
+      return () => clearInterval(interval);
+    }, []);
+    const formattedDateTime = dateTime.toLocaleString("es-PE", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+
   const sidebarItems = [
     { icon: <HomeIcon />, label: 'Inicio', active: true },
     { icon: <AssignmentIcon />, label: 'Trámites', active: false },
@@ -188,8 +204,8 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <ScheduleIcon sx={{ fontSize: '1.2rem' }} />
-            <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
-              11/06/2024 02:57 p.m.
+            <Typography variant="body2" sx={{ fontSize: '0.875rem', textTransform: "capitalize"  }}>
+             {formattedDateTime}
             </Typography>
           </Box>
 
