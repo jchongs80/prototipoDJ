@@ -1,5 +1,5 @@
 // src/components/InscripcionPredial.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
@@ -35,6 +35,10 @@ import {
   ExitToApp as ExitToAppIcon,
   PictureAsPdf as PictureAsPdfIcon,
   InfoOutlined as InfoIcon,
+  Schedule as ScheduleIcon,
+  Language as LanguageIcon,
+  NotificationsNone as NotificationsIcon,
+  ArrowDropDown as ArrowDropDownIcon,
 } from "@mui/icons-material";
 
 /* ======================
@@ -56,8 +60,8 @@ const InfoButton: React.FC<InfoButtonProps> = ({ title, color, items }) => {
       sx={{
         position: "relative",
         cursor: "pointer",
-        width: 310, // 🔹 más ancho para que el texto no salte de línea
-        height: 85, // 🔹 altura uniforme
+        width: 310,
+        height: 85,
       }}
     >
       <Box
@@ -100,15 +104,7 @@ const InfoButton: React.FC<InfoButtonProps> = ({ title, color, items }) => {
           }}
         >
           {items.map((item, i) => (
-            <Box
-              key={i}
-              sx={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 1,
-                mb: 0.8,
-              }}
-            >
+            <Box key={i} sx={{ display: "flex", alignItems: "flex-start", gap: 1, mb: 0.8 }}>
               <InfoIcon sx={{ color, fontSize: "1rem", mt: "2px" }} />
               <Typography variant="body2" sx={{ fontSize: "0.85rem" }}>
                 {item}
@@ -126,7 +122,6 @@ const InfoButton: React.FC<InfoButtonProps> = ({ title, color, items }) => {
 ====================== */
 const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const drawerWidth = 80;
   const navigate = useNavigate();
   const location = useLocation();
@@ -152,6 +147,22 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
     }, 2500);
   };
 
+  // 🕒 Fecha y hora en vivo
+  const [dateTime, setDateTime] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => setDateTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+  const formattedDateTime = dateTime.toLocaleString("es-PE", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
   const prediosAnteriores = [
     { codigo: "DJ-2023-0001", direccion: "Jr. Puno 421", uso: "VIVIENDA", anio: "2023" },
   ];
@@ -170,14 +181,45 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
       {/* ===== APPBAR ===== */}
       <AppBar position="fixed" sx={{ zIndex: (t) => t.zIndex.drawer + 1, bgcolor: "#1e5ba8" }}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+        <Toolbar sx={{ minHeight: "64px!important" }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "1.5rem", mr: 3 }}>
             SAT
           </Typography>
+
+          {/* Fecha y hora */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <ScheduleIcon sx={{ fontSize: "1.2rem" }} />
+            <Typography variant="body2" sx={{ fontSize: "0.875rem", textTransform: "capitalize" }}>
+              {formattedDateTime}
+            </Typography>
+          </Box>
+
           <Box sx={{ flexGrow: 1 }} />
-          <Typography variant="body2" sx={{ color: "white" }}>
-            Usuario: Víctor Gonzales
-          </Typography>
+
+          {/* Botones derechos */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Button startIcon={<LanguageIcon />} sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}>
+              Mejora la visualización de esta página
+            </Button>
+
+            <Button startIcon={<HelpOutlineIcon />} sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}>
+              Guía de usuario
+            </Button>
+
+            <Button
+              startIcon={<NotificationsIcon />}
+              sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}
+            >
+              Alertas y notificaciones
+            </Button>
+
+            <Button
+              endIcon={<ArrowDropDownIcon />}
+              sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}
+            >
+              Usuario: Victor Gonzales
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -189,8 +231,11 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
           flexShrink: 0,
           "& .MuiDrawer-paper": {
             width: drawerWidth,
+            boxSizing: "border-box",
             bgcolor: "#003d7a",
+            border: "none",
             mt: "64px",
+            height: "calc(100vh - 64px)",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
@@ -212,11 +257,21 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
         </List>
 
         <Box sx={{ mb: 2 }}>
-          <ListItemButton onClick={onLogout} sx={{ flexDirection: "column", py: 2, color: "white" }}>
-            <ExitToAppIcon sx={{ mb: 0.5 }} />
-            <Typography variant="caption">Salir</Typography>
-          </ListItemButton>
-        </Box>
+                  <ListItemButton
+                    onClick={() => navigate("/")}
+                    sx={{
+                      flexDirection: "column",
+                      py: 2,
+                      color: "white",
+                      "&:hover": { bgcolor: "rgba(255,255,255,0.08)" },
+                    }}
+                  >
+                    <ExitToAppIcon sx={{ mb: 0.5 }} />
+                    <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
+                      Salir
+                    </Typography>
+                  </ListItemButton>
+                </Box>
       </Drawer>
 
       {/* ===== CONTENIDO PRINCIPAL ===== */}
@@ -229,23 +284,15 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
           p: 4,
           textAlign: "center",
           overflowX: "hidden",
+          pb: 10,
         }}
       >
         <Typography variant="h6" sx={{ fontWeight: "bold", color: "#003366", mb: 3 }}>
           Antes de iniciar el registro de tu Declaración Jurada de Impuesto Predial, ten en cuenta lo siguiente:
         </Typography>
 
-       {/* ==== BOTONES Y TRIBUTITO ==== */}
-        <Box
-          sx={{
-            position: "relative",
-            display: "flex",
-            justifyContent: "center",
-            gap: 3,
-            mb: 6,
-            flexWrap: "wrap",
-          }}
-        >
+        {/* ==== BOTONES ==== */}
+        <Box sx={{ position: "relative", display: "flex", justifyContent: "center", gap: 3, mb: 6, flexWrap: "wrap" }}>
           <InfoButton
             title="¿Qué puedes declarar?"
             color="#1e88e5"
@@ -254,22 +301,18 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
           <InfoButton
             title="¿Qué documentos debes tener a mano?"
             color="#0d47a1"
-            items={[
-              "Minuta o Escritura Pública del predio adquirido",
-              "Recibo de servicios de los últimos 3 meses",
-              "PU del predio adquirido",
-            ]}
+            items={["Minuta o Escritura Pública", "Recibo de servicios", "PU del predio"]}
           />
           <InfoButton
             title="¿Cuándo puedes registrarla?"
             color="#ffb300"
             items={[
-              "Puedes declarar hasta el último día hábil de febrero del año siguiente a la adquisición.",
-              "Puedes realizar el registro virtual las 24 horas de los 7 días de la semana.",
+              "Hasta el último día hábil de febrero del año siguiente a la adquisición.",
+              "Registro virtual 24/7 disponible.",
             ]}
           />
 
-          {/* ==== TRIBUTITO flotante ==== */}
+          {/* Tributito */}
           <Box
             sx={{
               position: "absolute",
@@ -282,15 +325,11 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
               },
             }}
           >
-            <img
-              src={require("../assets/tributito2.png")}
-              alt="Tributito"
-              style={{ height: "200px" }}
-            />
+            <img src={require("../assets/tributito2.png")} alt="Tributito" style={{ height: "200px" }} />
           </Box>
         </Box>
 
-        {/* ==== TABLA ANTERIORES ==== */}
+        {/* ==== TABLAS ==== */}
         <Fade in timeout={700}>
           <Box
             sx={{
@@ -347,9 +386,7 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
             </Typography>
 
             {prediosRecientes.length === 0 ? (
-              <Typography sx={{ color: "#888", py: 2 }}>
-                No tiene predios declarados recientemente.
-              </Typography>
+              <Typography sx={{ color: "#888", py: 2 }}>No tiene predios declarados recientemente.</Typography>
             ) : (
               <Table>
                 <TableHead>
@@ -464,13 +501,46 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
                 </Box>
               </>
             ) : (
-              <Box sx={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+              <Box
+                sx={{
+                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 2,
+                }}
+              >
                 <CircularProgress color="primary" />
                 <Typography sx={{ mt: 2, color: "#003366" }}>Preparando el registro...</Typography>
               </Box>
             )}
           </Box>
         </Modal>
+      </Box>
+
+      {/* ===== FOOTER ===== */}
+      <Box
+        component="footer"
+        sx={{
+          position: "fixed",
+          bottom: 0,
+          left: drawerWidth,
+          right: 0,
+          bgcolor: "white",
+          borderTop: "1px solid #e0e0e0",
+          p: 1,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          zIndex: 1000,
+        }}
+      >
+        <Typography variant="caption" sx={{ color: "#666", ml: 2 }}>
+          Copyright © 2025 SAT Lima — Todos los derechos reservados.
+        </Typography>
+        <Typography variant="caption" sx={{ color: "#666", mr: 2 }}>
+          Versión 1.0.0
+        </Typography>
       </Box>
     </Box>
   );

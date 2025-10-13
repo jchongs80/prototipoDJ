@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// src/components/ResumenPredios.tsx
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -33,6 +34,10 @@ import {
   ExitToApp as ExitToAppIcon,
   PictureAsPdf as PictureAsPdfIcon,
   InfoOutlined as InfoIcon,
+  Schedule as ScheduleIcon,
+  Language as LanguageIcon,
+  NotificationsNone as NotificationsIcon,
+  ArrowDropDown as ArrowDropDownIcon,
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -42,14 +47,26 @@ const ResumenPredios: React.FC = () => {
   const totalDeclarados = state?.totalDeclarados || 2;
   const drawerWidth = 80;
 
-  const [snackbar, setSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    type: "success" | "info";
-  }>({
+  const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
-    type: "success",
+    type: "success" as "success" | "info",
+  });
+
+  // 🕒 Fecha y hora actualizadas
+  const [dateTime, setDateTime] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => setDateTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+  const formattedDateTime = dateTime.toLocaleString("es-PE", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 
   const sidebarItems = [
@@ -103,10 +120,42 @@ const ResumenPredios: React.FC = () => {
           boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
         }}
       >
-        <Toolbar>
-          <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+        <Toolbar sx={{ minHeight: "64px!important" }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "1.5rem", mr: 3 }}>
             SAT
           </Typography>
+
+          {/* Fecha y hora */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <ScheduleIcon sx={{ fontSize: "1.2rem" }} />
+            <Typography variant="body2" sx={{ fontSize: "0.875rem", textTransform: "capitalize" }}>
+              {formattedDateTime}
+            </Typography>
+          </Box>
+
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* Botones institucionales */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Button startIcon={<LanguageIcon />} sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}>
+              Mejora la visualización de esta página
+            </Button>
+            <Button startIcon={<HelpOutlineIcon />} sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}>
+              Guía de usuario
+            </Button>
+            <Button
+              startIcon={<NotificationsIcon />}
+              sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}
+            >
+              Alertas y notificaciones
+            </Button>
+            <Button
+              endIcon={<ArrowDropDownIcon />}
+              sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}
+            >
+              Usuario: Victor Gonzales
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
 

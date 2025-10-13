@@ -1,4 +1,5 @@
-import React from "react";
+// src/components/DeclaracionExitosa.tsx
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -21,31 +22,51 @@ import {
   ExitToApp as ExitToAppIcon,
   CheckCircleOutline as CheckCircleOutlineIcon,
   PictureAsPdf as PictureAsPdfIcon,
+  Schedule as ScheduleIcon,
+  Language as LanguageIcon,
+  NotificationsNone as NotificationsIcon,
+  ArrowDropDown as ArrowDropDownIcon,
 } from "@mui/icons-material";
 
 interface Props {
   onLogout?: () => void;
 }
 
-const DeclaracionExitosa: React.FC<Props> = ({onLogout}) => {
+const DeclaracionExitosa: React.FC<Props> = ({ onLogout }) => {
   const navigate = useNavigate();
   const { state } = useLocation();
   const {
-  numPredios = 1,
-  prediosDeclarados = 0,
-  tipoPersona,
-  tipoDocConyuge,
-  nroDocConyuge,
-  apellidosConyuge,
-  fechaNacimientoConyuge
-} = state || {};
+    numPredios = 1,
+    prediosDeclarados = 0,
+    tipoPersona,
+    tipoDocConyuge,
+    nroDocConyuge,
+    apellidosConyuge,
+    fechaNacimientoConyuge,
+  } = state || {};
   const drawerWidth = 80;
 
-const total = Number(numPredios);
-const declarados = Number(prediosDeclarados);
-const quedanPorDeclarar = Math.max(total - declarados, 0);
+  const total = Number(numPredios);
+  const declarados = Number(prediosDeclarados);
+  const quedanPorDeclarar = Math.max(total - declarados, 0);
 
-console.log("📊 Predios:", { total, declarados, quedanPorDeclarar });
+  console.log("📊 Predios:", { total, declarados, quedanPorDeclarar });
+
+  // 🕒 Estado para fecha y hora
+  const [dateTime, setDateTime] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => setDateTime(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+  const formattedDateTime = dateTime.toLocaleString("es-PE", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 
   const sidebarItems = [
     { icon: <HomeIcon />, label: "Inicio", active: true },
@@ -55,19 +76,17 @@ console.log("📊 Predios:", { total, declarados, quedanPorDeclarar });
     { icon: <HelpOutlineIcon />, label: "Ayuda", active: false },
   ];
 
-  // 🔹 Función para descargar el PDF desde la carpeta public
+  // 🔹 Descarga PDF desde /public
   const handleDescargarPDF = () => {
-    const fileName = "DJ_prop02.pdf"; // nombre del archivo en /public
+    const fileName = "DJ_prop02.pdf";
     const fileURL = `${process.env.PUBLIC_URL}/${fileName}`;
-
-    // Crear un enlace invisible para forzar descarga
     const link = document.createElement("a");
     link.href = fileURL;
     link.setAttribute("download", fileName);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    };
+  };
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
@@ -80,10 +99,42 @@ console.log("📊 Predios:", { total, declarados, quedanPorDeclarar });
           boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
         }}
       >
-        <Toolbar>
-          <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "1.5rem" }}>
+        <Toolbar sx={{ minHeight: "64px!important" }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "1.5rem", mr: 3 }}>
             SAT
           </Typography>
+
+          {/* Fecha y hora */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <ScheduleIcon sx={{ fontSize: "1.2rem" }} />
+            <Typography variant="body2" sx={{ fontSize: "0.875rem", textTransform: "capitalize" }}>
+              {formattedDateTime}
+            </Typography>
+          </Box>
+
+          <Box sx={{ flexGrow: 1 }} />
+
+          {/* Botones institucionales */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Button startIcon={<LanguageIcon />} sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}>
+              Mejora la visualización de esta página
+            </Button>
+            <Button startIcon={<HelpOutlineIcon />} sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}>
+              Guía de usuario
+            </Button>
+            <Button
+              startIcon={<NotificationsIcon />}
+              sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}
+            >
+              Alertas y notificaciones
+            </Button>
+            <Button
+              endIcon={<ArrowDropDownIcon />}
+              sx={{ color: "white", textTransform: "none", fontSize: "0.875rem" }}
+            >
+              Usuario: Victor Gonzales
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
 
@@ -131,9 +182,7 @@ console.log("📊 Predios:", { total, declarados, quedanPorDeclarar });
         </List>
 
         <Box sx={{ mb: 2 }}>
-          <ListItemButton onClick={onLogout} 
-          sx={{ flexDirection: "column", py: 2, color: "white" }}>
-            
+          <ListItemButton onClick={onLogout} sx={{ flexDirection: "column", py: 2, color: "white" }}>
             <ExitToAppIcon sx={{ mb: 0.5 }} />
             <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
               Salir
@@ -156,17 +205,16 @@ console.log("📊 Predios:", { total, declarados, quedanPorDeclarar });
       >
         <CheckCircleOutlineIcon sx={{ color: "#3ba935", fontSize: 80, mb: 2 }} />
         <Typography variant="h4" sx={{ fontWeight: 700, color: "#003366", mb: 2 }}>
-          Declaración Jurada declarada satisfactoriamente
+          Declaración Jurada registrada satisfactoriamente
         </Typography>
 
         <Typography variant="body1" sx={{ color: "#444", mb: 4 }}>
-          Victor, has culminado con éxito el registro de tu Declaración Jurada predial{" "}
-          <b>N.° 2025678010</b>, la cual ha sido notificada en línea a tu casilla electrónica
-          y correo.
+          Victor, has culminado con éxito el registro de tu Declaración Jurada Predial{" "}
+          <b>N.° 2025678010</b>, la cual ha sido notificada en línea a tu casilla electrónica y correo.
         </Typography>
 
         <Typography variant="body2" sx={{ color: "#555", mt: 1 }}>
-        {quedanPorDeclarar > 0
+          {quedanPorDeclarar > 0
             ? `Te quedan ${quedanPorDeclarar} predio(s) por declarar.`
             : "Has completado todas tus declaraciones juradas."}
         </Typography>
@@ -184,34 +232,34 @@ console.log("📊 Predios:", { total, declarados, quedanPorDeclarar });
 
           {quedanPorDeclarar > 0 ? (
             <Button
-                variant="contained"
-                color="warning"
-                onClick={() =>
-                    navigate("/registrar-dj", {
-                    state: {
-                        numPredios: total,
-                        tipoPersona,
-                        prediosDeclarados: declarados, // 👈 mantener el conteo actual
-                        // 👇 reenviamos los datos del cónyuge
-                        tipoDocConyuge,
-                        nroDocConyuge,
-                        apellidosConyuge,
-                        fechaNacimientoConyuge
-                    },
-                    })
-                }
-                >
-                Declarar Nuevo Predio ({quedanPorDeclarar} restante)
-                </Button>
+              variant="contained"
+              color="warning"
+              onClick={() =>
+                navigate("/registrar-dj", {
+                  state: {
+                    numPredios: total,
+                    tipoPersona,
+                    prediosDeclarados: declarados,
+                    tipoDocConyuge,
+                    nroDocConyuge,
+                    apellidosConyuge,
+                    fechaNacimientoConyuge,
+                  },
+                })
+              }
+            >
+              Declarar Nuevo Predio ({quedanPorDeclarar} restante)
+            </Button>
           ) : (
-            <Button variant="contained" color="success" 
-            onClick={() => {
-    const totalDeclarados = Number(prediosDeclarados);
-    sessionStorage.removeItem("prediosDeclarados");
-
-    navigate("/resumen-predios", { state: { totalDeclarados } });
-  }}
-  >
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => {
+                const totalDeclarados = Number(prediosDeclarados);
+                sessionStorage.removeItem("prediosDeclarados");
+                navigate("/resumen-predios", { state: { totalDeclarados } });
+              }}
+            >
               Terminar Proceso
             </Button>
           )}
