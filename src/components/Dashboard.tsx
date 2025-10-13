@@ -1,6 +1,6 @@
 // src/components/Dashboard.tsx
 import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   AppBar,
@@ -111,7 +111,10 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const drawerWidth = 80;
 
+  const location = useLocation();
   const navigate = useNavigate();
+
+  const nuevosPredios = location.state?.nuevosPredios || 0;
 
   const sidebarItems = [
     { icon: <HomeIcon />, label: 'Inicio', active: true },
@@ -486,7 +489,7 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
                   description={service.description}
                   onClick={() => {
                   if (service.title === "Inscripción predial") {
-                    navigate("/inscripcion-predial");
+                    navigate("/inscripcion-predial",{ state: { nuevosPredios } });
                   }
                 }}
                 />
