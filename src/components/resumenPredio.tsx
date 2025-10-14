@@ -40,6 +40,7 @@ import {
   ArrowDropDown as ArrowDropDownIcon,
 } from "@mui/icons-material";
 import { useLocation, useNavigate } from "react-router-dom";
+import formapago from './../assets/formapago.png'; 
 
 const ResumenPredios: React.FC = () => {
   const navigate = useNavigate();
@@ -477,7 +478,7 @@ const ResumenPredios: React.FC = () => {
       gap: 1,
     }}
   >
-    📄 Montos a Pagar a la Fecha de Emisión
+    📄 Montos a Pagar a la Fecha de Emisión de Impuesto Predial
   </Typography>
 
   <Table
@@ -706,46 +707,137 @@ const ResumenPredios: React.FC = () => {
 
 
 
-{/* 🔹 BOTONES FINALES */}
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 5 }}>
-          <Button
-            variant="contained"
-            color="success"
-            sx={{ px: 4, py: 1.2, fontWeight: 600 }}
-            onClick={() => navigate("/dashboard", { state: { nuevosPredios: totalDeclarados } })}
-          >
-            Ir al Menú Principal
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<CreditCardIcon />}
-            sx={{ px: 4, py: 1.2, fontWeight: 600, backgroundColor: "#1e5ba8" }}
-            onClick={() =>
-              setSnackbar({
-                open: true,
-                message: "💳 Redirigiendo a la pasarela de pagos...",
-                type: "info",
-              })
-            }
-          >
-            Realizar Pago
-          </Button>
-        </Box>
+{/* 💳 BLOQUE FINAL DE PAGO Y ACCIÓN PRINCIPAL */}
+<Box
+  sx={{
+    mt: 6,
+    mb: 4,
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 2,
+  }}
+>
+  <Typography
+    variant="h6"
+    sx={{
+      color: "#1e5ba8",
+      fontWeight: 700,
+      mb: 1,
+    }}
+  >
+    💳 ¡Paga tus tributos de forma fácil, segura y desde cualquier lugar!
+  </Typography>
 
-        {/* 🧩 Mensaje de cierre institucional */}
-        <Typography
-          sx={{
-            mt: 4,
-            textAlign: "center",
-            color: "#004a7c",
-            fontSize: "0.9rem",
-          }}
-        >
-          Recuerda: puedes pagar en línea o desde la{" "}
-          <strong>App SAT Móvil</strong>. Tu declaración ha sido registrada con éxito.
-        </Typography>
+  <Typography
+    variant="body1"
+    sx={{
+      color: "#444",
+      maxWidth: 700,
+      lineHeight: 1.6,
+      mb: 2,
+    }}
+  >
+    El SAT Lima pone a tu disposición diversas opciones digitales para realizar tus pagos al instante: 
+    tarjetas, billeteras móviles y bancos afiliados. Evita colas y mantente al día con tus obligaciones tributarias.
+  </Typography>
+
+  {/* Imagen de medios de pago */}
+  <Box
+    component="img"
+    src={formapago}
+    alt="Formas de pago disponibles SAT Lima"
+    sx={{
+      width: "90%",
+      maxWidth: 950,
+      borderRadius: 2,
+      boxShadow: "0 3px 8px rgba(0,0,0,0.1)",
+      p: 1,
+      bgcolor: "#fff",
+    }}
+  />
+
+  {/* BOTONES DE ACCIÓN */}
+  <Box
+    sx={{
+      mt: 4,
+      display: "flex",
+      justifyContent: "center",
+      gap: 3,
+      flexWrap: "wrap",
+    }}
+  >
+    {/* Botón principal - Pasarela de pagos */}
+    <Button
+      variant="contained"
+      color="success"
+      startIcon={<CreditCardIcon />}
+      sx={{
+        px: 5,
+        py: 1.4,
+        fontWeight: 700,
+        fontSize: "1rem",
+        backgroundColor: "#2e7d32",
+        "&:hover": { backgroundColor: "#256528" },
+        boxShadow: "0 4px 10px rgba(46,125,50,0.3)",
+      }}
+      onClick={() =>
+        setSnackbar({
+          open: true,
+          message: "💳 Redirigiendo a la pasarela de pagos...",
+          type: "info",
+        })
+      }
+    >
+      Ir a la Pasarela de Pagos
+    </Button>
+
+    {/* Botón secundario - Menú principal */}
+    <Button
+      variant="contained"
+      startIcon={<HomeIcon />}
+      sx={{
+        px: 5,
+        py: 1.4,
+        fontWeight: 700,
+        fontSize: "1rem",
+        backgroundColor: "#1e5ba8",
+        "&:hover": { backgroundColor: "#17467f" },
+        boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+      }}
+      onClick={() =>
+        navigate("/dashboard", { state: { nuevosPredios: totalDeclarados } })
+      }
+    >
+      Ir al Menú Principal
+    </Button>
+  </Box>
+
+  {/* 🧩 Mensaje institucional mejorado */}
+  <Typography
+    variant="body2"
+    sx={{
+      mt: 5,
+      textAlign: "center",
+      color: "#004a7c",
+      fontSize: "0.95rem",
+      lineHeight: 1.7,
+      maxWidth: 800,
+      px: 2,
+    }}
+  >
+    También puedes pagar desde nuestro{" "}
+    <strong>Aplicativo Móvil SAT Lima – Pago de Servicios</strong>.<br />
+    Tu declaración jurada ha sido registrada exitosamente. 
+    <strong> ¡Mantén tus tributos al día y contribuye con el desarrollo de tu ciudad!</strong>
+  </Typography>
+</Box>
+
+
+
       </Box>
-
       {/* ===== FOOTER ===== */}
       <Box
         component="footer"

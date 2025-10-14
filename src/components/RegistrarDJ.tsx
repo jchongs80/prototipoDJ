@@ -121,20 +121,57 @@ useEffect(() => {
   ];
 
   const handleNext = () => {
-  if (activeStep === 0 && tipoPersona === "Sociedad Conyugal") {
-    if (!formData.tipoDocConyuge || !formData.nroDocConyuge.trim()) {
-      alert("⚠️ Complete los datos del cónyuge antes de continuar al siguiente paso.");
+  // 🔸 Validación del Paso 1 (Datos del Contribuyente)
+  if (activeStep === 0) {
+    // Si es sociedad conyugal
+    if (tipoPersona === "Sociedad Conyugal") {
+      if (!formData.tipoDocConyuge || !formData.nroDocConyuge.trim()) {
+        setMensajeSnackbar("⚠️ Complete los datos del cónyuge antes de continuar.");
+        setOpenSnackbar(true);
+        return;
+      }
+    }
+
+    let valid = true;
+
+    // Validar PDF de recibo de servicio
+    if (!formData.reciboServicio) {
+      setErrorReciboFile("Debe adjuntar el PDF de un recibo de servicio (agua o luz).");
+      valid = false;
+    } else {
+      setErrorReciboFile("");
+    }
+
+    // Validar PDF de condición especial
+    if (formData.tipoCondicion && formData.tipoCondicion !== "" && !formData.docCondicion) {
+      setErrorCondicionFile("No ha seleccionado el archivo que acredite la condición especial.");
+      valid = false;
+    } else {
+      setErrorCondicionFile("");
+    }
+
+    if (!valid) {
+      setMensajeSnackbar("⚠️ Corrige los errores antes de continuar.");
+      setOpenSnackbar(true);
       return;
     }
   }
 
-   if (activeStep === 1 && (!formData.codigoPredio || formData.codigoPredio.trim() === "")) {
-    alert("Debe seleccionar un predio antes de continuar.");
+  // 🔸 Validación del Paso 2
+  if (activeStep === 1 && (!formData.codigoPredio || formData.codigoPredio.trim() === "")) {
+    setMensajeSnackbar("Debe seleccionar un predio antes de continuar.");
+    setOpenSnackbar(true);
     return;
   }
 
+  // ✅ Si todo bien, avanzar
   setActiveStep((prev) => prev + 1);
+  setMensajeSnackbar("✅ Se guardaron los datos del paso anterior correctamente.");
+  setOpenSnackbar(true);
 };
+
+
+
   const handleBack = () => setActiveStep((prev) => prev - 1);
   const handleGuardar = () =>
     alert("✅ Tu progreso ha sido guardado para continuar después.");
@@ -171,6 +208,9 @@ const formattedDateTime = dateTime.toLocaleString("es-PE", {
   minute: "2-digit",
   second: "2-digit",
 });
+
+const [errorCondicionFile, setErrorCondicionFile] = useState("");
+const [errorReciboFile, setErrorReciboFile] = useState("");
 
 const [openSnackbar, setOpenSnackbar] = useState(false);
 const [mensajeSnackbar, setMensajeSnackbar] = useState("");
@@ -257,7 +297,7 @@ const [formData, setFormData] = useState({
     areaPropia:"78",
     areaComun:"0",
     areaTotal:"78",
-    valorArancelario:"890",
+    valorArancelario:"890.00",
     valorTotalTerreno:"69420.00",
     claseUso:"Residencial",
     subClaseUso:"Vivienda",
@@ -289,28 +329,62 @@ const handleChange = (
 // Archivo para "Condición especial"
 const handleFileChange = (file: File | null) => {
   if (file && file.type === "application/pdf") {
-    const url = URL.createObjectURL(file);
+    // ✅ Limpiar error y mostrar loading temporal
+    setErrorCondicionFile("");
     setFormData((prev) => ({
       ...prev,
-      docCondicion: file.name,
-      urlCondicion: url,
+      docCondicion: "",
+      urlCondicion: "",
+      loadingCondicion: true, // 🔸 nuevo flag temporal
     }));
+
+    setTimeout(() => {
+      const url = URL.createObjectURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        docCondicion: file.name,
+        urlCondicion: url,
+        loadingCondicion: false, // 🔸 quitar loading
+      }));
+    }, 3000);
   } else {
-    setFormData((prev) => ({ ...prev, docCondicion: "", urlCondicion: "" }));
+    setFormData((prev) => ({
+      ...prev,
+      docCondicion: "",
+      urlCondicion: "",
+      loadingCondicion: false,
+    }));
   }
 };
+
 
 // Archivo para "Dirección completa" (recibo)
 const handleReciboChange = (file: File | null) => {
   if (file && file.type === "application/pdf") {
-    const url = URL.createObjectURL(file);
+    setErrorReciboFile("");
     setFormData((prev) => ({
       ...prev,
-      reciboServicio: file.name,
-      urlRecibo: url,
+      reciboServicio: "",
+      urlRecibo: "",
+      loadingRecibo: true, // 🔸 nuevo flag temporal
     }));
+
+    setTimeout(() => {
+      const url = URL.createObjectURL(file);
+      setFormData((prev) => ({
+        ...prev,
+        reciboServicio: file.name,
+        urlRecibo: url,
+        loadingRecibo: false,
+      }));
+    }, 3000);
   } else {
-    setFormData((prev) => ({ ...prev, reciboServicio: "", urlRecibo: "" }));
+    setFormData((prev) => ({
+      ...prev,
+      reciboServicio: "",
+      urlRecibo: "",
+      loadingRecibo: false,
+    }));
   }
 };
 
@@ -592,6 +666,8 @@ const handlePresentarDeclaracion = () => {
               mostrarDireccionDetallada={mostrarDireccionDetallada}
               handleFileChange={handleFileChange}
               handleReciboChange={handleReciboChange}
+              errorCondicionFile={errorCondicionFile}      // ✅ nuevo
+              errorReciboFile={errorReciboFile}            // ✅ nuevo
             />
             </Box>
           </>

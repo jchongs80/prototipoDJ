@@ -13,13 +13,12 @@ import EditIcon from "@mui/icons-material/Edit";
 
 interface DireccionCompletaProps {
   formData: any;
-  handleChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => void;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleReciboChange: (file: File | null) => void;
   onEditarDireccion?: () => void;
   mostrarDireccionDetallada: boolean;
   setMostrarDireccionDetallada: React.Dispatch<React.SetStateAction<boolean>>;
+  errorReciboFile?: string; // ✅ nuevo prop opcional
 }
 
 const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
@@ -29,6 +28,7 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
   onEditarDireccion,
   mostrarDireccionDetallada,
   setMostrarDireccionDetallada,
+  errorReciboFile,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -50,34 +50,36 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
         InputProps={{
           endAdornment: (
             <InputAdornment position="end" sx={{ gap: 1 }}>
-              {/* ✏️ Botón de editar */}
+              {/* ✏️ Editar dirección */}
               <Tooltip title="Editar dirección" arrow>
                 <IconButton
                   color="primary"
                   onClick={() => setMostrarDireccionDetallada((prev) => !prev)}
-                        edge="end"
-                        sx={{
-                        color: mostrarDireccionDetallada ? "#1976d2" : "default",
-                        "&:hover": { color: "#004c99" },
-                        }}
+                  edge="end"
+                  sx={{
+                    color: mostrarDireccionDetallada ? "#1976d2" : "default",
+                    "&:hover": { color: "#004c99" },
+                    width: 36,
+                    height: 36,
+                  }}
                 >
-                  <EditIcon fontSize="small" />
+                  <EditIcon sx={{ fontSize: 20 }} />
                 </IconButton>
               </Tooltip>
 
-              {/* 📄 Botón de subir archivo */}
-              <Tooltip title="Subir comprobante PDF" arrow>
+              {/* 📄 Subir archivo */}
+              <Tooltip title="Debe agregar el archivo de un recibo de servicio de agua o luz que acredite la dirección fiscal" arrow>
                 <IconButton
                   color="success"
                   onClick={() => fileInputRef.current?.click()}
                   sx={{
                     bgcolor: "rgba(76,175,80,0.08)",
                     "&:hover": { bgcolor: "rgba(76,175,80,0.2)" },
-                    width: 32,
-                    height: 32,
+                    width: 36,
+                    height: 36,
                   }}
                 >
-                  <UploadFileIcon fontSize="small" />
+                  <UploadFileIcon sx={{ fontSize: 22 }} />
                 </IconButton>
               </Tooltip>
 
@@ -93,8 +95,28 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
         }}
       />
 
-      {/* ✅ Mensaje de archivo válido + link */}
-      {(formData.reciboServicio || formData.urlRecibo) && (
+      {/* ❌ Error rojo */}
+      {errorReciboFile && (
+        <Typography
+          variant="caption"
+          sx={{ color: "red", fontSize: "0.75rem", mt: 0.5 }}
+        >
+          {errorReciboFile}
+        </Typography>
+      )}
+
+      {/* 🕒 Estado de carga */}
+      {formData.loadingRecibo && (
+        <Typography
+          variant="caption"
+          sx={{ color: "#1976d2", fontStyle: "italic", mt: 0.8, display: "block" }}
+        >
+          ⏳ Procesando validación de PDF…
+        </Typography>
+      )}
+
+      {/* ✅ Archivo válido */}
+      {!formData.loadingRecibo && (formData.reciboServicio || formData.urlRecibo) && (
         <Box
           sx={{
             mt: 0.8,
@@ -104,10 +126,7 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
             flexWrap: "wrap",
           }}
         >
-          <Typography
-            variant="caption"
-            sx={{ color: "#2e7d32", fontWeight: 500 }}
-          >
+          <Typography variant="caption" sx={{ color: "#2e7d32", fontWeight: 500 }}>
             ✅ Archivo válido — Nro Folios: 1
           </Typography>
           {formData.urlRecibo && (
@@ -127,6 +146,7 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
           )}
         </Box>
       )}
+      
     </Box>
   );
 };

@@ -315,6 +315,7 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({
                 size="small"
                 fullWidth
                 placeholder="0.00"
+                disabled
               />
               <TextField
                 label="Valor total del terreno (S/.)"
@@ -337,8 +338,7 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({
               fontStyle: "italic",
             }}
           >
-            Los valores se calculan automáticamente según el arancel vigente
-            del distrito.
+            Los valores se calculan automáticamente según el arancel vigente.
           </Typography>
         </Box>
       </Box>

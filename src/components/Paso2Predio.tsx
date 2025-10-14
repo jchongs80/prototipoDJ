@@ -41,6 +41,15 @@ import usoPredioIcon from './../assets/edificio.png';
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import predio1 from '../assets/predio1.png';
+import predio2 from '../assets/predio2.png';
+import predio3 from '../assets/predio3.png';
+import predio4 from '../assets/predio4.png';
+import predio5 from '../assets/predio5.png';
+import predio6 from '../assets/predio6.png';
+import predio7 from '../assets/predio7.png';
+import predio8 from '../assets/predio8.png';
+import predio9 from '../assets/predio9.png';
+import predio10 from '../assets/predio10.png';
 
 interface Paso2PredioProps {
   formData: any;
@@ -57,9 +66,14 @@ const Paso2Predio: React.FC<Paso2PredioProps> = ({ formData, handleChange }) => 
   const [tipoViaBusqueda, setTipoViaBusqueda] = useState("");
   const [nombreCalle, setNombreCalle] = useState("");
   const [numeroPuerta, setNumeroPuerta] = useState("");
-  const [distritoBusqueda, setDistritoBusqueda] = useState("");
   const [loadingBusqueda, setLoadingBusqueda] = useState(false);
   const [resultadosBusqueda, setResultadosBusqueda] = useState<any[]>([]);
+
+  const [openImagen, setOpenImagen] = useState(false);
+  const [selectedPredio, setSelectedPredio] = useState<any>(null);
+
+  const [errorCodigoPU, setErrorCodigoPU] = useState("");
+
   const [mostrarDetallePredio, setMostrarDetallePredio] = useState(false);
   // Util para mostrar "—" cuando no hay valor
   const view = (v?: string) => (v && `${v}`.trim() !== "" ? v : "—");
@@ -76,42 +90,90 @@ useEffect(() => {
 }, [formData.codigoPredio]);
 
 
-  // 🔍 Buscar por Dirección (demo)
-  const handleBuscarDireccion = () => {
-    setLoadingBusqueda(true);
-    setTimeout(() => {
-      const datosDemo = Array.from({ length: 10 }).map((_, i) => ({
-        codigo: `PU-${1000 + i}`,
-        direccion: "Cercado de Lima, Jr. Camaná, 499, Lima",
+  
+const handleBuscarDireccion = () => {
+  setLoadingBusqueda(true);
+  setTimeout(() => {
+    const calles = [
+      "Camaná", "Arequipa", "Tacna", "Colonial", "Brasil",
+      "Salaverry", "La Mar", "Sucre", "Bolívar", "Junín",
+      "Angamos", "Pardo", "Petit Thouars", "Abancay",
+      "Prolongación Iquitos", "Santa Rosa"
+    ];
+
+    const nombres = [
+      "Luis Ramos", "Ana Torres", "Carlos Vega", "María Salas",
+      "José Paredes", "Carmen López", "Diego Vargas", "Lucía Gutiérrez",
+      "Raúl Mendoza", "Patricia Rojas", "Andrés Silva", "Rosa Castillo"
+    ];
+
+    // 🔹 Lista de imágenes disponibles
+    const imagenesPredio = [
+      predio1, predio2, predio3, predio4, predio5,
+      predio6, predio7, predio8, predio9, predio10
+    ];
+
+    // 🔹 Mezclar el orden de las imágenes (Fisher–Yates shuffle)
+    const imagenesAleatorias = [...imagenesPredio].sort(() => Math.random() - 0.5);
+
+    // 🔹 Generar datos de ejemplo
+    const datosDemo = Array.from({ length: 10 }).map((_, i) => {
+      const calle = calles[Math.floor(Math.random() * calles.length)];
+      const numero = Math.floor(Math.random() * (1500 - 100) + 100);
+      const propietario = nombres[Math.floor(Math.random() * nombres.length)];
+      return {
+        codigo: (10001 + i).toString(),
+        direccion: `Cercado de Lima, Jr. ${calle}, ${numero}, Lima`,
         tipoVia: "Jirón",
-        descripcionVia: "Camaná",
-        tipoDenomUrbana: "",            // vacío a propósito (demo)
-        nombreDenomUrbana: "",          // vacío a propósito (demo)
-        numero: "499",
-        propietario: `Juan Pérez ${i + 1}`,
-      }));
-      setResultadosBusqueda(datosDemo);
-      setLoadingBusqueda(false);
-    }, 1200);
-  };
+        descripcionVia: calle,
+        numero,
+        propietario,
+        imagen: imagenesAleatorias[i], // 🔸 Asigna imagen distinta
+      };
+    });
 
-  // 🔍 Buscar por PU (demo)
-  const handleBuscarPU = () => {
-    if (!codigoPU.trim()) {
-      alert("Ingrese un código de PU válido.");
-      return;
-    }
-    // Setea valores demo y muestra detalle
-    handleChange({ target: { name: "codigoPredio", value: codigoPU } } as any);
-    handleChange({ target: { name: "direccionCompletaPredio", value: "Cercado de Lima, Jr. Camaná, 499, Lima" } } as any);
-    handleChange({ target: { name: "tipoViaPredio", value: "Jirón" } } as any);
-    handleChange({ target: { name: "descViaPredio", value: "Camaná" } } as any);
-    handleChange({ target: { name: "tipoDenomUrbPredio", value: "" } } as any);
-    handleChange({ target: { name: "descDenomUrbPredio", value: "" } } as any);
-    handleChange({ target: { name: "numMun1", value: "499" } } as any);
-    setMostrarDetallePredio(true);
-  };
+    setResultadosBusqueda(datosDemo);
+    setLoadingBusqueda(false);
+  }, 1000);
+};
 
+
+// 🔍 Buscar por PU (demo con validación)
+const handleBuscarPU = () => {
+  // Eliminar espacios
+  const codigo = codigoPU.trim();
+
+  // Validar si está vacío
+  if (!codigo) {
+    setErrorCodigoPU("El código de PU es obligatorio.");
+    return;
+  }
+
+  // Validar formato numérico de 5 dígitos
+  if (!/^\d{5}$/.test(codigo)) {
+    setErrorCodigoPU("Valor numérico de 5 dígitos.");
+    return;
+  }
+
+  // Si todo está correcto, limpiar error
+  setErrorCodigoPU("");
+
+  // Setea valores demo y muestra detalle
+  handleChange({ target: { name: "codigoPredio", value: codigo } } as any);
+  handleChange({
+    target: {
+      name: "direccionCompletaPredio",
+      value: "Cercado de Lima, Jr. Camaná, 499, Lima",
+    },
+  } as any);
+  handleChange({ target: { name: "tipoViaPredio", value: "Jirón" } } as any);
+  handleChange({ target: { name: "descViaPredio", value: "Camaná" } } as any);
+  handleChange({ target: { name: "tipoDenomUrbPredio", value: "" } } as any);
+  handleChange({ target: { name: "descDenomUrbPredio", value: "" } } as any);
+  handleChange({ target: { name: "numMun1", value: "499" } } as any);
+
+  setMostrarDetallePredio(true);
+};
 
   return (
     <Box sx={{ p: 3 }}>
@@ -126,13 +188,21 @@ useEffect(() => {
 
       {/* CABECERA DE BÚSQUEDA */}
       <Box sx={{ border: "1px solid #e0e0e0", bgcolor: "#fff",display: "flex", p: 2.5,alignItems: "center", gap: 2, flexWrap: "wrap", mb: 3 }}>
-        <Tooltip title="Ingrese el código de PU (Predio Urbano) que aparece en el PU de la cuponera." arrow>
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <Tooltip
+          title="Ingrese el código de PU (Predio Urbano) que aparece en el PU de la cuponera."
+          arrow
+        >
           <TextField
             label="Código PU"
             value={codigoPU}
-            onChange={(e) => setCodigoPU(e.target.value)}
+            onChange={(e) => {
+              setCodigoPU(e.target.value);
+              if (errorCodigoPU) setErrorCodigoPU(""); // limpiar mensaje mientras escribe
+            }}
             size="small"
             sx={{ width: 220 }}
+            error={Boolean(errorCodigoPU)} // 🔴 activa color rojo en el borde
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -142,7 +212,16 @@ useEffect(() => {
             }}
           />
         </Tooltip>
-
+        {errorCodigoPU && (
+          <Typography
+            variant="caption"
+            sx={{ color: "red", fontSize: "0.75rem", mt: 0.3, ml: 0.5 }}
+          >
+            {errorCodigoPU}
+          </Typography>
+        )}
+      </Box>
+        
         <Button variant="contained" color="success" startIcon={<SearchIcon />} onClick={handleBuscarPU}>
           Buscar por PU
         </Button>
@@ -724,140 +803,197 @@ useEffect(() => {
 </Paper>
 
 </>
-      )}
+)}
 
-      {/* MODAL DE BÚSQUEDA POR DIRECCIÓN */}
-      <Dialog
-        open={openBuscarDireccion}
-        onClose={() => setOpenBuscarDireccion(false)}
-        fullWidth
-        maxWidth="md"
+{/* MODAL DE BÚSQUEDA POR DIRECCIÓN */}
+<Dialog
+  open={openBuscarDireccion}
+  onClose={() => setOpenBuscarDireccion(false)}
+  fullWidth
+  maxWidth="lg"
+>
+  <DialogTitle sx={{ fontWeight: 600, color: "#003366" }}>
+    Búsqueda de Predio por Dirección
+  </DialogTitle>
+  <DialogContent dividers>
+    {/* Fila única de filtros */}
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "nowrap",
+        alignItems: "center",
+        gap: 1.5,
+        mb: 3,
+      }}
+    >
+      <TextField
+        label="Distrito"
+        value="Cercado de Lima"
+        size="small"
+        disabled
+        sx={{ width: 200 }}
+      />
+
+      <FormControl size="small" sx={{ minWidth: 160 }}>
+        <InputLabel>Tipo de Vía</InputLabel>
+        <Select
+          value={tipoViaBusqueda}
+          onChange={(e) => setTipoViaBusqueda(e.target.value)}
+          label="Tipo de Vía"
+        >
+          <MenuItem value="">--Seleccione--</MenuItem>
+          <MenuItem value="Avenida">Avenida</MenuItem>
+          <MenuItem value="Jirón">Jirón</MenuItem>
+          <MenuItem value="Calle">Calle</MenuItem>
+          <MenuItem value="Pasaje">Pasaje</MenuItem>
+          <MenuItem value="Parque">Parque</MenuItem>
+        </Select>
+      </FormControl>
+
+      <FormControl size="small" sx={{ minWidth: 200 }}>
+        <InputLabel>Nombre de Calle</InputLabel>
+        <Select
+          value={nombreCalle}
+          onChange={(e) => setNombreCalle(e.target.value)}
+          label="Nombre de Calle"
+        >
+          <MenuItem value="">--Seleccione--</MenuItem>
+          {[
+            "Camaná", "Arequipa", "Tacna", "Colonial", "Brasil",
+            "Salaverry", "La Mar", "Sucre", "Bolívar", "Junín",
+            "Angamos", "Pardo", "Petit Thouars", "Abancay",
+            "Prolongación Iquitos", "Santa Rosa"
+          ].map((c) => (
+            <MenuItem key={c} value={c}>{c}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <TextField
+        label="Número de Puerta"
+        value={numeroPuerta}
+        onChange={(e) => setNumeroPuerta(e.target.value)}
+        size="small"
+        sx={{ width: 160 }}
+      />
+
+      <Button
+        variant="contained"
+        color="success"
+        startIcon={<SearchIcon />}
+        onClick={handleBuscarDireccion}
+        disabled={loadingBusqueda}
+        sx={{ height: 40 }}
       >
-        <DialogTitle sx={{ fontWeight: 600, color: "#003366" }}>
-          Búsqueda de Predio por Dirección
-        </DialogTitle>
-        <DialogContent dividers>
+        {loadingBusqueda ? "Buscando..." : "Buscar"}
+      </Button>
+    </Box>
+
+    {loadingBusqueda ? (
+      <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+        <CircularProgress />
+      </Box>
+    ) : resultadosBusqueda.length > 0 ? (
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Imagen</TableCell>
+            <TableCell>Código</TableCell>
+            <TableCell>Dirección</TableCell>
+            <TableCell>Propietario</TableCell>
+          </TableRow>
+        </TableHead>
+        
+        <TableBody>
+  {resultadosBusqueda.map((r, i) => (
+    <TableRow
+      key={i}
+      hover
+      sx={{
+        cursor: "pointer",
+        "& td": { py: 0.1, px: 1.5 }, // 👈 reduce espacio vertical (py) y horizontal (px)
+      }}
+      onClick={() => {
+        handleChange({ target: { name: "codigoPredio", value: r.codigo } } as any);
+        handleChange({ target: { name: "direccionCompletaPredio", value: r.direccion } } as any);
+        handleChange({ target: { name: "tipoViaPredio", value: r.tipoVia } } as any);
+        handleChange({ target: { name: "descViaPredio", value: r.descripcionVia } } as any);
+        handleChange({ target: { name: "numMun1", value: r.numero } } as any);
+        setCodigoPU(r.codigo);
+        setMostrarDetallePredio(true);
+        setOpenBuscarDireccion(false);
+      }}
+    >
+      <TableCell>
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelectedPredio(r);
+            setOpenImagen(true);
+          }}
+        >
           <Box
+            component="img"
+            src={r.imagen}
+            alt="Predio"
             sx={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: 2,
-              mb: 3,
+              width: 40,
+              height: 40,
+              borderRadius: 1,
+              border: "1px solid #ddd",
+              objectFit: "cover",
             }}
-          >
-            <FormControl size="small" fullWidth>
-              <InputLabel>Tipo de Vía</InputLabel>
-              <Select
-                value={tipoViaBusqueda}
-                onChange={(e) => setTipoViaBusqueda(e.target.value)}
-                label="Tipo de Vía"
-              >
-                <MenuItem value="">--Seleccione--</MenuItem>
-                <MenuItem value="Avenida">Avenida</MenuItem>
-                <MenuItem value="Jirón">Jirón</MenuItem>
-                <MenuItem value="Calle">Calle</MenuItem>
-                <MenuItem value="Pasaje">Pasaje</MenuItem>
-                <MenuItem value="Parque">Parque</MenuItem>
-              </Select>
-            </FormControl>
+            onError={(e: any) => {
+              e.target.src = predio1; // fallback si no carga
+            }}
+          />
+        </IconButton>
+      </TableCell>
+      <TableCell>{r.codigo}</TableCell>
+      <TableCell>{r.direccion}</TableCell>
+      <TableCell>{r.propietario}</TableCell>
+    </TableRow>
+  ))}
+</TableBody>
 
-            <FormControl size="small" fullWidth>
-              <InputLabel>Nombre de Calle</InputLabel>
-              <Select
-                value={nombreCalle}
-                onChange={(e) => setNombreCalle(e.target.value)}
-                label="Nombre de Calle"
-              >
-                <MenuItem value="">--Seleccione--</MenuItem>
-                {[
-                  "Camaná", "Arequipa", "Tacna", "Colonial", "Brasil",
-                  "Salaverry", "La Mar", "Sucre", "Bolívar", "Junín",
-                  "Angamos", "Pardo", "Petit Thouars", "Abancay", "Prolongación Iquitos",
-                ].map((c) => (
-                  <MenuItem key={c} value={c}>{c}</MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+      </Table>
+    ) : (
+      <Typography variant="body2" sx={{ color: "text.secondary", fontStyle: "italic" }}>
+        No hay resultados para mostrar.
+      </Typography>
+    )}
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpenBuscarDireccion(false)}>Cerrar</Button>
+  </DialogActions>
+</Dialog>
+     
+  
+<Dialog open={openImagen} onClose={() => setOpenImagen(false)}>
+  <DialogTitle sx={{ fontWeight: 600, color: "#003366" }}>
+    Imagen del Predio {selectedPredio?.codigo}
+  </DialogTitle>
+  <DialogContent>
+    {selectedPredio && (
+      <Box>
+        <Box
+          component="img"
+          src={selectedPredio.imagen}
+          alt="Predio"
+          sx={{ width: "100%", borderRadius: 2, mb: 2 }}
+        />
+        <Typography variant="body2" sx={{ color: "#333" }}>
+          <strong>Dirección:</strong> {selectedPredio.direccion}
+        </Typography>
+        <Typography variant="body2" sx={{ color: "#333" }}>
+          <strong>Propietario:</strong> {selectedPredio.propietario}
+        </Typography>
+      </Box>
+    )}
+  </DialogContent>
+</Dialog>
 
-            <TextField
-              label="Número de Puerta"
-              value={numeroPuerta}
-              onChange={(e) => setNumeroPuerta(e.target.value)}
-              size="small"
-              fullWidth
-            />
 
-            <TextField
-              label="Distrito"
-              value={distritoBusqueda}
-              onChange={(e) => setDistritoBusqueda(e.target.value)}
-              size="small"
-              fullWidth
-            />
-          </Box>
-
-          <Button
-            variant="contained"
-            color="success"
-            startIcon={<SearchIcon />}
-            onClick={handleBuscarDireccion}
-            disabled={loadingBusqueda}
-            sx={{ mb: 2 }}
-          >
-            {loadingBusqueda ? "Buscando..." : "Buscar"}
-          </Button>
-
-          {loadingBusqueda ? (
-            <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-              <CircularProgress />
-            </Box>
-          ) : resultadosBusqueda.length > 0 ? (
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Código PU</TableCell>
-                  <TableCell>Dirección</TableCell>
-                  <TableCell>Propietario</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {resultadosBusqueda.map((r, i) => (
-                  <TableRow
-                    key={i}
-                    hover
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => {
-                      // Setea todo lo necesario en formData
-                      handleChange({ target: { name: "codigoPredio", value: r.codigo } } as any);
-                      handleChange({ target: { name: "direccionCompletaPredio", value: r.direccion } } as any);
-                      handleChange({ target: { name: "tipoViaPredio", value: r.tipoVia } } as any);
-                      handleChange({ target: { name: "descViaPredio", value: r.descripcionVia } } as any);
-                      handleChange({ target: { name: "tipoDenomUrbPredio", value: r.tipoDenomUrbana } } as any);
-                      handleChange({ target: { name: "descDenomUrbPredio", value: r.nombreDenomUrbana } } as any);
-                      handleChange({ target: { name: "numMun1", value: r.numero } } as any);
-
-                      setCodigoPU(r.codigo);
-                      setMostrarDetallePredio(true);
-                      setOpenBuscarDireccion(false);
-                    }}
-                  >
-                    <TableCell>{r.codigo}</TableCell>
-                    <TableCell>{r.direccion}</TableCell>
-                    <TableCell>{r.propietario}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <Typography variant="body2" sx={{ color: "text.secondary", fontStyle: "italic" }}>
-              No hay resultados para mostrar.
-            </Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenBuscarDireccion(false)}>Cerrar</Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };

@@ -34,6 +34,8 @@ interface Paso1ContribuyenteProps {
   mostrarDireccionDetallada: boolean;
   handleFileChange: (file: File | null) => void;
   handleReciboChange: (file: File | null) => void;
+  errorCondicionFile?: string; // ✅ nuevo
+  errorReciboFile?: string;    // ✅ nuevo
 }
 
 const Paso1Contribuyente: React.FC<Paso1ContribuyenteProps> = ({
@@ -44,6 +46,9 @@ const Paso1Contribuyente: React.FC<Paso1ContribuyenteProps> = ({
   setMostrarDireccionDetallada,
   handleFileChange,
   handleReciboChange,
+  errorCondicionFile,
+  errorReciboFile,
+
 }) => {
 
 
@@ -353,6 +358,7 @@ const handleBuscarConyuge = () => {
       formData={formData}
       handleChange={handleChange}
       handleFileChange={handleFileChange}
+      errorCondicionFile={errorCondicionFile}
     />
   </Box>
 
@@ -388,6 +394,7 @@ const handleBuscarConyuge = () => {
       handleReciboChange={handleReciboChange}
       mostrarDireccionDetallada={mostrarDireccionDetallada}
       setMostrarDireccionDetallada={setMostrarDireccionDetallada}
+      errorReciboFile={errorReciboFile}
     />
   </Box>
 </Box>
