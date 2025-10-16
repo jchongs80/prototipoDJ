@@ -58,9 +58,10 @@ interface Paso2PredioProps {
       | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
       | import("@mui/material/Select").SelectChangeEvent
   ) => void;
+  registerValidator?: (fn: () => boolean) => void; 
 }
 
-const Paso2Predio: React.FC<Paso2PredioProps> = ({ formData, handleChange }) => {
+const Paso2Predio: React.FC<Paso2PredioProps> = ({ formData, handleChange, registerValidator, }) => {
   const [codigoPU, setCodigoPU] = useState("");
   const [openBuscarDireccion, setOpenBuscarDireccion] = useState(false);
   const [tipoViaBusqueda, setTipoViaBusqueda] = useState("");
@@ -75,6 +76,12 @@ const Paso2Predio: React.FC<Paso2PredioProps> = ({ formData, handleChange }) => 
   const [errorCodigoPU, setErrorCodigoPU] = useState("");
 
   const [mostrarDetallePredio, setMostrarDetallePredio] = useState(false);
+
+  const [errorArchivoAdquisicion, setErrorArchivoAdquisicion] = useState("");
+  const [loadingArchivoAdquisicion, setLoadingArchivoAdquisicion] = useState(false);
+  const [debeValidar, setDebeValidar] = useState(false); // ✅ controla si se debe mostrar error
+
+
   // Util para mostrar "—" cuando no hay valor
   const view = (v?: string) => (v && `${v}`.trim() !== "" ? v : "—");
 
@@ -90,8 +97,9 @@ useEffect(() => {
 }, [formData.codigoPredio]);
 
 
-  
 const handleBuscarDireccion = () => {
+  //setDebeValidar(false);
+resetValidacionArchivo(); // 🧹 limpia validación antes de buscar
   setLoadingBusqueda(true);
   setTimeout(() => {
     const calles = [
@@ -140,6 +148,9 @@ const handleBuscarDireccion = () => {
 
 // 🔍 Buscar por PU (demo con validación)
 const handleBuscarPU = () => {
+
+  //setDebeValidar(false); // 🔹 evita mostrar error por validación anterior
+ resetValidacionArchivo(); // 🧹 limpia validación antes de buscar
   // Eliminar espacios
   const codigo = codigoPU.trim();
 
@@ -173,6 +184,30 @@ const handleBuscarPU = () => {
   handleChange({ target: { name: "numMun1", value: "499" } } as any);
 
   setMostrarDetallePredio(true);
+};
+
+useEffect(() => {
+  if (registerValidator) {
+    registerValidator(() => {
+      setDebeValidar(true); // 🔹 activa validación visual solo al presionar Siguiente
+
+      if (!formData.docAdquisicion || formData.docAdquisicion.trim() === "") {
+        setErrorArchivoAdquisicion(
+          "No se ha seleccionado el archivo que acredite la transferencia del predio."
+        );
+        return false;
+      }
+
+      setErrorArchivoAdquisicion("");
+      return true;
+    });
+  }
+}, [registerValidator, formData.docAdquisicion]);
+
+// Limpia errores al buscar predio o cargar datos automáticos
+const resetValidacionArchivo = () => {
+  setDebeValidar(false);
+  setErrorArchivoAdquisicion("");
 };
 
   return (
@@ -452,94 +487,140 @@ const handleBuscarPU = () => {
   >
     {/* 1️⃣ Tipo de Transferencia con PDF embebido */}
     <Box>
-      <TextField
-        select
-        fullWidth
-        size="small"
-        label="Tipo de Transferencia"
-        name="tipoTransferencia"
-        value={formData.tipoTransferencia || ""}
-        onChange={handleChange}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                color="success"
-                onClick={() => document.getElementById("fileAdquisicion")?.click()}
-                sx={{
-                  bgcolor: formData.docAdquisicion
-                    ? "rgba(46,125,50,0.15)"
-                    : "rgba(76,175,80,0.08)",
-                  "&:hover": { bgcolor: "rgba(76,175,80,0.2)" },
-                }}
-              >
-                <UploadFileIcon />
-              </IconButton>
-              <input
-                id="fileAdquisicion"
-                type="file"
-                accept="application/pdf"
-                hidden
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const url = URL.createObjectURL(file);
-                    handleChange({
-                      target: { name: "docAdquisicion", value: file.name },
-                    } as any);
-                    handleChange({
-                      target: { name: "urlAdquisicion", value: url },
-                    } as any);
-                  }
-                }}
-              />
-            </InputAdornment>
-          ),
-        }}
-      >
-        <MenuItem value="">--Seleccione--</MenuItem>
-        <MenuItem value="Compra">Compra</MenuItem>
-        <MenuItem value="Sucesión">Sucesión</MenuItem>
-        <MenuItem value="Anticipo de Legítima">Anticipo de Legítima</MenuItem>
-        <MenuItem value="Adjudicación">Adjudicación</MenuItem>
-        <MenuItem value="Otros">Otros</MenuItem>
-      </TextField>
-
-      {/* ✅ Mensaje verde y link PDF */}
-      {(formData.docAdquisicion || formData.urlAdquisicion) && (
-        <Box
-          sx={{
-            mt: 0.8,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{ color: "#2e7d32", fontWeight: 500 }}
+     <TextField
+    select
+    fullWidth
+    size="small"
+    label="Tipo de Transferencia"
+    name="tipoTransferencia"
+    value={formData.tipoTransferencia || ""}
+    onChange={handleChange}
+    InputProps={{
+      endAdornment: (
+        <InputAdornment position="end">
+          <Tooltip
+            title="Si escoge un tipo de transferencia debe adjuntar el PDF que acredite la transferencia del predio."
+            arrow
           >
-            ✅ Archivo válido — Nro Folios: 4
-          </Typography>
-          {formData.urlAdquisicion && (
-            <Typography
-              component="a"
-              href={formData.urlAdquisicion}
-              target="_blank"
-              rel="noopener"
+            <IconButton
+              color="success"
+              onClick={() => document.getElementById("fileAdquisicion")?.click()}
               sx={{
-                fontSize: "0.75rem",
-                color: "#1e88e5",
-                textDecoration: "none",
-                "&:hover": { textDecoration: "underline" },
+                bgcolor: "rgba(76,175,80,0.08)",
+                "&:hover": { bgcolor: "rgba(76,175,80,0.2)" },
+                width: 36,
+                height: 36,
               }}
             >
-              Ver archivo
-            </Typography>
-          )}
-        </Box>
-      )}
+              <UploadFileIcon sx={{ fontSize: 22 }} />
+            </IconButton>
+          </Tooltip>
+          <input
+            id="fileAdquisicion"
+            type="file"
+            accept="application/pdf"
+            hidden
+            onChange={(e) => {
+              const file = e.target.files?.[0] || null;
+              if (file && file.type === "application/pdf") {
+                // ✅ limpia error y simula validación
+                setErrorArchivoAdquisicion("");
+                setLoadingArchivoAdquisicion(true);
+                setDebeValidar(false); // 🔹 evita mostrar error tras selección
+                setTimeout(() => {
+                  const url = URL.createObjectURL(file);
+                  handleChange({
+                    target: { name: "docAdquisicion", value: file.name },
+                  } as any);
+                  handleChange({
+                    target: { name: "urlAdquisicion", value: url },
+                  } as any);
+                  setLoadingArchivoAdquisicion(false);
+                }, 3000);
+              } else {
+                setErrorArchivoAdquisicion(
+                  "No se ha seleccionado el archivo que acredite la transferencia del predio."
+                );
+                handleChange({
+                  target: { name: "docAdquisicion", value: "" },
+                } as any);
+                handleChange({
+                  target: { name: "urlAdquisicion", value: "" },
+                } as any);
+              }
+            }}
+          />
+        </InputAdornment>
+      ),
+    }}
+  >
+    <MenuItem value="">--Seleccione--</MenuItem>
+    <MenuItem value="Compra">Compra</MenuItem>
+    <MenuItem value="Sucesión">Sucesión</MenuItem>
+    <MenuItem value="Anticipo de Legítima">Anticipo de Legítima</MenuItem>
+    <MenuItem value="Adjudicación">Adjudicación</MenuItem>
+    <MenuItem value="Otros">Otros</MenuItem>
+  </TextField>
+
+  {/* ❌ Error rojo */}
+  {debeValidar && errorArchivoAdquisicion && !loadingArchivoAdquisicion && (
+    <Typography
+      variant="caption"
+      sx={{ color: "red", fontSize: "0.75rem", mt: 0.5, display: "block" }}
+    >
+      {errorArchivoAdquisicion}
+    </Typography>
+  )}
+
+  {/* 🕒 Estado de carga */}
+  {loadingArchivoAdquisicion && (
+    <Typography
+      variant="caption"
+      sx={{
+        color: "#1976d2",
+        fontStyle: "italic",
+        mt: 0.8,
+        display: "block",
+      }}
+    >
+      ⏳ Procesando validación de PDF…
+    </Typography>
+  )}
+
+  {/* ✅ Archivo válido */}
+  {!loadingArchivoAdquisicion &&
+    !errorArchivoAdquisicion &&
+    (formData.docAdquisicion || formData.urlAdquisicion) && (
+      <Box
+        sx={{
+          mt: 0.8,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+        }}
+      >
+        <Typography variant="caption" sx={{ color: "#2e7d32", fontWeight: 500 }}>
+          ✅ Archivo válido — Nro Folios: 4
+        </Typography>
+        {formData.urlAdquisicion && (
+          <Typography
+            component="a"
+            href={formData.urlAdquisicion}
+            target="_blank"
+            rel="noopener"
+            sx={{
+              fontSize: "0.75rem",
+              color: "#1e88e5",
+              textDecoration: "none",
+              "&:hover": { textDecoration: "underline" },
+            }}
+          >
+            Ver archivo
+          </Typography>
+        )}
+      </Box>
+    )}
     </Box>
 
     {/* 2️⃣ Condición de la Propiedad */}

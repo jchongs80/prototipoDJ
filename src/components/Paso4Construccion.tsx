@@ -20,11 +20,21 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import WorkIcon from "@mui/icons-material/Work";
 import ApartmentIcon from "@mui/icons-material/Apartment";
+import { SelectChangeEvent } from "@mui/material/Select";
+
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert from "@mui/material/Alert";
 
 import SelectConstruccion from "./SelectContruccion";
 import { ListaMuros } from "./ListaMuros";
 import { ListaTechos } from "./ListaTechos";
 import { ListaPuertasVentanas } from "./ListaPuertasVentanas";
+
+// ✅ 1️⃣ INTERFACE CORRECTA
+type Paso4ConstruccionProps ={
+  onChatMessage?: (mensaje: string) => void;
+}
+
 
 // ======= Listas de Selects =======
 const tipoNivelList = ["Piso", "Mezzanine", "Sótano", "Azotea", "Aires"];
@@ -140,9 +150,37 @@ interface Obra {
   valorTotalObras: string;
 }
 
-const Paso4Construccion: React.FC = () => {
-  
 
+const Paso4Construccion: React.FC<Paso4ConstruccionProps> = ( props) => {
+  
+const { onChatMessage } = props; // 🔹 evita sombrear el tipo
+  
+  // ✅ 3️⃣ FUNCIONES AUXILIARES (no confundir con el tipo)
+  const avisarNuevoPiso = () => {
+    onChatMessage?.(
+      "🏗️ Ahora estás registrando un nuevo piso. Completa los campos relacionados con el nivel, área, materiales y estado de conservación.\n\n💬 Si tienes dudas sobre cómo llenar este formulario para agregar un piso con características de construcción, solo preguntame y yo estaré gustoso de ayudarte en el registro de tu DJ."
+    );
+  };
+
+  const avisarNuevaObra = () => {
+    onChatMessage?.(
+      "⚙️ Estás registrando una nueva obra complementaria. Completa los campos de descripción, categoría, materiales y medidas.\n\n💬 Si tienes dudas sobre cómo llenar este formulario para agregar una obra complementaria, solo preguntame y yo estaré gustoso de ayudarte en el registro de tu DJ."
+    );
+  };
+
+
+  // ✅ 4️⃣ HANDLERS DE BOTONES
+  const handleAgregarPisoClick = () => {
+    setMostrarFormPiso(true);
+    setMostrarFormObra(false);
+    avisarNuevoPiso();
+  };
+
+  const handleAgregarObraClick = () => {
+    setMostrarFormObra(true);
+    setMostrarFormPiso(false);
+    avisarNuevaObra();
+  };
  
 
   const pisoInicial: Piso = {
@@ -264,44 +302,128 @@ const Paso4Construccion: React.FC = () => {
   ]);
   const [mostrarFormPiso, setMostrarFormPiso] = useState(false);
   const [mostrarFormObra, setMostrarFormObra] = useState(false);
+  
+  const [erroresPiso, setErroresPiso] = useState<{ [key: string]: boolean }>({});
+  const [erroresObra, setErroresObra] = useState<{ [key: string]: boolean }>({});
+
+  // ✅ Snackbar de éxito
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+
   const handleChangePiso = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setNuevoPiso((prev) => ({ ...prev, [name]: value }));
-  };
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+) => {
+  const { name, value } = e.target;
 
-  const handleChangeObra = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setNuevaObra((prev) => ({ ...prev, [name]: value }));
-  };
+  // Actualiza el valor
+  setNuevoPiso((prev) => ({ ...prev, [name]: value }));
 
+  // ✅ Si el campo tenía error y ahora el usuario escribe algo, se limpia el error
+  if (erroresPiso[name]) {
+    setErroresPiso((prev) => {
+      const updated = { ...prev };
+      delete updated[name];
+      return updated;
+    });
+  }
+};
+
+
+
+ const camposObligatoriosObra = [
+  "descripcion",
+  "categoria",
+  "unidadMedida",
+  "mesAnio",
+  "material",
+  "estadoConserv",
+  "tipoNivel",
+  "nroPiso",
+  "cantidad",
+  "metrado",
+];
 
 const handleAgregarPiso = () => {
-  console.log("🔹 Intentando agregar piso:", nuevoPiso);
+  const camposObligatorios = [
+    "tipoNivel",
+    "nroPiso",
+    "fechaConstruccion",
+    "areaPropia",
+    "areaComun",
+    "material",
+    "estadoConserv",
+    "muros",
+    "techos",
+    "puertasVentanas",
+  ];
 
-  if (!nuevoPiso.tipoNivel || !nuevoPiso.nroPiso) {
-    alert("Completa al menos Tipo Nivel y N° Piso antes de agregar.");
+
+   // Validar vacíos
+  const nuevosErrores: Record<string, boolean> = {};
+  camposObligatorios.forEach((campo) => {
+    if (!nuevoPiso[campo as keyof Piso] || (nuevoPiso[campo as keyof Piso] + "").trim() === "") {
+      nuevosErrores[campo] = true;
+    }
+  });
+
+
+
+
+  // Si hay errores, marcarlos y detener proceso
+  if (Object.keys(nuevosErrores).length > 0) {
+    setErroresPiso(nuevosErrores);
     return;
   }
 
-  setPisos((prev) => {
-    const nuevoArray = [...prev, { ...nuevoPiso }];
-    console.log("✅ Pisos actualizado:", nuevoArray);
-    return nuevoArray;
-  });
 
-  // ✅ Limpia y cierra el formulario
-  setNuevoPiso({ ...pisoInicial });
-  setMostrarFormPiso(false);
+  // ✅ Si todo está bien, agrega el piso
+  setPisos((prev) => [...prev, { ...nuevoPiso }]);
+  setNuevoPiso(pisoInicial);
+  setErroresPiso({});
+  setMostrarFormPiso(false); // ✅ Cierra formulario y vuelve a mostrar todo
+
+   // Mostrar Snackbar
+  setOpenSnackbar(true);
+
 };
 
   const handleAgregarObra = () => {
-    setObras((prev) => [...prev, { ...nuevaObra }]);
-    setMostrarFormObra(false);
-  };
+  const nuevosErrores: Record<string, boolean> = {};
+
+  camposObligatoriosObra.forEach((campo) => {
+    if (!nuevaObra[campo as keyof Obra] || (nuevaObra[campo as keyof Obra] + "").trim() === "") {
+      nuevosErrores[campo] = true;
+    }
+  });
+
+  if (Object.keys(nuevosErrores).length > 0) {
+    setErroresObra(nuevosErrores);
+    return; // Detiene si hay campos vacíos
+  }
+
+  setObras((prev) => [...prev, { ...nuevaObra }]);
+  setNuevaObra({
+    descripcion: "",
+    tipoNivel: "",
+    nroPiso: "",
+    material: "",
+    estadoConserv: "",
+    categoria: "",
+    cantidad: "",
+    unidadMedida: "",
+    metrado: "",
+    mesAnio: "",
+    valorObra: "100",
+    incremento: "5",
+    depreciacion: "15",
+    valorObraDepreciada: "85",
+    factorOfic: "0.68",
+    valorTotalObras: "57.8",
+  });
+
+  setErroresObra({});
+  setMostrarFormObra(false);
+  setOpenSnackbar(true);
+};
 
   const totalConstruccion = pisos.reduce(
     (acc, p) => acc + parseFloat(p.valorFinal || "0"),
@@ -312,9 +434,30 @@ const handleAgregarPiso = () => {
     0
   );
 
+const handleObraChange = (
+  e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
+) => {
+  const { name, value } = e.target as HTMLInputElement;
+  setNuevaObra((prev) => ({ ...prev, [name]: value }));
+
+  if (erroresObra[name]) {
+    setErroresObra((prev) => {
+      const updated = { ...prev };
+      delete updated[name];
+      return updated;
+    });
+  }
+};
+
+
+
+
+
   return (
     <Box sx={{ p: 3 }}>
       {/* ====== CONSTRUCCIÓN ====== */}
+      {!mostrarFormObra && (
+        <>
       <Typography
         variant="h6"
         sx={{
@@ -328,6 +471,7 @@ const handleAgregarPiso = () => {
         <ApartmentIcon sx={{ mr: 1 }} /> Características de la construcción propia y común
       </Typography>
 
+
       <Paper variant="outlined" sx={{ p: 2, mb: 4 }}>
         {!mostrarFormPiso ? (
           <>
@@ -339,15 +483,12 @@ const handleAgregarPiso = () => {
                 variant="contained"
                 startIcon={<AddCircleOutlineIcon />}
                 color="success"
-                onClick={() => {
-                    setNuevoPiso(pisoInicial);  // ✅ limpia todos los campos
-                    setMostrarFormPiso(true);   // ✅ muestra el formulario
-                }}
+                onClick={handleAgregarPisoClick}
               >
                 Agregar nuevo Piso
               </Button>
             </Box>
-<ThemeProvider theme={compactTableTheme}>
+          <ThemeProvider theme={compactTableTheme}>
             <Table size="small">
               <TableHead sx={{ bgcolor: "#f0f4f8" }}>
                 <TableRow>
@@ -380,68 +521,69 @@ const handleAgregarPiso = () => {
                     <TableCell>{p.material}</TableCell>
                     <TableCell>{p.estadoConserv}</TableCell>
                     <TableCell align="center"
-  sx={{
-    verticalAlign: "middle",
-    padding: 0,
-  }}><Box
-    sx={{
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: 22,
-      height: 22,
-      borderRadius: "50%",
-      bgcolor: getColorByLetra(p.muros), // azul SAT
-      color: "#fff",
-      fontSize: "0.75rem",
-      fontWeight: 600,
-      mx: "auto",
-    }}
-  >
-    {p.muros}
-  </Box></TableCell>
-                    <TableCell align="center"
-  sx={{
-    verticalAlign: "middle",
-    padding: 0,
-  }}><Box
-    sx={{
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: 22,
-      height: 22,
-      borderRadius: "50%",
-      bgcolor: getColorByLetra(p.techos), // verde SAT
-      color: "#fff",
-      fontSize: "0.75rem",
-      fontWeight: 600,
-      mx: "auto",
-    }}
-  >
-    {p.techos}
-  </Box></TableCell>
-                    <TableCell align="center"
-  sx={{
-    verticalAlign: "middle",
-    padding: 0,
-  }}><Box
-    sx={{
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: 22,
-      height: 22,
-      borderRadius: "50%",
-      bgcolor: getColorByLetra(p.puertasVentanas), // morado SAT
-      color: "#fff",
-      fontSize: "0.75rem",
-      fontWeight: 600,
-      mx: "auto",
-    }}
-  >
-    {p.puertasVentanas}
-  </Box></TableCell>
+                      sx={{
+                        verticalAlign: "middle",
+                        padding: 0,
+                      }}><Box
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 22,
+                          height: 22,
+                          borderRadius: "50%",
+                          bgcolor: getColorByLetra(p.muros), // azul SAT
+                          color: "#fff",
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          mx: "auto",
+                        }}
+                      >
+                        {p.muros}
+                      </Box></TableCell>
+                                        <TableCell align="center"
+                      sx={{
+                        verticalAlign: "middle",
+                        padding: 0,
+                      }}><Box
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 22,
+                          height: 22,
+                          borderRadius: "50%",
+                          bgcolor: getColorByLetra(p.techos), // verde SAT
+                          color: "#fff",
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          mx: "auto",
+                        }}
+                      >
+                        {p.techos}
+                      </Box></TableCell>
+                                        <TableCell align="center"
+                      sx={{
+                        verticalAlign: "middle",
+                        padding: 0,
+                      }}><Box
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: 22,
+                          height: 22,
+                          borderRadius: "50%",
+                          bgcolor: getColorByLetra(p.puertasVentanas), // morado SAT
+                          color: "#fff",
+                          fontSize: "0.75rem",
+                          fontWeight: 600,
+                          mx: "auto",
+                        }}
+                      >
+                        {p.puertasVentanas}
+                      </Box>
+                    </TableCell>
                     <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.valorUnitario}</TableCell>
                     <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.incremento}</TableCell>
                     <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.depreciacion}</TableCell>
@@ -462,7 +604,7 @@ const handleAgregarPiso = () => {
                 ))}
               </TableBody>
             </Table>
-</ThemeProvider>
+            </ThemeProvider>
             <Typography sx={{ textAlign: "right", fontWeight: 600, mt: 2 }}>
               Total de Construcción (S/): {totalConstruccion.toFixed(2)}
             </Typography>
@@ -470,18 +612,21 @@ const handleAgregarPiso = () => {
         ) : (
           <>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-  Nuevo Piso
-</Typography>
+            Nuevo Piso
+          </Typography>
 
-{/* 🔹 Primera fila: Tipo Nivel, N° Piso, Área Propia, Área Común */}
-<Box
-  sx={{
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-    gap: 2,
-    mb: 2,
-  }}
->
+  
+
+
+  {/* 🔹 Primera fila: Tipo Nivel, N° Piso, Área Propia, Área Común */}
+  <Box
+    sx={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+      gap: 2,
+      mb: 2,
+    }}
+  >
   <TextField
     select
     label="Tipo de Nivel"
@@ -489,6 +634,8 @@ const handleAgregarPiso = () => {
     value={nuevoPiso.tipoNivel}
     onChange={handleChangePiso}
     size="small"
+    error={!!erroresPiso["tipoNivel"]}
+    helperText={erroresPiso["tipoNivel"] ? "Campo obligatorio" : ""}
   >
     {tipoNivelList.map((n) => (
       <MenuItem key={n} value={n}>
@@ -503,6 +650,8 @@ const handleAgregarPiso = () => {
     value={nuevoPiso.nroPiso}
     onChange={handleChangePiso}
     size="small"
+    error={!!erroresPiso["nroPiso"]}
+    helperText={erroresPiso["nroPiso"] ? "Campo obligatorio" : ""}
   />
 
   <TextField
@@ -511,6 +660,8 @@ const handleAgregarPiso = () => {
     value={nuevoPiso.areaPropia}
     onChange={handleChangePiso}
     size="small"
+    error={!!erroresPiso["areaPropia"]}
+    helperText={erroresPiso["areaPropia"] ? "Campo obligatorio" : ""}
   />
 
   <TextField
@@ -519,6 +670,14 @@ const handleAgregarPiso = () => {
     value={nuevoPiso.areaComun}
     onChange={handleChangePiso}
     size="small"
+    error={!!erroresPiso["areaComun"]}
+    helperText={erroresPiso["areaComun"] ? "Campo obligatorio" : ""}
+    sx={{
+    "& .MuiOutlinedInput-root": {
+      "& fieldset": { borderColor: erroresPiso["areaComun"] ? "#d32f2f" : "" },
+      "&:hover fieldset": { borderColor: erroresPiso["areaComun"] ? "#d32f2f" : "" },
+    },
+  }}
   />
 </Box>
 
@@ -550,6 +709,8 @@ const handleAgregarPiso = () => {
       value={nuevoPiso.fechaConstruccion}
       onChange={handleChangePiso}
       size="small"
+      error={!!erroresPiso["fechaConstruccion"]}
+      helperText={erroresPiso["fechaConstruccion"] ? "Campo obligatorio" : ""}
       InputLabelProps={{ shrink: true }}
     />
 
@@ -560,6 +721,9 @@ const handleAgregarPiso = () => {
       value={nuevoPiso.material}
       onChange={handleChangePiso}
       size="small"
+      error={!!erroresPiso["material"]}
+    helperText={erroresPiso["material"] ? "Campo obligatorio" : ""}
+      
     >
       {materialList.map((m) => (
         <MenuItem key={m} value={m}>
@@ -575,6 +739,8 @@ const handleAgregarPiso = () => {
       value={nuevoPiso.estadoConserv}
       onChange={handleChangePiso}
       size="small"
+      error={!!erroresPiso["estadoConserv"]}
+    helperText={erroresPiso["estadoConserv"] ? "Campo obligatorio" : ""}
     >
       {estadoConservList.map((e) => (
         <MenuItem key={e} value={e}>
@@ -601,27 +767,54 @@ const handleAgregarPiso = () => {
       label="Muros y columnas"
       value={nuevoPiso.muros}
       opciones={ListaMuros}
-      onChange={(val) =>
-        setNuevoPiso((prev) => ({ ...prev, muros: val }))
-      }
+      onChange={(val) => {
+    setNuevoPiso((prev) => ({ ...prev, muros: val }));
+    if (erroresPiso["muros"]) {
+      setErroresPiso((prev) => {
+        const updated = { ...prev };
+        delete updated["muros"];
+        return updated;
+      });
+    }
+  }}
+  error={!!erroresPiso["muros"]}
+  helperText={erroresPiso["muros"] ? "Campo obligatorio" : ""}
     />
 
     <SelectConstruccion
       label="Techos"
       value={nuevoPiso.techos}
       opciones={ListaTechos}
-      onChange={(val) =>
-        setNuevoPiso((prev) => ({ ...prev, techos: val }))
-      }
+      onChange={(val) => {
+    setNuevoPiso((prev) => ({ ...prev, techos: val }));
+    if (erroresPiso["techos"]) {
+      setErroresPiso((prev) => {
+        const updated = { ...prev };
+        delete updated["techos"];
+        return updated;
+      });
+    }
+  }}
+  error={!!erroresPiso["techos"]}
+  helperText={erroresPiso["techos"] ? "Campo obligatorio" : ""}
     />
 
     <SelectConstruccion
       label="Puertas y Ventanas"
       value={nuevoPiso.puertasVentanas}
       opciones={ListaPuertasVentanas}
-      onChange={(val) =>
-        setNuevoPiso((prev) => ({ ...prev, puertasVentanas: val }))
-      }
+      onChange={(val) => {
+    setNuevoPiso((prev) => ({ ...prev, puertasVentanas: val }));
+    if (erroresPiso["puertasVentanas"]) {
+      setErroresPiso((prev) => {
+        const updated = { ...prev };
+        delete updated["puertasVentanas"];
+        return updated;
+      });
+    }
+  }}
+  error={!!erroresPiso["puertasVentanas"]}
+  helperText={erroresPiso["puertasVentanas"] ? "Campo obligatorio" : ""}
     />
   </Box>
 </Box>
@@ -648,7 +841,11 @@ const handleAgregarPiso = () => {
           </>
         )}
       </Paper>
+      </>
+)}
 
+{!mostrarFormPiso && (
+  <>
       {/* ====== OBRAS COMPLEMENTARIAS ====== */}
       <Typography
         variant="h6"
@@ -674,12 +871,12 @@ const handleAgregarPiso = () => {
                 variant="contained"
                 startIcon={<AddCircleOutlineIcon />}
                 color="success"
-                onClick={() => setMostrarFormObra(true)}
+                 onClick={handleAgregarObraClick}
               >
                 Agregar nueva Obra
               </Button>
             </Box>
-<ThemeProvider theme={compactTableTheme}>
+          <ThemeProvider theme={compactTableTheme}>
             <Table size="small">
               <TableHead sx={{ bgcolor: "#f0f4f8" }}>
                 <TableRow>
@@ -736,7 +933,7 @@ const handleAgregarPiso = () => {
                 ))}
               </TableBody>
             </Table>
-</ThemeProvider>
+          </ThemeProvider>
             <Typography sx={{ textAlign: "right", fontWeight: 600, mt: 2 }}>
               Total Obras Complementarias (S/): {totalObras.toFixed(2)}
             </Typography>
@@ -760,28 +957,32 @@ const handleAgregarPiso = () => {
 >
   <TextField
     select
-    label="Descripción de Obra"
-    name="descripcion"
-    value={nuevaObra.descripcion}
-    onChange={handleChangeObra}
-    size="small"
-    fullWidth
-  >
-    {descripcionesObra.map((d, idx) => (
-      <MenuItem key={idx} value={d}>
-        {d}
-      </MenuItem>
-    ))}
-  </TextField>
+      label="Descripción de Obra"
+      name="descripcion"
+      value={nuevaObra.descripcion}
+      size="small"
+      onChange={handleObraChange}
+      fullWidth
+      error={!!erroresObra["descripcion"]}
+      helperText={erroresObra["descripcion"] ? "Campo obligatorio" : ""}
+    >
+      {descripcionesObra.map((d, idx) => (
+        <MenuItem key={idx} value={d}>
+          {d}
+        </MenuItem>
+      ))}
+    </TextField>
 
-  <TextField
+    <TextField
     select
     label="Categoría"
     name="categoria"
     value={nuevaObra.categoria}
-    onChange={handleChangeObra}
+    onChange={handleObraChange}
     size="small"
     fullWidth
+    error={!!erroresObra["categoria"]}
+      helperText={erroresObra["categoria"] ? "Campo obligatorio" : ""}
   >
     {categoriasObra.map((c, idx) => (
       <MenuItem key={idx} value={c}>
@@ -795,9 +996,11 @@ const handleAgregarPiso = () => {
     label="Unidad de Medida"
     name="unidadMedida"
     value={nuevaObra.unidadMedida}
-    onChange={handleChangeObra}
+    onChange={handleObraChange}
     size="small"
     fullWidth
+    error={!!erroresObra["unidadMedida"]}
+      helperText={erroresObra["unidadMedida"] ? "Campo obligatorio" : ""}
   >
     {unidadMedidaList.map((u) => (
       <MenuItem key={u} value={u}>
@@ -826,8 +1029,10 @@ const handleAgregarPiso = () => {
       label="Mes/Año"
       name="mesAnio"
       value={nuevaObra.mesAnio}
-      onChange={handleChangeObra}
+      onChange={handleObraChange}
       size="small"
+      error={!!erroresObra["mesAnio"]}
+      helperText={erroresObra["mesAnio"] ? "Campo obligatorio" : ""}
       InputLabelProps={{ shrink: true }}
     />
 
@@ -836,8 +1041,10 @@ const handleAgregarPiso = () => {
       label="Material Estruct. Predom."
       name="material"
       value={nuevaObra.material}
-      onChange={handleChangeObra}
+      onChange={handleObraChange}
       size="small"
+      error={!!erroresObra["material"]}
+      helperText={erroresObra["material"] ? "Campo obligatorio" : ""}
     >
       {materialList.map((m) => (
         <MenuItem key={m} value={m}>
@@ -851,8 +1058,10 @@ const handleAgregarPiso = () => {
       label="Estado de Conservación"
       name="estadoConserv"
       value={nuevaObra.estadoConserv}
-      onChange={handleChangeObra}
+      onChange={handleObraChange}
       size="small"
+      error={!!erroresObra["estadoConserv"]}
+      helperText={erroresObra["estadoConserv"] ? "Campo obligatorio" : ""}
     >
       {estadoConservList.map((e) => (
         <MenuItem key={e} value={e}>
@@ -880,8 +1089,10 @@ const handleAgregarPiso = () => {
       label="Tipo Nivel"
       name="tipoNivel"
       value={nuevaObra.tipoNivel}
-      onChange={handleChangeObra}
+      onChange={handleObraChange}
       size="small"
+      error={!!erroresObra["tipoNivel"]}
+      helperText={erroresObra["tipoNivel"] ? "Campo obligatorio" : ""}
     >
       {tipoNivelList.map((n) => (
         <MenuItem key={n} value={n}>
@@ -894,27 +1105,34 @@ const handleAgregarPiso = () => {
       label="N° Piso"
       name="nroPiso"
       value={nuevaObra.nroPiso}
-      onChange={handleChangeObra}
+      onChange={handleObraChange}
       size="small"
+      error={!!erroresObra["nroPiso"]}
+      helperText={erroresObra["nroPiso"] ? "Campo obligatorio" : ""}
     />
 
     <TextField
       label="Cantidad"
       name="cantidad"
       value={nuevaObra.cantidad}
-      onChange={handleChangeObra}
+      onChange={handleObraChange}
       size="small"
+      error={!!erroresObra["cantidad"]}
+      helperText={erroresObra["cantidad"] ? "Campo obligatorio" : ""}
     />
 
     <TextField
       label="Metrado"
       name="metrado"
       value={nuevaObra.metrado}
-      onChange={handleChangeObra}
+      onChange={handleObraChange}
       size="small"
+      error={!!erroresObra["metrado"]}
+      helperText={erroresObra["metrado"] ? "Campo obligatorio" : ""}
     />
   </Box>
 </Box>
+
 
 {/* 🔹 Botones */}
 <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
@@ -938,8 +1156,35 @@ const handleAgregarPiso = () => {
           </>
         )}
       </Paper>
+
+
+
+
+ </>
+)}
+
+<Snackbar
+  open={openSnackbar}
+  autoHideDuration={3000}
+  onClose={() => setOpenSnackbar(false)}
+  anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+>
+  <MuiAlert
+    onClose={() => setOpenSnackbar(false)}
+    severity="success"
+    sx={{ width: "100%" }}
+    variant="filled"
+  >
+    ✅ Piso agregado correctamente
+  </MuiAlert>
+</Snackbar>
     </Box>
+
+
+
+
   );
 };
+
 
 export default Paso4Construccion;

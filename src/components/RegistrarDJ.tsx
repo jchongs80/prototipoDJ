@@ -69,7 +69,7 @@ const RegistrarDJ: React.FC<Props> = ({ onLogout }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const drawerWidth = 80;
 
-
+const [validarPaso2, setValidarPaso2] = useState<(() => boolean) | null>(null);
   
 
 
@@ -106,6 +106,31 @@ useEffect(() => {
 
 
   const [activeStep, setActiveStep] = useState(0);
+
+
+  // Cambia los mensajes cuando cambia el paso activo
+useEffect(() => {
+  const paso = mensajesPorPaso[activeStep];
+
+  if (!paso) return; // seguridad
+
+  // 👇 Construimos los mensajes dinámicamente
+  const nuevosMensajes: string[] = [];
+
+  if (paso.intro) {
+    nuevosMensajes.push(paso.intro);
+  }
+
+  if (paso.descripcion) {
+    nuevosMensajes.push(`🤖 Tributito: ${paso.descripcion}`);
+  }
+
+  setMessages(nuevosMensajes);
+}, [activeStep]);
+
+
+
+
   const [showChat, setShowChat] = useState(true);
   const [messages, setMessages] = useState<string[]>([
     "👋 ¡Hola! Soy Tributito, tu asistente virtual. Te guiaré en el proceso de tu Declaración Jurada.",
@@ -151,6 +176,7 @@ useEffect(() => {
     }
 
     if (!valid) {
+      setSeveritySnackbar("error");
       setMensajeSnackbar("⚠️ Corrige los errores antes de continuar.");
       setOpenSnackbar(true);
       return;
@@ -159,15 +185,30 @@ useEffect(() => {
 
   // 🔸 Validación del Paso 2
   if (activeStep === 1 && (!formData.codigoPredio || formData.codigoPredio.trim() === "")) {
-    setMensajeSnackbar("Debe seleccionar un predio antes de continuar.");
-    setOpenSnackbar(true);
-    return;
+    setSeveritySnackbar("error");
+  setMensajeSnackbar("⚠️ Debe seleccionar un predio antes de continuar.");
+  setOpenSnackbar(true);
+  return;
   }
+
+  if (activeStep === 1) { // Paso 2 (recordando que paso 0 es el contribuyente)
+
+      if (validarPaso2 && !validarPaso2()) {
+    if (!formData.docAdquisicion) {
+       setSeveritySnackbar("error");
+      setMensajeSnackbar("⚠️ Debe adjuntar el documento PDF del tipo de transferencia");
+      setOpenSnackbar(true);
+    }
+    return; // 🚫 Detiene el avance
+  }
+  
+}
 
   // ✅ Si todo bien, avanzar
   setActiveStep((prev) => prev + 1);
-  setMensajeSnackbar("✅ Se guardaron los datos del paso anterior correctamente.");
-  setOpenSnackbar(true);
+setSeveritySnackbar("success");
+setMensajeSnackbar("✅ Se guardaron los datos del paso anterior correctamente.");
+setOpenSnackbar(true);
 };
 
 
@@ -175,17 +216,25 @@ useEffect(() => {
   const handleBack = () => setActiveStep((prev) => prev - 1);
   const handleGuardar = () =>
     alert("✅ Tu progreso ha sido guardado para continuar después.");
+  
   const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
-    setMessages((prev) => [...prev, `🧾 Tú: ${inputValue}`]);
-    setInputValue("");
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        "🤖 Tributito: Gracias por tu mensaje. Estoy procesando tu consulta...",
-      ]);
-    }, 800);
-  };
+  if (!inputValue.trim()) return;
+
+  // Mostrar mensaje del usuario
+  setMessages((prev) => [...prev, `🧾 Tú: ${inputValue}`]);
+  const currentStep = activeStep;
+
+  // Limpiar input
+  setInputValue("");
+
+  // Mostrar respuesta automática
+  setTimeout(() => {
+    setMessages((prev) => [
+      ...prev,
+      `🤖 Tributito: ${respuestasDemo[currentStep] || "Gracias por tu mensaje. Estoy procesando tu consulta..."}`,
+    ]);
+  }, 1000);
+};
 
   // 🕒 Estado para mostrar la fecha y hora en tiempo real
 const [dateTime, setDateTime] = useState(new Date());
@@ -209,10 +258,45 @@ const formattedDateTime = dateTime.toLocaleString("es-PE", {
   second: "2-digit",
 });
 
+
+
+// Mensajes automáticos del asistente por paso
+const mensajesPorPaso = [
+  {
+    intro: "👋 ¡Hola! Soy Tributito, tu asistente virtual. Te guiaré en el proceso de tu Declaración Jurada.",
+    descripcion: "En este paso debes registrar tus datos personales y, si corresponde, los de tu cónyuge. Además, adjunta los documentos solicitados como el recibo de servicio y tu condición especial si aplica."
+  },
+  {
+    descripcion: "Aquí registrarás la información de tu predio: su código, dirección, tipo de transferencia y documento de adquisición (PDF)."
+  },
+  {
+    descripcion: "En este paso ingresa los valores y características del terreno: área, frontis y valor arancelario del predio."
+  },
+  {
+    descripcion: "Registra las características de construcción y obras complementarias como pisos, materiales, y detalles de edificación."
+  },
+  {
+    descripcion: "Aquí podrás revisar toda la información registrada antes de presentar tu Declaración Jurada."
+  }
+];
+
+
+// Respuestas breves del bot (demo)
+const respuestasDemo = [
+  "😊 ¡Muy bien! Si necesitas ayuda con tus datos personales, revisa los campos obligatorios antes de avanzar.",
+  "🏠 Recuerda adjuntar el documento de transferencia para continuar correctamente.",
+  "📏 Asegúrate de ingresar correctamente el área y el valor arancelario del terreno.",
+  "🔨 No olvides agregar al menos un piso o una obra complementaria si aplica.",
+  "✅ Todo listo. Revisa tus datos y presenta la declaración."
+];
+
+
+
 const [errorCondicionFile, setErrorCondicionFile] = useState("");
 const [errorReciboFile, setErrorReciboFile] = useState("");
 
 const [openSnackbar, setOpenSnackbar] = useState(false);
+const [severitySnackbar, setSeveritySnackbar] = useState<"success" | "error" | "warning" | "info">("info");
 const [mensajeSnackbar, setMensajeSnackbar] = useState("");
 
 const [formData, setFormData] = useState({
@@ -414,6 +498,23 @@ const handlePresentarDeclaracion = () => {
     });
   }, 1500);
 };
+
+
+
+
+
+// ✅ Ref para el contenedor del chat
+const chatContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+// ✅ Efecto: hacer scroll automático cuando cambian los mensajes
+React.useEffect(() => {
+  if (chatContainerRef.current) {
+    chatContainerRef.current.scrollTo({
+      top: chatContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }
+}, [messages]);
 
 
   return (
@@ -675,7 +776,7 @@ const handlePresentarDeclaracion = () => {
 
       {activeStep === 1 && (
         <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
-        <Paso2Predio formData={formData} handleChange={handleChange} />
+        <Paso2Predio formData={formData} handleChange={handleChange} registerValidator={(fn) => setValidarPaso2(() => fn)} />
         </Box>
       )}
       {activeStep === 2 && (
@@ -685,7 +786,7 @@ const handlePresentarDeclaracion = () => {
       )}
       {activeStep === 3 && (
         <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
-          <Paso4Construccion />
+          <Paso4Construccion onChatMessage={(mensaje) => setMessages((prev) => [...prev, `🤖 Tributito: ${mensaje}`])} />
         </Box>
       )}
       {activeStep === 4 && (
@@ -830,6 +931,7 @@ const handlePresentarDeclaracion = () => {
 
       {/* Mensajes */}
       <Box
+        ref={chatContainerRef} // 👈 aquí
         sx={{
           flexGrow: 1,
           overflowY: 'auto',
@@ -869,12 +971,21 @@ const handlePresentarDeclaracion = () => {
           gap: 1,
         }}
       >
-        <TextField
+       <TextField
           fullWidth
           placeholder="Escribe tu mensaje..."
           size="small"
+          multiline
+          minRows={1}
+          maxRows={3}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault(); // evita salto de línea
+              handleSendMessage(); // envía el mensaje
+            }
+          }}
         />
         <Button variant="contained" color="success" onClick={handleSendMessage}>
           <SendIcon />
@@ -938,13 +1049,19 @@ const handlePresentarDeclaracion = () => {
   open={openSnackbar}
   autoHideDuration={4000}
   onClose={() => setOpenSnackbar(false)}
-  anchorOrigin={{ vertical: "top", horizontal: "center" }} // ⬅️ aquí cambia
+  anchorOrigin={{ vertical: "top", horizontal: "center" }}
 >
   <Alert
     onClose={() => setOpenSnackbar(false)}
-    severity="success"
+    severity={severitySnackbar}
     variant="filled"
-    sx={{ width: "100%" }}
+    sx={{
+      width: "100%",
+      fontSize: "0.95rem",
+      fontWeight: 500,
+      letterSpacing: "0.3px",
+      boxShadow: "0 3px 8px rgba(0,0,0,0.2)",
+    }}
   >
     {mensajeSnackbar}
   </Alert>

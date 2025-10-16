@@ -18,6 +18,8 @@ interface SelectConstruccionProps {
   value: string;
   opciones: OpcionMaterial[];
   onChange: (value: string) => void;
+  error?: boolean; // ✅ Nuevo: estado de error
+  helperText?: string; // ✅ Nuevo: texto de ayuda o error
 }
 
 const SelectConstruccion: React.FC<SelectConstruccionProps> = ({
@@ -25,18 +27,20 @@ const SelectConstruccion: React.FC<SelectConstruccionProps> = ({
   value,
   opciones,
   onChange,
+  error = false,
+  helperText = "",
 }) => {
   const theme = useTheme();
   const selected = opciones.find((o) => o.value === value) || null;
 
   return (
-    <Tooltip
-      title={selected ? selected.label : ""}
-      placement="top-start"
-      arrow
-      disableInteractive
-    >
-      <Box>
+    <Box>
+      <Tooltip
+        title={selected ? selected.label : ""}
+        placement="top-start"
+        arrow
+        disableInteractive
+      >
         <Autocomplete
           options={opciones}
           value={selected}
@@ -52,58 +56,63 @@ const SelectConstruccion: React.FC<SelectConstruccionProps> = ({
               size="small"
               fullWidth
               variant="outlined"
+              error={error} // ✅ Aplica el error visual
+              helperText={error ? helperText : ""}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": { borderColor: error ? "#d32f2f" : "" },
+                },
+              }}
             />
           )}
           renderOption={(props, option) => (
-            <Tooltip
-              title={option.label}
-              placement="right"
-              arrow
-              disableInteractive
+            <Box
+              component="li"
+              {...props}
+              sx={{
+                display: "flex",
+                flexDirection: "row", // ✅ Muestra valor y descripción en una fila
+                alignItems: "center",
+                justifyContent: "flex-start",
+                gap: 1.5,
+                p: "6px 10px",
+                borderBottom: "1px solid #f0f0f0",
+                "&:hover": { bgcolor: "#f9f9f9" },
+              }}
             >
-              <Box
-                component="li"
-                {...props}
+              <Typography
+                variant="body2"
                 sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  p: 1,
-                  borderBottom: "1px solid #f0f0f0",
-                  "&:hover": { bgcolor: "#f9f9f9" },
+                  fontWeight: 700,
+                  fontSize: "0.9rem",
+                  color: theme.palette.primary.main,
+                  width: "24px",
+                  textAlign: "left", // ✅ Alineado a la izquierda
                 }}
               >
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: "0.9rem",
-                    color: theme.palette.primary.main,
-                  }}
-                >
-                  {option.value}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: "0.75rem",
-                    color: "#555",
-                    lineHeight: 1.3,
-                    whiteSpace: "normal",
-                  }}
-                >
-                  {option.label}
-                </Typography>
-              </Box>
-            </Tooltip>
+                {option.value}
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: "0.8rem",
+                  color: "#333",
+                  lineHeight: 1.4,
+                  whiteSpace: "normal",
+                  textAlign: "left",
+                }}
+              >
+                {option.label}
+              </Typography>
+            </Box>
           )}
           sx={{
             "& .MuiAutocomplete-inputRoot": { fontSize: "0.85rem" },
             "& .MuiInputLabel-root": { fontSize: "0.85rem" },
           }}
         />
-      </Box>
-    </Tooltip>
+      </Tooltip>
+    </Box>
   );
 };
 

@@ -212,6 +212,10 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({
                 gap: 2,
               }}
             >
+               <Tooltip
+                title="Área del terreno propio"
+                arrow
+              >
               <TextField
                 label="Área Propia (m²)"
                 name="areaPropia"
@@ -221,6 +225,11 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({
                 fullWidth
                 placeholder="0.00"
               />
+              </Tooltip>
+              <Tooltip
+                title="Área común que compartes con otro(s) propietario(s)"
+                arrow
+              >
               <TextField
                 label="Área Común (m²)"
                 name="areaComun"
@@ -230,6 +239,7 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({
                 fullWidth
                 placeholder="0.00"
               />
+              </Tooltip>
               <TextField
                 label="Área Total (m²)"
                 name="areaTotal"
