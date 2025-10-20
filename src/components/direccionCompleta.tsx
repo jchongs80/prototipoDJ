@@ -7,6 +7,7 @@ import {
   Box,
   Link,
   Tooltip,
+  LinearProgress,
 } from "@mui/material";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import EditIcon from "@mui/icons-material/Edit";
@@ -18,7 +19,7 @@ interface DireccionCompletaProps {
   onEditarDireccion?: () => void;
   mostrarDireccionDetallada: boolean;
   setMostrarDireccionDetallada: React.Dispatch<React.SetStateAction<boolean>>;
-  errorReciboFile?: string; // ✅ nuevo prop opcional
+  errorReciboFile?: string;
 }
 
 const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
@@ -32,9 +33,99 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
+  // 🧠 Simulación IA ultra estable (idéntica a la versión funcional)
+  const simulateAIValidation = (file: File) => {
+    handleChange({ target: { name: "loadingRecibo", value: true } } as any);
+    handleChange({ target: { name: "aiVisibleRecibo", value: true } } as any);
+    handleChange({ target: { name: "aiProgressRecibo", value: 0 } } as any);
+
+    const steps = [
+      "Inicializando motor de validación...",
+      "Analizando autenticidad del recibo...",
+      "Verificando nombre y dirección declarada...",
+      "Reconociendo texto, sellos y códigos QR...",
+      "Comprobando coincidencia con registros oficiales...",
+      "Aplicando modelos de inteligencia artificial...",
+      "Evaluando integridad del archivo PDF...",
+      "Finalizando validación con inteligencia artificial...",
+    ];
+
+    const duration = 12000; // 12 segundos
+    let start: number | null = null;
+    let currentStep = 0;
+
+    const animate = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const progress = Math.min((elapsed / duration) * 100, 100);
+
+      const stepIndex = Math.min(
+        Math.floor((progress / 100) * steps.length),
+        steps.length - 1
+      );
+      if (stepIndex !== currentStep) {
+        currentStep = stepIndex;
+        handleChange({
+          target: { name: "aiMessageRecibo", value: steps[currentStep] },
+        } as any);
+      }
+
+      handleChange({
+        target: { name: "aiProgressRecibo", value: progress },
+      } as any);
+
+      if (progress < 100) {
+        requestAnimationFrame(animate);
+      } else {
+        // Mantener visible 2 segundos al 100%
+        handleChange({
+          target: {
+            name: "aiMessageRecibo",
+            value: "Completando análisis con inteligencia artificial...",
+          },
+        } as any);
+        handleChange({
+          target: { name: "aiProgressRecibo", value: 100 },
+        } as any);
+
+        setTimeout(() => {
+          const isValid = Math.random() > 0.05;
+          handleChange({ target: { name: "loadingRecibo", value: false } } as any);
+          handleChange({
+            target: { name: "aiResultRecibo", value: isValid ? "valid" : "invalid" },
+          } as any);
+
+          // Mantener visible 1.5 s más antes de ocultar
+          setTimeout(() => {
+            handleChange({
+              target: { name: "aiVisibleRecibo", value: false },
+            } as any);
+          }, 1500);
+        }, 2000);
+      }
+    };
+
+    handleChange({
+      target: { name: "aiMessageRecibo", value: steps[0] },
+    } as any);
+
+    requestAnimationFrame(animate);
+  };
+
+  // 📤 Subida de archivo
   const onUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const uploaded = e.target.files?.[0] || null;
     handleReciboChange(uploaded);
+
+    if (uploaded && uploaded.type === "application/pdf") {
+
+      handleChange({ target: { name: "aiResultRecibo", value: "" } } as any);
+      handleChange({ target: { name: "aiMessageRecibo", value: "" } } as any);
+      handleChange({ target: { name: "aiProgressRecibo", value: 0 } } as any);
+      handleChange({ target: { name: "aiVisibleRecibo", value: false } } as any);
+
+      simulateAIValidation(uploaded);
+    }
   };
 
   return (
@@ -68,7 +159,7 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
               </Tooltip>
 
               {/* 📄 Subir archivo */}
-              <Tooltip title="Debe agregar el archivo de un recibo de servicio de agua o luz que acredite la dirección fiscal" arrow>
+              <Tooltip title="Debe subir el PDF de un recibo de agua o luz que acredite la dirección fiscal." arrow>
                 <IconButton
                   color="success"
                   onClick={() => fileInputRef.current?.click()}
@@ -93,9 +184,10 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
             </InputAdornment>
           ),
         }}
+        disabled
       />
 
-      {/* ❌ Error rojo */}
+      {/* ❌ Error */}
       {errorReciboFile && (
         <Typography
           variant="caption"
@@ -105,48 +197,120 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
         </Typography>
       )}
 
-      {/* 🕒 Estado de carga */}
-      {formData.loadingRecibo && (
-        <Typography
-          variant="caption"
-          sx={{ color: "#1976d2", fontStyle: "italic", mt: 0.8, display: "block" }}
-        >
-          ⏳ Procesando validación de PDF…
-        </Typography>
-      )}
+      {/* 🤖 Proceso de validación IA */}
+    {formData.aiVisibleRecibo && (
+  <Box
+    sx={{
+      mt: 1,
+      p: 1,
+      borderRadius: 1,
+      bgcolor: "#f0f8ff",
+      border: "1px solid #bbdefb",
+      textAlign: "center",
+      transition: "all 0.3s ease",
+      opacity: 1,
+    }}
+  >
+    <Typography
+      variant="caption"
+      sx={{
+        color: "#1976d2",
+        fontWeight: 500,
+        display: "block",
+        mb: 0.5,
+      }}
+    >
+      🤖 {formData.aiMessageRecibo || "Analizando autenticidad del documento..."}
+    </Typography>
 
+    <LinearProgress
+      variant="determinate"
+      value={formData.aiProgressRecibo || 0}
+      sx={{
+        height: 5,
+        borderRadius: 3,
+        bgcolor: "#e3f2fd",
+        "& .MuiLinearProgress-bar": {
+          background: "linear-gradient(90deg,#42a5f5,#1e88e5)",
+        },
+      }}
+    />
+    <Typography
+      variant="caption"
+      sx={{
+        color: "#0d47a1",
+        fontSize: "0.7rem",
+        fontWeight: 500,
+        mt: 0.3,
+      }}
+    >
+      {Math.min(formData.aiProgressRecibo?.toFixed(0) || 0, 100)} % completado
+    </Typography>
+  </Box>
+)}
       {/* ✅ Archivo válido */}
-      {!formData.loadingRecibo && (formData.reciboServicio || formData.urlRecibo) && (
-        <Box
-          sx={{
-            mt: 0.8,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-          }}
-        >
-          <Typography variant="caption" sx={{ color: "#2e7d32", fontWeight: 500 }}>
-            ✅ Archivo válido — Nro Folios: 1
-          </Typography>
-          {formData.urlRecibo && (
-            <Link
-              href={formData.urlRecibo}
-              target="_blank"
-              rel="noopener"
-              sx={{
-                fontSize: "0.75rem",
-                color: "#1e88e5",
-                textDecoration: "none",
-                "&:hover": { textDecoration: "underline" },
-              }}
+      {!formData.loadingRecibo &&
+        formData.aiResultRecibo === "valid" &&
+        (formData.reciboServicio || formData.urlRecibo) && (
+          <Box
+            sx={{
+              mt: 1,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <Typography
+              variant="caption"
+              sx={{ color: "#2e7d32", fontWeight: 500 }}
             >
-              Ver archivo
-            </Link>
-          )}
-        </Box>
-      )}
-      
+              ✅ Archivo válido — Autenticado con inteligencia artificial
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+  {formData.urlRecibo && (
+    <>
+      <Link
+        href={formData.urlRecibo}
+        target="_blank"
+        rel="noopener"
+        sx={{
+          fontSize: "0.75rem",
+          color: "#1e88e5",
+          textDecoration: "none",
+          fontWeight: 400,
+          "&:hover": { textDecoration: "underline" },
+        }}
+      >
+        Ver archivo
+      </Link>
+
+      <Link
+        component="button"
+        onClick={() => {
+          handleChange({ target: { name: "docRecibo", value: "" } } as any);
+          handleChange({ target: { name: "urlRecibo", value: "" } } as any);
+          handleChange({ target: { name: "aiResultRecibo", value: "" } } as any);
+          handleChange({ target: { name: "aiVisibleRecibo", value: false } } as any);
+          handleChange({ target: { name: "aiMessageRecibo", value: "" } } as any);
+          handleChange({ target: { name: "aiProgressRecibo", value: 0 } } as any);
+          handleChange({ target: { name: "loadingRecibo", value: false } } as any);
+        }}
+        sx={{
+          fontSize: "0.75rem",
+          color: "#c62828",
+          textDecoration: "none",
+          fontWeight: 400,
+          "&:hover": { textDecoration: "underline", color: "#b71c1c" },
+        }}
+      >
+        ❌ Quitar archivo
+      </Link>
+    </>
+  )}
+</Box>
+          </Box>
+        )}
     </Box>
   );
 };

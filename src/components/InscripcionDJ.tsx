@@ -133,6 +133,9 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
   const [numPredios, setNumPredios] = useState<number | "">("");
   const [tipoPersona, setTipoPersona] = useState("");
 
+  const [errorNumPredios, setErrorNumPredios] = useState("");
+  const [errorTipoPersona, setErrorTipoPersona] = useState("");
+
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
 
@@ -301,14 +304,14 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
           <InfoButton
             title="¿Qué documentos debes tener a mano?"
             color="#0d47a1"
-            items={["Minuta o Escritura Pública", "Recibo de servicios", "PU del predio"]}
+            items={["Minuta, contrato privado o Escritura Pública", "Recibo de servicios del domicilio fiscal, de cualquiera de los 3 últimos meses de la fecha del registro", "PU del predio adquirido"]}
           />
           <InfoButton
             title="¿Cuándo puedes registrarla?"
             color="#ffb300"
             items={[
-              "Hasta el último día hábil de febrero del año siguiente a la adquisición.",
-              "Registro virtual 24/7 disponible.",
+              "Puedes declarar hasta el último día hábil del mes de febrero del año siguiente a la adquisición del bien. De no hacerlo, incurrirás en infracción y se le sancionará con multa; sin embargo, al estar obligado al pago de los arbitrios del mes siguiente de producida la transferencia, se recomienda presentar su declaración jurada hasta antes del último día hábil del mes siguiente de ejecutada la transferencia.",
+              "Puedes realizar el registro virtual las 24 horas de los 7 días de la semana",
             ]}
           />
 
@@ -455,67 +458,120 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
         </Box>
 
         {/* ==== MODAL ==== */}
-        <Modal open={openModal} onClose={handleClose}>
-          <Box
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: 400,
-              bgcolor: "background.paper",
-              borderRadius: 2,
-              boxShadow: 24,
-              p: 4,
+        {/* ==== MODAL ==== */}
+<Modal open={openModal} onClose={handleClose}>
+  <Box
+    sx={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      width: 400,
+      bgcolor: "background.paper",
+      borderRadius: 2,
+      boxShadow: 24,
+      p: 4,
+    }}
+  >
+    {!loading ? (
+      <>
+        <Typography variant="h6" sx={{ mb: 2, color: "#003366", fontWeight: 600 }}>
+          Datos iniciales
+        </Typography>
+
+        {/* ===== VALIDACIONES ===== */}
+        <TextField
+          fullWidth
+          label="Nro de Predios a Declarar"
+          type="number"
+          value={numPredios}
+          onChange={(e) => {
+            const value = Number(e.target.value);
+            setNumPredios(value);
+            if (value > 0) setErrorNumPredios("");
+            else setErrorNumPredios("El número debe ser mayor a 0");
+          }}
+          error={!!errorNumPredios}
+          helperText={errorNumPredios}
+          sx={{
+            mb: 2,
+            "& .MuiFormHelperText-root": {
+              color: "#e53935",
+              fontSize: "0.8rem",
+              mt: 0.5,
+            },
+          }}
+        />
+
+        <TextField
+          select
+          fullWidth
+          label="Tipo de Persona"
+          value={tipoPersona}
+          onChange={(e) => {
+            setTipoPersona(e.target.value);
+            if (e.target.value) setErrorTipoPersona("");
+          }}
+          error={!!errorTipoPersona}
+          helperText={errorTipoPersona}
+          sx={{
+            mb: 3,
+            "& .MuiFormHelperText-root": {
+              color: "#e53935",
+              fontSize: "0.8rem",
+              mt: 0.5,
+            },
+          }}
+        >
+          <MenuItem value="Persona Natural">Persona Natural</MenuItem>
+          <MenuItem value="Sociedad Conyugal">Sociedad Conyugal</MenuItem>
+        </TextField>
+
+        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
+          <Button onClick={handleClose}>Cancelar</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              let valid = true;
+              if (!numPredios || numPredios <= 0) {
+                setErrorNumPredios("Debe ingresar un número mayor a 0");
+                valid = false;
+              }
+              if (!tipoPersona) {
+                setErrorTipoPersona("Debe seleccionar un tipo de persona");
+                valid = false;
+              }
+
+              if (!valid) return;
+
+              setLoading(true);
+              setTimeout(() => {
+                setLoading(false);
+                setOpenModal(false);
+                navigate("/registrar-dj", { state: { numPredios, tipoPersona } });
+              }, 2500);
             }}
           >
-            {!loading ? (
-              <>
-                <Typography variant="h6" sx={{ mb: 2, color: "#003366", fontWeight: 600 }}>
-                  Datos iniciales
-                </Typography>
-                <TextField
-                  fullWidth
-                  label="Nro de Predios a Declarar"
-                  type="number"
-                  value={numPredios}
-                  onChange={(e) => setNumPredios(Number(e.target.value))}
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  select
-                  fullWidth
-                  label="Tipo de Persona"
-                  value={tipoPersona}
-                  onChange={(e) => setTipoPersona(e.target.value)}
-                  sx={{ mb: 3 }}
-                >
-                  <MenuItem value="Persona Natural">Persona Natural</MenuItem>
-                  <MenuItem value="Sociedad Conyugal">Sociedad Conyugal</MenuItem>
-                </TextField>
-                <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
-                  <Button onClick={handleClose}>Cancelar</Button>
-                  <Button variant="contained" onClick={handleAceptar} disabled={!numPredios || !tipoPersona}>
-                    Aceptar
-                  </Button>
-                </Box>
-              </>
-            ) : (
-              <Box
-                sx={{
-                  textAlign: "center",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 2,
-                }}
-              >
-                <CircularProgress color="primary" />
-                <Typography sx={{ mt: 2, color: "#003366" }}>Preparando el registro...</Typography>
-              </Box>
-            )}
-          </Box>
-        </Modal>
+            Aceptar
+          </Button>
+        </Box>
+      </>
+    ) : (
+      <Box
+        sx={{
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 2,
+        }}
+      >
+        <CircularProgress color="primary" />
+        <Typography sx={{ mt: 2, color: "#003366" }}>Preparando el registro...</Typography>
+      </Box>
+    )}
+  </Box>
+</Modal>
       </Box>
 
       {/* ===== FOOTER ===== */}

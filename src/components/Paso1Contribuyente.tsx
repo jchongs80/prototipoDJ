@@ -1,12 +1,22 @@
 import React from "react";
 import {
   Box,
+  Paper,
   TextField,
   Typography,
   Divider,
   MenuItem,
-  FormControl, Select, InputLabel
+  Autocomplete
 } from "@mui/material";
+
+import {
+  AccountCircleOutlined,
+  DescriptionOutlined,
+  TodayOutlined,
+  PhoneIphoneOutlined,
+  EmailOutlined,
+  PhoneOutlined,
+} from "@mui/icons-material";
 
 import contribuyenteIcon from './../assets/contribuyente.png';
 import conyugeIcon from './../assets/conyuge.png';
@@ -21,6 +31,8 @@ import InputAdornment from "@mui/material/InputAdornment";
 import IconButton from "@mui/material/IconButton";
 import Dialog from "@mui/material/Dialog";
 import CircularProgress from "@mui/material/CircularProgress";
+import InfoCallout from "./InfoCallout";
+import HelpTooltip from "../components/helpTooltip";
 
 interface Paso1ContribuyenteProps {
   formData: any;
@@ -100,117 +112,251 @@ const handleBuscarConyuge = () => {
   }, 2500);
 };
 
+
+// ✅ Función auxiliar para manejar Autocomplete
+const handleAutoCompleteChange = (name: string, value: any) => {
+  handleChange({
+    target: {
+      name,
+      value,
+    },
+  } as React.ChangeEvent<HTMLInputElement>);
+};
+
+
+
   return (
-    <Box sx={{ p: 3, bgcolor: "#fff", borderRadius: 2, boxShadow: 1 }}>
-      {/* Título principal */}
-      <Typography variant="h6" sx={{ fontWeight: 600, color: "#003366", mb: 2 }}>
-        <img src={contribuyenteIcon} alt="Contribuyente"  style={{ width: "30px", height: "30px", marginRight: "8px" }}/>
-        Datos del Contribuyente
-      </Typography>
+    <Box sx={{ p: 1, bgcolor: "#fff", borderRadius: 2, boxShadow: 1 }}>
+  
+      <InfoCallout
+    title="¿Qué registrarás aquí?"
+    body="Completa tus datos personales y, si corresponde, los de tu cónyuge. Adjunta los documentos solicitados, como el recibo de servicio o la constancia de condición especial."
+  />
 
-      {/* Primera fila */}
-      <Box
-        sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 2,
-            mb: 2,
-        }}
-      >
-        <TextField
-          label="Tipo de documento"
-          name="tipoDocumento"
-          value={formData.tipoDocumento}
-          onChange={handleChange}
-          fullWidth
-           size="small"
-        />
-        <TextField
-          label="N° documento"
-          name="nroDocumento"
-          value={formData.nroDocumento}
-          onChange={handleChange}
-          fullWidth
-           size="small"
-        />
-        <TextField
-          label="Apellidos y Nombres"
-          name="apellidosNombres"
-          value={formData.apellidosNombres}
-          onChange={handleChange}
-          fullWidth
-           size="small"
-        />
-        <TextField
-          label="Fecha de nacimiento"
-          name="fechaNacimiento"
-          type="date"
-          value={formData.fechaNacimiento}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-          fullWidth
-          size="small"
-        />
+{/* 🔹 Encabezado */}
+<Typography
+  variant="h6"
+  sx={{
+    display: "flex",
+    alignItems: "center",
+    fontWeight: 600,
+    color: "#003366",
+    mb: 2,
+    gap: 1,
+  }}
+>
+  <AccountCircleOutlined sx={{ color: "#0056b3" }} />
+  Datos del Contribuyente
+</Typography>
+
+{/* 🩵 CONTENEDOR PRINCIPAL: Datos personales + Teléfonos */}
+<Paper
+  elevation={0}
+  sx={{
+    display: "grid",
+    gridTemplateColumns: { xs: "1fr", md: "3fr 1fr" }, // ✅ 75/25 en pantallas medianas+
+    gap: 2, // ✅ separación entre ambas cajas
+    p: 2,
+    mb: 2,
+    border: "1px solid #e0e0e0",
+    borderRadius: 2,
+    backgroundColor: "#ffffff",
+  }}
+>
+  {/* 🩵 Caja izquierda: datos informativos */}
+  <Box
+    sx={{
+      bgcolor: "#f9f9f9",
+      p: 2,
+      borderRadius: 2,
+      border: "1px solid #e0e0e0",
+      display: "flex",
+      flexDirection: "column",
+      gap: 1.5,
+    }}
+  >
+    {/* 🔹 Fila 1 */}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", sm: "1.5fr 1fr 1fr" },
+        gap: 2,
+        alignItems: "center",
+      }}
+    >
+      {/* Apellidos y Nombres */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <AccountCircleOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
+        <Box>
+          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
+            Apellidos y Nombres
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{ fontWeight: 600, color: "#222", fontSize: "0.9rem" }}
+          >
+            {formData.apellidosNombres}
+          </Typography>
+        </Box>
       </Box>
 
-    
-
-      {/* Tercera fila */}
-      <Box sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4, 1fr)",
-            gap: 2,
-            mb: 2,
-        }}>
-        <TextField
-          label="Teléfono fijo"
-          name="telefonoFijo"
-          value={formData.telefonoFijo}
-          onChange={handleChange}
-          fullWidth
-          size="small"
-        />
-        <TextField
-          label="Celular"
-          name="celular"
-          value={formData.celular}
-          onChange={handleChange}
-          fullWidth
-          size="small"
-        />
-        <TextField
-          label="Correo electrónico"
-          name="correo"
-          value={formData.correo}
-          onChange={handleChange}
-          fullWidth
-          size="small"
-        />
-        <TextField
-          label="Teléfono de referencia"
-          name="telefonoReferencia"
-          value={formData.telefonoReferencia}
-          onChange={handleChange}
-          fullWidth
-          size="small"
-        />
+      {/* Tipo Documento */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <DescriptionOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
+        <Box>
+          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
+            Tipo de Documento
+          </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222" }}>
+            {formData.tipoDocumento}
+          </Typography>
+        </Box>
       </Box>
 
+      {/* N° Documento */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <DescriptionOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
+        <Box>
+          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
+            N° Documento
+          </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222" }}>
+            {formData.nroDocumento}
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
 
+    <Divider sx={{ my: 1 }} />
 
-      {/* Datos del cónyuge */}
-      
+    {/* 🔹 Fila 2 */}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: { xs: "1fr", sm: "1.5fr 1fr 1fr" },
+        gap: 2,
+        alignItems: "center",
+      }}
+    >
+      {/* Fecha de Nacimiento */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <TodayOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
+        <Box>
+          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
+            Fecha de Nacimiento
+          </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222" }}>
+            {formData.fechaNacimiento}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Celular */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <PhoneIphoneOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
+        <Box>
+          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
+            Celular
+          </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222" }}>
+            {formData.celular}
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* Correo Electrónico */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <EmailOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
+        <Box>
+          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
+            Correo Electrónico
+          </Typography>
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222", wordBreak: "break-word" }}>
+            {formData.correo}
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  </Box>
+
+  {/* 🩶 Caja derecha: teléfonos editables */}
+  {/* 🩶 Caja derecha: teléfonos editables */}
+<Box
+  sx={{
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    p: 2,
+    bgcolor: "#fafafa",
+    borderRadius: 2,
+    border: "1px solid #e0e0e0",
+    "& .MuiInputBase-input": {
+      fontSize: "1rem", // 👈 tamaño del texto dentro del input
+      py: 0.7,
+    },
+    "& .MuiInputLabel-root": {
+      fontSize: "0.9rem", // 👈 tamaño del label flotante
+    },
+  }}
+>
+  {/* Teléfono fijo */}
+  <TextField
+    name="telefonoFijo"
+    label="Teléfono Fijo"
+    value={formData.telefonoFijo}
+    onChange={handleChange}
+    fullWidth
+    size="small"
+    autoComplete="off"
+    InputProps={{
+      endAdornment: (
+        <HelpTooltip
+          text="Ingrese su teléfono fijo principal. Este número podrá ser usado para validaciones o contacto administrativo."
+          placement="top"
+        />
+      ),
+    }}
+  />
+
+  {/* Teléfono de referencia */}
+  <TextField
+    name="telefonoReferencia"
+    label="Teléfono de Referencia"
+    value={formData.telefonoReferencia}
+    onChange={handleChange}
+    fullWidth
+    size="small"
+    autoComplete="off"
+    InputProps={{
+      endAdornment: (
+        <HelpTooltip
+          text="Registre un teléfono adicional de contacto, puede ser de un familiar o persona de referencia."
+          placement="top"
+        />
+      ),
+    }}
+  />
+</Box>
+</Paper>
+
+     {/* Datos del cónyuge */}
 {tipoPersona === "Sociedad Conyugal" && (
   <>
     <Divider sx={{ my: 3 }} />
     <Typography
       variant="h6"
-      sx={{ fontWeight: 600, color: "#003366", mb: 2 }}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        fontWeight: 600,
+        color: "#003366",
+        mb: 2,
+      }}
     >
       <img
         src={conyugeIcon}
         alt="Conyuge"
-        style={{ width: "30px", height: "30px", marginRight: "8px" }}
+        style={{ width: 30, height: 30, marginRight: 8 }}
       />
       Datos del Cónyuge
     </Typography>
@@ -218,9 +364,31 @@ const handleBuscarConyuge = () => {
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: "repeat(4, 1fr)",
+        gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
         gap: 2,
         mb: 2,
+        bgcolor: "#ffffff",
+        p: 2,
+        borderRadius: 2,
+        border: "1px solid #e0e0e0",
+        "& .MuiInputBase-input": {
+          fontSize: "1rem",
+          py: 0.7,
+        },
+        "& .MuiInputLabel-root": {
+          fontSize: "0.9rem",
+        },
+        "& .MuiFormHelperText-root": {
+          fontSize: "0.75rem",
+        },
+        // 🔹 Ajuste para SELECT (asegura mismo alto)
+        "& .MuiSelect-select": {
+          fontSize: "0.85rem !important",
+          paddingY: "7px !important",
+          minHeight: "18px !important",
+          display: "flex",
+          alignItems: "center",
+        },
       }}
     >
       {/* Tipo de documento */}
@@ -273,8 +441,15 @@ const handleBuscarConyuge = () => {
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton color="primary" onClick={handleBuscarConyuge}>
-                  <SearchIcon />
+                <IconButton
+                  color="primary"
+                  onClick={handleBuscarConyuge}
+                  sx={{
+                    "&:hover": { bgcolor: "rgba(21,101,192,0.08)" },
+                    p: 0.5,
+                  }}
+                >
+                  <SearchIcon fontSize="small" />
                 </IconButton>
               </InputAdornment>
             ),
@@ -290,7 +465,7 @@ const handleBuscarConyuge = () => {
         )}
       </Box>
 
-      {/* Nombre */}
+      {/* Apellidos y Nombres */}
       <TextField
         label="Apellidos y Nombres"
         name="apellidosConyuge"
@@ -337,22 +512,26 @@ const handleBuscarConyuge = () => {
     }}
   >
     <Typography
-      variant="h6"
-      sx={{
-        fontWeight: 600,
-        color: "#003366",
-        mb: 2,
-        display: "flex",
-        alignItems: "center",
-      }}
-    >
-      <img
-        src={condicionEspecialIcon}
-        alt="Condición especial"
-        style={{ width: 30, height: 30, marginRight: 8 }}
-      />
-      Condición Especial del Contribuyente
-    </Typography>
+  variant="h6"
+  sx={{
+    fontWeight: 600,
+    color: "#003366",
+    mb: 2,
+    display: "flex",
+    alignItems: "center",
+  }}
+>
+  <img
+    src={condicionEspecialIcon}
+    alt="Condición especial"
+    style={{ width: 30, height: 30, marginRight: 8 }}
+  />
+  Condición Especial del Contribuyente
+  <HelpTooltip
+    text="Si selecciona una condición especial (ej. CONADIS u otra), deberá subir el archivo PDF que acredite dicha condición."
+    placement="top"
+  />
+</Typography>
 
     <CondicionEspecial
       formData={formData}
@@ -371,22 +550,26 @@ const handleBuscarConyuge = () => {
     }}
   >
     <Typography
-      variant="h6"
-      sx={{
-        fontWeight: 600,
-        color: "#003366",
-        mb: 2,
-        display: "flex",
-        alignItems: "center",
-      }}
-    >
-      <img
-        src={direccionCompletaIcon}
-        alt="Dirección fiscal"
-        style={{ width: 30, height: 30, marginRight: 8 }}
-      />
-      Dirección Fiscal del Contribuyente
-    </Typography>
+  variant="h6"
+  sx={{
+    fontWeight: 600,
+    color: "#003366",
+    mb: 2,
+    display: "flex",
+    alignItems: "center",
+  }}
+>
+  <img
+    src={direccionCompletaIcon}
+    alt="Dirección fiscal"
+    style={{ width: 30, height: 30, marginRight: 8 }}
+  />
+  Dirección Fiscal del Contribuyente
+  <HelpTooltip
+    text="Debe subir el PDF escaneado de su recibo de agua o luz. Este documento se utiliza para validar su dirección fiscal registrada."
+    placement="top"
+  />
+</Typography>
 
     <DireccionCompleta
       formData={formData}
@@ -400,8 +583,6 @@ const handleBuscarConyuge = () => {
 </Box>
 
 
-
-
 {mostrarDireccionDetallada && (
   <Box
     sx={{
@@ -412,6 +593,25 @@ const handleBuscarConyuge = () => {
       boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
       border: "1px solid #e0e0e0",
       transition: "all 0.3s ease",
+      "& .MuiInputBase-input": {
+        fontSize: "1rem", // 👈 tamaño del texto dentro del input
+        py: 0.7,
+      },
+      "& .MuiInputLabel-root": {
+        fontSize: "0.9rem", // 👈 tamaño del label flotante
+      },
+      "& .MuiFormHelperText-root": {
+        fontSize: "0.75rem", // 👈 si hay helperText
+      },
+          // 👇 Ajuste adicional para Autocomplete
+    "& .MuiAutocomplete-input": {
+      fontSize: "1rem",
+      padding: "6px 0 !important",
+    },
+    "& .MuiAutocomplete-inputRoot": {
+      minHeight: "30px !important", // iguala el alto de TextField
+      paddingY: "0 !important",
+    },
     }}
   >
     <Typography
@@ -430,9 +630,22 @@ const handleBuscarConyuge = () => {
         style={{ width: 30, height: 30, marginRight: 8 }}
       />
       Detalle de Dirección Fiscal
+      <HelpTooltip
+        text="Complete los datos de su dirección fiscal tal como figura en su recibo de servicio o documento oficial."
+        placement="top"
+      />
     </Typography>
 
-    {/* Primera fila */}
+    {/* ✅ Función auxiliar para Autocomplete */}
+    {/** 
+      const handleAutoCompleteChange = (name: string, value: any) => {
+        handleChange({
+          target: { name, value },
+        } as React.ChangeEvent<HTMLInputElement>);
+      };
+    */}
+
+    {/* PRIMERA FILA */}
     <Box
       sx={{
         display: "grid",
@@ -440,51 +653,74 @@ const handleBuscarConyuge = () => {
         gap: 2,
       }}
     >
-      <FormControl fullWidth>
-        <InputLabel>Distrito</InputLabel>
-        <Select
-          name="distrito"
-          value={formData.distrito}
-          onChange={handleChange}
-          size="small"
-        >
-          <MenuItem value="">--Seleccione--</MenuItem>
-          <MenuItem value="Cercado de Lima">Cercado de Lima</MenuItem>
-          <MenuItem value="San Isidro">San Isidro</MenuItem>
-          <MenuItem value="Miraflores">Miraflores</MenuItem>
-          <MenuItem value="Surco">Surco</MenuItem>
-          <MenuItem value="La Molina">La Molina</MenuItem>
-          <MenuItem value="Los Olivos">Los Olivos</MenuItem>
-        </Select>
-      </FormControl>
+      {/* Distrito */}
+      <Autocomplete
+        options={[
+          "Cercado de Lima",
+          "San Isidro",
+          "Miraflores",
+          "Surco",
+          "La Molina",
+          "Los Olivos",
+        ]}
+        value={formData.distrito || ""}
+        onChange={(e, newValue) =>
+          handleAutoCompleteChange("distrito", newValue || "")
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                Distrito
+                <HelpTooltip
+                  text="Seleccione el distrito donde se ubica la dirección fiscal."
+                  placement="top"
+                />
+              </Box>
+            }
+            size="small"
+            
+          />
+        )}
+      />
 
-      <FormControl fullWidth>
-        <InputLabel>Tipo de vía</InputLabel>
-        <Select
-          name="tipoVia"
-          value={formData.tipoVia}
-          onChange={handleChange}
-          size="small"
-        >
-          {[
-            "Avenida",
-            "Jirón",
-            "Calle",
-            "Pasaje",
-            "Parque",
-            "Urbanización",
-            "Prolongación",
-            "Malecón",
-            "Plaza",
-            "Alameda",
-          ].map((tipo) => (
-            <MenuItem key={tipo} value={tipo}>
-              {tipo}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      {/* Tipo de vía */}
+      <Autocomplete
+        options={[
+          "Avenida",
+          "Jirón",
+          "Calle",
+          "Pasaje",
+          "Parque",
+          "Urbanización",
+          "Prolongación",
+          "Malecón",
+          "Plaza",
+          "Alameda",
+        ]}
+        value={formData.tipoVia || ""}
+        onChange={(e, newValue) =>
+          handleAutoCompleteChange("tipoVia", newValue || "")
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                Tipo de Via
+                <HelpTooltip
+                  text="Seleccione el tipo de vía: calle, jirón, avenida, etc."
+                  placement="top"
+                />
+              </Box>
+            }
+            size="small"
+          />
+        )}
+      />
 
+      {/* Descripción de la vía */}
       <TextField
         name="descVia"
         label="Descripción de la vía"
@@ -492,8 +728,17 @@ const handleBuscarConyuge = () => {
         onChange={handleChange}
         fullWidth
         size="small"
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip
+              text="Ingrese el nombre de la vía (ejemplo: Av. Arequipa, Jr. Camaná, etc.)."
+              placement="top"
+            />
+          ),
+        }}
       />
 
+      {/* Número */}
       <TextField
         name="numeroPuerta"
         label="Número"
@@ -501,10 +746,18 @@ const handleBuscarConyuge = () => {
         onChange={handleChange}
         fullWidth
         size="small"
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip
+              text="Ingrese el número de la puerta según su recibo o documento de dirección."
+              placement="top"
+            />
+          ),
+        }}
       />
     </Box>
 
-    {/* Segunda fila */}
+    {/* SEGUNDA FILA */}
     <Box
       sx={{
         display: "grid",
@@ -513,31 +766,41 @@ const handleBuscarConyuge = () => {
         mt: 2,
       }}
     >
-      <FormControl fullWidth>
-        <InputLabel>Tipo denom. urbana</InputLabel>
-        <Select
-          name="tipoDenomUrbana"
-          value={formData.tipoDenomUrbana}
-          onChange={handleChange}
-          size="small"
-        >
-          {[
-            "Ninguno",
-            "Urbanización",
-            "Asentamiento Humano",
-            "Conj. Habitacional",
-            "Residencial",
-            "Cooperativa de vivienda",
-            "Pueblo Joven",
-            "Agrupación",
-          ].map((op) => (
-            <MenuItem key={op} value={op}>
-              {op}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      {/* Tipo denom. urbana */}
+      <Autocomplete
+        options={[
+          "Ninguno",
+          "Urbanización",
+          "Asentamiento Humano",
+          "Conj. Habitacional",
+          "Residencial",
+          "Cooperativa de vivienda",
+          "Pueblo Joven",
+          "Agrupación",
+        ]}
+        value={formData.tipoDenomUrbana || ""}
+        onChange={(e, newValue) =>
+          handleAutoCompleteChange("tipoDenomUrbana", newValue || "")
+        }
+        renderInput={(params) => (
+          <TextField
+            {...params}
+             label={
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                Tipo Denom. Urbana
+                <HelpTooltip
+                  text="Seleccione el tipo de agrupación urbana o residencial (ejemplo: Urbanización, Residencial, etc.)."
+                  placement="top"
+                />
+              </Box>
+            }
+            size="small"
+            
+          />
+        )}
+      />
 
+      {/* Descripción denom. urbana */}
       <TextField
         name="descDenomUrbana"
         label="Descripción denom. urbana"
@@ -545,8 +808,17 @@ const handleBuscarConyuge = () => {
         onChange={handleChange}
         fullWidth
         size="small"
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip
+              text="Ingrese el nombre de la urbanización o conjunto habitacional si aplica."
+              placement="top"
+            />
+          ),
+        }}
       />
 
+      {/* Departamento */}
       <TextField
         name="departamento"
         label="Departamento"
@@ -554,8 +826,17 @@ const handleBuscarConyuge = () => {
         onChange={handleChange}
         fullWidth
         size="small"
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip
+              text="Ingrese el número o nombre de departamento (ejemplo: Dpto. 302)."
+              placement="top"
+            />
+          ),
+        }}
       />
 
+      {/* Oficina */}
       <TextField
         name="oficina"
         label="Oficina"
@@ -563,10 +844,18 @@ const handleBuscarConyuge = () => {
         onChange={handleChange}
         fullWidth
         size="small"
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip
+              text="Indique la oficina o local si se trata de una propiedad comercial o administrativa."
+              placement="top"
+            />
+          ),
+        }}
       />
     </Box>
 
-    {/* Tercera fila */}
+    {/* TERCERA FILA */}
     <Box
       sx={{
         display: "grid",
@@ -576,15 +865,15 @@ const handleBuscarConyuge = () => {
       }}
     >
       {[
-        ["interior", "Interior"],
-        ["manzana", "Manzana"],
-        ["lote", "Lote"],
-        ["seccion", "Sección"],
-        ["block", "Block"],
-        ["ucv", "UCV"],
-        ["edificio", "Edificio"],
-        ["referencia", "Referencia"],
-      ].map(([name, label]) => (
+        ["interior", "Interior", "Ingrese el número o letra del interior si aplica."],
+        ["manzana", "Manzana", "Ingrese la manzana según figura en su dirección."],
+        ["lote", "Lote", "Ingrese el número de lote correspondiente."],
+        ["seccion", "Sección", "Ingrese la sección o bloque si corresponde."],
+        ["block", "Block", "Ingrese el bloque o torre si aplica."],
+        ["ucv", "UCV", "Unidad Catastral de Vivienda (solo si corresponde)."],
+        ["edificio", "Edificio", "Ingrese el nombre del edificio si aplica."],
+        ["referencia", "Referencia", "Agregue una referencia adicional para ubicar su dirección."],
+      ].map(([name, label, help]) => (
         <TextField
           key={name}
           name={name}
@@ -593,6 +882,9 @@ const handleBuscarConyuge = () => {
           onChange={handleChange}
           fullWidth
           size="small"
+          InputProps={{
+            endAdornment: <HelpTooltip text={help} placement="top" />,
+          }}
         />
       ))}
     </Box>

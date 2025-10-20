@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
   Box,
+  Autocomplete,
   Typography,
   Button,
   TextField,
@@ -12,6 +13,10 @@ import {
   Paper,
   Tooltip,
   MenuItem,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
@@ -29,6 +34,8 @@ import SelectConstruccion from "./SelectContruccion";
 import { ListaMuros } from "./ListaMuros";
 import { ListaTechos } from "./ListaTechos";
 import { ListaPuertasVentanas } from "./ListaPuertasVentanas";
+import InfoCallout from "./InfoCallout";
+import HelpTooltip from "./helpTooltip";
 
 // ✅ 1️⃣ INTERFACE CORRECTA
 type Paso4ConstruccionProps ={
@@ -41,6 +48,7 @@ const tipoNivelList = ["Piso", "Mezzanine", "Sótano", "Azotea", "Aires"];
 const materialList = ["Concreto", "Ladrillo", "Adobe"];
 const estadoConservList = ["Muy bueno", "Bueno", "Regular", "Malo"];
 const unidadMedidaList = ["m2", "m3", "litros", "metros"];
+
 
 const descripcionesObra = [
   "Muro de concreto armado que incluye armadura y cimentacion.",
@@ -149,6 +157,40 @@ interface Obra {
   factorOfic: string;
   valorTotalObras: string;
 }
+
+
+
+
+
+
+// === Catálogo ampliado de Obras Complementarias (extracto del PDF SAT 2025) ===
+const obrasCatalogo = [
+  { categoria: "Muros perimétricos o cercos", descripcion: "Muro de concreto armado que incluye armadura y cimentación, espesor hasta 0.25 m. Altura hasta 2.40 m.", unidad: "m2", valor: 446.51 },
+  { categoria: "Muros perimétricos o cercos", descripcion: "Muro traslúcido de concreto armado (tipo UNI) y/o metálico que incluye cimentación. h: 2.40 m.", unidad: "m2", valor: 409.68 },
+  { categoria: "Muros perimétricos o cercos", descripcion: "Muro de ladrillo tarrajeado con columnas de concreto armado. h: hasta 2.40 m.", unidad: "m2", valor: 324.16 },
+  { categoria: "Muros perimétricos o cercos", descripcion: "Muro de ladrillo con columnas metálicas, h>2.40 m.", unidad: "m2", valor: 372.92 },
+  { categoria: "Muros perimétricos o cercos", descripcion: "Muro de adobe o tapial tarrajeado.", unidad: "m2", valor: 145.23 },
+  { categoria: "Portones y puertas", descripcion: "Puerta de fierro o aluminio h=2.20m, ancho ≤2.00m.", unidad: "m2", valor: 601.86 },
+  { categoria: "Portones y puertas", descripcion: "Portón de fierro con plancha metálica h=3.00–4.00m.", unidad: "m2", valor: 418.66 },
+  { categoria: "Tanques elevados", descripcion: "Tanque de concreto armado con capacidad hasta 5 m³.", unidad: "m3", valor: 1283.62 },
+  { categoria: "Tanques elevados", descripcion: "Tanque elevado de plástico o fibra hasta 1.00 m³.", unidad: "m3", valor: 1043.22 },
+  { categoria: "Cisternas, pozos sumideros, tanques sépticos", descripcion: "Cisterna de concreto armado con capacidad hasta 10 m³.", unidad: "m3", valor: 1203.93 },
+  { categoria: "Cisternas, pozos sumideros, tanques sépticos", descripcion: "Pozo de ladrillo tarrajeado hasta 5 m³.", unidad: "m3", valor: 1136.83 },
+  { categoria: "Piscinas, espejos de agua", descripcion: "Piscina de concreto armado con mayólica hasta 5 m³.", unidad: "m3", valor: 1436.21 },
+  { categoria: "Piscinas, espejos de agua", descripcion: "Piscina de ladrillo con pintura.", unidad: "m3", valor: 984.44 },
+  { categoria: "Losas deportivas y estacionamientos", descripcion: "Losa de concreto armado espesor 4''.", unidad: "m2", valor: 164.95 },
+  { categoria: "Losas deportivas y estacionamientos", descripcion: "Asfalto espesor 2''.", unidad: "m2", valor: 136.96 },
+  { categoria: "Rampas, gradas y escaleras de concreto", descripcion: "Escalera de concreto armado con acabados.", unidad: "m3", valor: 5988.09 },
+  { categoria: "Rampas, gradas y escaleras de concreto", descripcion: "Rampa de concreto s/encofrado.", unidad: "m3", valor: 1689.40 },
+  { categoria: "Postes de alumbrado", descripcion: "Poste de concreto/fierro con reflector instalado.", unidad: "und", valor: 2497.20 },
+  { categoria: "Pasamanos metálicos", descripcion: "Pasamano metálico de tubo galvanizado de 2'' diam.", unidad: "ml", valor: 217.18 },
+  { categoria: "Cercos metálicos", descripcion: "Cerco metálico con tubo 2'' y malla 2x2 Alam #8.", unidad: "m2", valor: 233.73 },
+  { categoria: "Sardineles", descripcion: "Sardinel de concreto e=0.15m, h=0.35m con pintura.", unidad: "ml", valor: 137.20 },
+  { categoria: "Pistas o pavimentos", descripcion: "Pista o losa de concreto de 6'' de espesor.", unidad: "m2", valor: 191.90 },
+  { categoria: "Trampas de grasa", descripcion: "Trampa de concreto armado para grasa.", unidad: "m3", valor: 1319.54 },
+];
+
+
 
 
 const Paso4Construccion: React.FC<Paso4ConstruccionProps> = ( props) => {
@@ -450,12 +492,47 @@ const handleObraChange = (
 };
 
 
+// Estado para mostrar/ocultar el modal de confirmación
+const [openModalCancelar, setOpenModalCancelar] = useState(false);
+const [openCancelModal, setOpenCancelModal] = useState(false);
 
+// Valores vacíos iniciales de obra
+const obraInicial = {
+    descripcion: "",
+    tipoNivel: "",
+    nroPiso: "",
+    material: "",
+    estadoConserv: "",
+    categoria: "",
+    cantidad: "",
+    unidadMedida: "",
+    metrado: "",
+    mesAnio: "",
+    valorObra: "100",
+    incremento: "5",
+    depreciacion: "15",
+    valorObraDepreciada: "85",
+    factorOfic: "0.68",
+    valorTotalObras: "57.8",
+};
 
+// Función para limpiar todo el formulario
+const handleCancelarConfirmado = () => {
+  setNuevaObra(obraInicial);
+  setErroresObra({});
+  setOpenCancelModal(false);
+  setMostrarFormObra(false);
+};
 
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 1}}>
       {/* ====== CONSTRUCCIÓN ====== */}
+
+      <InfoCallout
+        title="¿Qué registrarás aquí?"
+        body="Agrega los niveles, materiales, estado de conservación y obras complementarias. Estos datos determinan el valor de la edificación."
+      />
+
       {!mostrarFormObra && (
         <>
       <Typography
@@ -618,69 +695,117 @@ const handleObraChange = (
   
 
 
-  {/* 🔹 Primera fila: Tipo Nivel, N° Piso, Área Propia, Área Común */}
+ {/* 🔹 Primera fila: Tipo Nivel / N° Piso y Área Propia / Área Común en cajas simétricas */}
+<Box
+  sx={{
+    display: "flex",
+    gap: 2,
+    flexWrap: "wrap",
+    mb: 2,
+  }}
+>
+  {/* 🔸 Subbloque Izquierdo (Tipo de Nivel, N° Piso) */}
   <Box
     sx={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+      flex: 1,
+      minWidth: 400,
+      p: 2,
+      borderRadius: 2,
+      backgroundColor: "#f8f9fa",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
       gap: 2,
-      mb: 2,
     }}
   >
-  <TextField
-    select
-    label="Tipo de Nivel"
-    name="tipoNivel"
-    value={nuevoPiso.tipoNivel}
-    onChange={handleChangePiso}
-    size="small"
-    error={!!erroresPiso["tipoNivel"]}
-    helperText={erroresPiso["tipoNivel"] ? "Campo obligatorio" : ""}
-  >
-    {tipoNivelList.map((n) => (
-      <MenuItem key={n} value={n}>
-        {n}
-      </MenuItem>
-    ))}
-  </TextField>
+    <TextField
+      select
+      label="Tipo de Nivel"
+      name="tipoNivel"
+      value={nuevoPiso.tipoNivel}
+      onChange={handleChangePiso}
+      size="small"
+      error={!!erroresPiso["tipoNivel"]}
+      helperText={erroresPiso["tipoNivel"] ? "Campo obligatorio" : ""}
+       sx={{ flex: 1 }}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Indica el nivel o tipo de piso donde se encuentra esta construcción. Por ejemplo: primer piso, segundo piso, semisótano o azotea." />
+        ),
+      }}
+    >
+      {tipoNivelList.map((n) => (
+        <MenuItem key={n} value={n}>
+          {n}
+        </MenuItem>
+      ))}
+    </TextField>
 
-  <TextField
-    label="N° Piso"
-    name="nroPiso"
-    value={nuevoPiso.nroPiso}
-    onChange={handleChangePiso}
-    size="small"
-    error={!!erroresPiso["nroPiso"]}
-    helperText={erroresPiso["nroPiso"] ? "Campo obligatorio" : ""}
-  />
+    <TextField
+      label="N° Piso"
+      name="nroPiso"
+      value={nuevoPiso.nroPiso}
+      onChange={handleChangePiso}
+      size="small"
+      error={!!erroresPiso["nroPiso"]}
+      helperText={erroresPiso["nroPiso"] ? "Campo obligatorio" : ""}
+      sx={{ flex: 1 }}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Número del piso que estás declarando. Si es el primer piso, escribe 1; si es el segundo, escribe 2, y así sucesivamente." />
+        ),
+      }}
+    />
+  </Box>
 
-  <TextField
-    label="Área Propia (m²)"
-    name="areaPropia"
-    value={nuevoPiso.areaPropia}
-    onChange={handleChangePiso}
-    size="small"
-    error={!!erroresPiso["areaPropia"]}
-    helperText={erroresPiso["areaPropia"] ? "Campo obligatorio" : ""}
-  />
-
-  <TextField
-    label="Área Común (m²)"
-    name="areaComun"
-    value={nuevoPiso.areaComun}
-    onChange={handleChangePiso}
-    size="small"
-    error={!!erroresPiso["areaComun"]}
-    helperText={erroresPiso["areaComun"] ? "Campo obligatorio" : ""}
+  {/* 🔸 Subbloque Derecho (Área Propia, Área Común) */}
+  <Box
     sx={{
-    "& .MuiOutlinedInput-root": {
-      "& fieldset": { borderColor: erroresPiso["areaComun"] ? "#d32f2f" : "" },
-      "&:hover fieldset": { borderColor: erroresPiso["areaComun"] ? "#d32f2f" : "" },
-    },
-  }}
-  />
-</Box>
+      flex: 1,
+      minWidth: 400,
+      p: 2,
+      borderRadius: 2,
+      backgroundColor: "#f8f9fa",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 2,
+    }}
+  >
+    <TextField
+      label="Área Propia (m²)"
+      name="areaPropia"
+      value={nuevoPiso.areaPropia}
+      onChange={handleChangePiso}
+      size="small"
+      error={!!erroresPiso["areaPropia"]}
+      helperText={erroresPiso["areaPropia"] ? "Campo obligatorio" : ""}
+      sx={{ flex: 1 }}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Coloca el área que corresponde exclusivamente a este piso, medida en metros cuadrados. No incluyas pasadizos ni zonas comunes." />
+        ),
+      }}
+    />
 
+    <TextField
+      label="Área Común (m²)"
+      name="areaComun"
+      value={nuevoPiso.areaComun}
+      onChange={handleChangePiso}
+      size="small"
+      error={!!erroresPiso["areaComun"]}
+      helperText={erroresPiso["areaComun"] ? "Campo obligatorio" : ""}
+      sx={{ flex: 1 }}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Si este piso tiene espacios compartidos con otros propietarios, como pasillos o escaleras, indica el área común en metros cuadrados. Si no tiene, coloca 0." />
+        ),
+      }}
+    
+    />
+  </Box>
+</Box>
 {/* 🔹 Bloques inferior: Izquierdo (datos generales) y Derecho (componentes) */}
 <Box
   sx={{
@@ -711,6 +836,12 @@ const handleObraChange = (
       size="small"
       error={!!erroresPiso["fechaConstruccion"]}
       helperText={erroresPiso["fechaConstruccion"] ? "Campo obligatorio" : ""}
+      
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="“Selecciona el mes y el año en que se construyó este piso. Si hubo ampliaciones o remodelaciones, usa la fecha más reciente." />
+        ),
+      }}
       InputLabelProps={{ shrink: true }}
     />
 
@@ -722,8 +853,12 @@ const handleObraChange = (
       onChange={handleChangePiso}
       size="small"
       error={!!erroresPiso["material"]}
-    helperText={erroresPiso["material"] ? "Campo obligatorio" : ""}
-      
+      helperText={erroresPiso["material"] ? "Campo obligatorio" : ""}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="“Elige el material principal con el que está construido este piso. Por ejemplo: concreto, adobe, madera o ladrillo." />
+        ),
+      }}
     >
       {materialList.map((m) => (
         <MenuItem key={m} value={m}>
@@ -740,7 +875,12 @@ const handleObraChange = (
       onChange={handleChangePiso}
       size="small"
       error={!!erroresPiso["estadoConserv"]}
-    helperText={erroresPiso["estadoConserv"] ? "Campo obligatorio" : ""}
+      helperText={erroresPiso["estadoConserv"] ? "Campo obligatorio" : ""}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Selecciona el estado actual del piso según su mantenimiento. Puede ser: bueno, regular o malo" />
+        ),
+      }}
     >
       {estadoConservList.map((e) => (
         <MenuItem key={e} value={e}>
@@ -763,6 +903,7 @@ const handleObraChange = (
       gap: 2.5, // 👈 mayor separación entre selects
     }}
   >
+    
     <SelectConstruccion
       label="Muros y columnas"
       value={nuevoPiso.muros}
@@ -779,6 +920,7 @@ const handleObraChange = (
   }}
   error={!!erroresPiso["muros"]}
   helperText={erroresPiso["muros"] ? "Campo obligatorio" : ""}
+
     />
 
     <SelectConstruccion
@@ -829,14 +971,16 @@ const handleObraChange = (
   >
     Agregar
   </Button>
+  
   <Button
     variant="outlined"
     color="inherit"
-    onClick={() => setMostrarFormPiso(false)}
-    sx={{ px: 4 }}
+     onClick={() => setOpenModalCancelar(true)} // 👈 abre modal
+  sx={{ px: 4 }}
   >
     Cancelar
   </Button>
+  
 </Box>
           </>
         )}
@@ -940,219 +1084,335 @@ const handleObraChange = (
           </>
         ) : (
           <>
-            {/* 🔹 Título */}
+          
+     {/* 🔹 Título */}
 <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
-  Nueva Obra
+  Nueva Obra Complementaria
 </Typography>
 
-{/* 🔹 Fila superior */}
+{/* 🧱 Contenedor principal con 60% / 40% */}
 <Box
   sx={{
     display: "grid",
-    gridTemplateColumns: "50% 25% 15%",
+    gridTemplateColumns: { xs: "1fr", md: "60% 40%" },
     gap: 2,
-    mb: 2,
-    alignItems: "center",
   }}
 >
-  <TextField
-    select
-      label="Descripción de Obra"
-      name="descripcion"
-      value={nuevaObra.descripcion}
-      size="small"
-      onChange={handleObraChange}
-      fullWidth
-      error={!!erroresObra["descripcion"]}
-      helperText={erroresObra["descripcion"] ? "Campo obligatorio" : ""}
-    >
-      {descripcionesObra.map((d, idx) => (
-        <MenuItem key={idx} value={d}>
-          {d}
-        </MenuItem>
-      ))}
-    </TextField>
-
-    <TextField
-    select
-    label="Categoría"
-    name="categoria"
-    value={nuevaObra.categoria}
-    onChange={handleObraChange}
-    size="small"
-    fullWidth
-    error={!!erroresObra["categoria"]}
-      helperText={erroresObra["categoria"] ? "Campo obligatorio" : ""}
-  >
-    {categoriasObra.map((c, idx) => (
-      <MenuItem key={idx} value={c}>
-        {c}
-      </MenuItem>
-    ))}
-  </TextField>
-
-  <TextField
-    select
-    label="Unidad de Medida"
-    name="unidadMedida"
-    value={nuevaObra.unidadMedida}
-    onChange={handleObraChange}
-    size="small"
-    fullWidth
-    error={!!erroresObra["unidadMedida"]}
-      helperText={erroresObra["unidadMedida"] ? "Campo obligatorio" : ""}
-  >
-    {unidadMedidaList.map((u) => (
-      <MenuItem key={u} value={u}>
-        {u}
-      </MenuItem>
-    ))}
-  </TextField>
-</Box>
-{/* 🔹 Segunda fila: bloques lado a lado */}
-<Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-  {/* 🔸 Bloque Izquierdo */}
-  <Box
+  {/* 🩶 Caja izquierda (60%) */}
+  <Paper
+    elevation={0}
     sx={{
-      flex: 1,
-      minWidth: 280,
       p: 2,
+      bgcolor: "#f9f9f9",
       borderRadius: 2,
-      backgroundColor: "#f8f9fa",
+      border: "1px solid #e0e0e0",
       display: "flex",
       flexDirection: "column",
       gap: 2,
     }}
   >
-    <TextField
-      type="month"
-      label="Mes/Año"
-      name="mesAnio"
-      value={nuevaObra.mesAnio}
-      onChange={handleObraChange}
-      size="small"
-      error={!!erroresObra["mesAnio"]}
-      helperText={erroresObra["mesAnio"] ? "Campo obligatorio" : ""}
-      InputLabelProps={{ shrink: true }}
+    {/* 🩵 Fila 1: Descripción de obra */}
+    <Autocomplete
+      options={obrasCatalogo}
+      getOptionLabel={(option) => option.descripcion}
+      renderOption={(props, option) => (
+      <Box
+        component="li"
+        {...props}
+        sx={{
+          width: "100%",                 // ocupa todo el ancho disponible
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",      // alinea todo el contenido a la izquierda
+          justifyContent: "flex-start",
+          textAlign: "left",
+          p: 1,
+          borderBottom: "1px solid #f0f0f0",
+          whiteSpace: "normal",
+          lineHeight: 1.3,
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: "0.85rem",
+            fontWeight: 500,
+            color: "#222",
+            width: "100%",
+            textAlign: "left",
+          }}
+        >
+          {option.descripcion}
+        </Typography>
+        <Typography
+          sx={{
+            fontSize: "0.75rem",
+            color: "text.secondary",
+            width: "100%",
+            textAlign: "left",
+          }}
+        >
+          {option.categoria} · {option.unidad} · S/ {option.valor}
+        </Typography>
+      </Box>
+    )}
+      onChange={(event, newValue) => {
+        if (newValue) {
+          setNuevaObra((prev) => ({
+            ...prev,
+            descripcion: newValue.descripcion,
+            categoria: newValue.categoria,
+            unidadMedida: newValue.unidad,
+            valorObra: newValue.valor.toString(),
+          }));
+          setErroresObra((prev) => ({ ...prev, descripcion: false }));
+        } else {
+          setNuevaObra((prev) => ({
+            ...prev,
+            descripcion: "",
+            categoria: "",
+            unidadMedida: "",
+            valorObra: "",
+          }));
+        }
+      }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Descripción de Obra"
+          placeholder="Ej. Muro de ladrillo, cisterna, piscina..."
+          size="small"
+          error={!!erroresObra["descripcion"]}
+          helperText={erroresObra["descripcion"] || ""}
+          InputProps={{
+            ...params.InputProps,
+            sx: { textAlign: "left" },
+            endAdornment: (
+              <>
+                {params.InputProps.endAdornment}
+                <HelpTooltip text="Selecciona la descripción de la obra complementaria." />
+              </>
+            ),
+          }}
+        />
+      )}
     />
 
-    <TextField
-      select
-      label="Material Estruct. Predom."
-      name="material"
-      value={nuevaObra.material}
-      onChange={handleObraChange}
-      size="small"
-      error={!!erroresObra["material"]}
-      helperText={erroresObra["material"] ? "Campo obligatorio" : ""}
-    >
-      {materialList.map((m) => (
-        <MenuItem key={m} value={m}>
-          {m}
-        </MenuItem>
-      ))}
-    </TextField>
+    {/* 🩵 Fila 2: Categoría, Unidad, Cantidad */}
+    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 0.8fr 0.8fr", gap: 2 }}>
+      <TextField
+        label="Categoría"
+        name="categoria"
+        value={nuevaObra.categoria}
+        size="small"
+        disabled
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip text="Categoría de la obra según los valores oficiales del SAT." />
+          ),
+        }}
+      />
+      <TextField
+        label="Unidad"
+        name="unidadMedida"
+        value={nuevaObra.unidadMedida}
+        size="small"
+        disabled
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip text="Unidad de medida de la obra (m², m³, unidad, etc.)." />
+          ),
+        }}
+      />
+      <TextField
+        label="Cantidad"
+        name="cantidad"
+        value={nuevaObra.cantidad}
+        onChange={handleObraChange}
+        size="small"
+        error={!!erroresObra["cantidad"]}
+        helperText={erroresObra["cantidad"] ? "Campo obligatorio" : ""}
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip text="Número total de unidades, áreas o tramos declarados." />
+          ),
+        }}
+      />
+    </Box>
 
-    <TextField
-      select
-      label="Estado de Conservación"
-      name="estadoConserv"
-      value={nuevaObra.estadoConserv}
-      onChange={handleObraChange}
-      size="small"
-      error={!!erroresObra["estadoConserv"]}
-      helperText={erroresObra["estadoConserv"] ? "Campo obligatorio" : ""}
-    >
-      {estadoConservList.map((e) => (
-        <MenuItem key={e} value={e}>
-          {e}
-        </MenuItem>
-      ))}
-    </TextField>
-  </Box>
+    {/* 🩵 Fila 3: Mes/Año, Material, Estado */}
+    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 2 }}>
+      <TextField
+        type="month"
+        label="Mes/Año de Construcción"
+        name="mesAnio"
+        value={nuevaObra.mesAnio}
+        onChange={handleObraChange}
+        size="small"
+        error={!!erroresObra["mesAnio"]}
+        helperText={erroresObra["mesAnio"] ? "Campo obligatorio" : ""}
+        InputLabelProps={{ shrink: true }}
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip text="Mes y año en que se construyó o instaló la obra." />
+          ),
+        }}
+      />
+      <TextField
+        select
+        label="Material Estruct. Predom."
+        name="material"
+        value={nuevaObra.material}
+        onChange={handleObraChange}
+        size="small"
+        error={!!erroresObra["material"]}
+        helperText={erroresObra["material"] ? "Campo obligatorio" : ""}
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip text="Material principal: concreto, ladrillo, etc." />
+          ),
+        }}
+      >
+        {["Concreto", "Ladrillo", "Adobe", "Madera", "Metal"].map((m) => (
+          <MenuItem key={m} value={m}>
+            {m}
+          </MenuItem>
+        ))}
+      </TextField>
+      <TextField
+        select
+        label="Estado de Conservación"
+        name="estadoConserv"
+        value={nuevaObra.estadoConserv}
+        onChange={handleObraChange}
+        size="small"
+        error={!!erroresObra["estadoConserv"]}
+        helperText={erroresObra["estadoConserv"] ? "Campo obligatorio" : ""}
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip text="Condición actual: buena, regular o mala." />
+          ),
+        }}
+      >
+        {["Muy bueno", "Bueno", "Regular", "Malo"].map((e) => (
+          <MenuItem key={e} value={e}>
+            {e}
+          </MenuItem>
+        ))}
+      </TextField>
+    </Box>
+  </Paper>
 
-  {/* 🔸 Bloque Derecho */}
-  <Box
+  {/* 🩶 Caja derecha (40%) */}
+  <Paper
+    elevation={0}
     sx={{
-      flex: 1,
-      minWidth: 280,
       p: 2,
+      bgcolor: "#f9f9f9",
       borderRadius: 2,
-      backgroundColor: "#f8f9fa",
+      border: "1px solid #e0e0e0",
       display: "flex",
       flexDirection: "column",
       gap: 2,
     }}
   >
-    <TextField
-      select
-      label="Tipo Nivel"
-      name="tipoNivel"
-      value={nuevaObra.tipoNivel}
-      onChange={handleObraChange}
-      size="small"
-      error={!!erroresObra["tipoNivel"]}
-      helperText={erroresObra["tipoNivel"] ? "Campo obligatorio" : ""}
-    >
-      {tipoNivelList.map((n) => (
-        <MenuItem key={n} value={n}>
-          {n}
-        </MenuItem>
-      ))}
-    </TextField>
+    {/* 🩵 Fila 1: Tipo Nivel, N° Piso, Metrado */}
+    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 0.7fr 1fr", gap: 2 }}>
+      <TextField
+        select
+        label="Tipo Nivel"
+        name="tipoNivel"
+        value={nuevaObra.tipoNivel}
+        onChange={handleObraChange}
+        size="small"
+        error={!!erroresObra["tipoNivel"]}
+        helperText={erroresObra["tipoNivel"] ? "Campo obligatorio" : ""}
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip text="Selecciona el nivel donde se encuentra la obra." />
+          ),
+        }}
+      >
+        {["Piso", "Sótano", "Azotea", "Aires"].map((n) => (
+          <MenuItem key={n} value={n}>
+            {n}
+          </MenuItem>
+        ))}
+      </TextField>
 
-    <TextField
-      label="N° Piso"
-      name="nroPiso"
-      value={nuevaObra.nroPiso}
-      onChange={handleObraChange}
-      size="small"
-      error={!!erroresObra["nroPiso"]}
-      helperText={erroresObra["nroPiso"] ? "Campo obligatorio" : ""}
-    />
+      <TextField
+        label="N° Piso"
+        name="nroPiso"
+        value={nuevaObra.nroPiso}
+        onChange={handleObraChange}
+        size="small"
+        error={!!erroresObra["nroPiso"]}
+        helperText={erroresObra["nroPiso"] ? "Campo obligatorio" : ""}
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip text="Número de piso donde está la obra." />
+          ),
+        }}
+      />
 
-    <TextField
-      label="Cantidad"
-      name="cantidad"
-      value={nuevaObra.cantidad}
-      onChange={handleObraChange}
-      size="small"
-      error={!!erroresObra["cantidad"]}
-      helperText={erroresObra["cantidad"] ? "Campo obligatorio" : ""}
-    />
+      <TextField
+        label="Metrado"
+        name="metrado"
+        value={nuevaObra.metrado}
+        onChange={handleObraChange}
+        size="small"
+        error={!!erroresObra["metrado"]}
+        helperText={erroresObra["metrado"] ? "Campo obligatorio" : ""}
+        InputProps={{
+          endAdornment: (
+            <HelpTooltip text="Medida total (m², m³, ml) según el tipo de obra." />
+          ),
+        }}
+      />
+    </Box>
 
-    <TextField
-      label="Metrado"
-      name="metrado"
-      value={nuevaObra.metrado}
-      onChange={handleObraChange}
-      size="small"
-      error={!!erroresObra["metrado"]}
-      helperText={erroresObra["metrado"] ? "Campo obligatorio" : ""}
-    />
-  </Box>
+    {/* 🩵 Fila 2: Valor Unitario y Factor */}
+    <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+      <TextField
+        label="Valor Unitario (S/)"
+        name="valorObra"
+        value={nuevaObra.valorObra}
+        size="small"
+        InputProps={{
+          readOnly: true,
+          sx: { bgcolor: "#f2f2f2" },
+          endAdornment: (
+            <HelpTooltip text="Valor referencial según tabla SAT 2025." />
+          ),
+        }}
+      />
+      <TextField
+        label="Factor de Oficialización"
+        name="factorOfic"
+        value={nuevaObra.factorOfic}
+        size="small"
+        InputProps={{
+          readOnly: true,
+          sx: { bgcolor: "#f2f2f2" },
+          endAdornment: (
+            <HelpTooltip text="Coeficiente que ajusta los valores oficiales." />
+          ),
+        }}
+      />
+    </Box>
+  </Paper>
 </Box>
 
-
-{/* 🔹 Botones */}
+{/* 🟩 Botones */}
 <Box sx={{ display: "flex", gap: 2, mt: 3 }}>
-  <Button
-    variant="contained"
-    color="success"
-    onClick={handleAgregarObra}
-    sx={{ px: 4 }}
-  >
+  <Button variant="contained" color="success" onClick={handleAgregarObra} sx={{ px: 4 }}>
     AGREGAR
   </Button>
-  <Button
-    variant="outlined"
-    color="inherit"
-    onClick={() => setMostrarFormObra(false)}
-    sx={{ px: 4 }}
-  >
+  <Button variant="outlined" color="inherit" onClick={() => setOpenCancelModal(true)} sx={{ px: 4 }}>
     CANCELAR
   </Button>
 </Box>
+
+
           </>
         )}
       </Paper>
@@ -1178,12 +1438,92 @@ const handleObraChange = (
     ✅ Piso agregado correctamente
   </MuiAlert>
 </Snackbar>
+
+
+  {/* 🧩 Modal de confirmación para Cancelar */}
+<Dialog
+  open={openModalCancelar}
+  onClose={() => setOpenModalCancelar(false)}
+  fullWidth
+>
+  <DialogTitle sx={{ fontWeight: 600, color: "#003366" }}>
+    ¿Deseas cancelar el registro de Características de construcción?
+  </DialogTitle>
+
+  <DialogContent>
+    <Typography sx={{ fontSize: "0.95rem", color: "#333" }}>
+       Si confirmas, se borrarán los datos ingresados en este formulario y no se guardará la información.
+    </Typography>
+  </DialogContent>
+
+  <DialogActions sx={{ justifyContent: "flex-end", p: 2 }}>
+    <Button
+      variant="outlined"
+      color="inherit"
+      onClick={() => setOpenModalCancelar(false)}
+    >
+      No, continuar registrando
+    </Button>
+    <Button
+      variant="contained"
+      color="error"
+      onClick={() => {
+        // 🔹 Limpia errores y resetea el formulario
+        setErroresPiso({});
+        setNuevoPiso(pisoInicial);
+        setMostrarFormPiso(false);
+
+        // 🔹 Cierra modal
+        setOpenModalCancelar(false);
+      }}
+    >
+      Sí, cancelar
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
+
+{/* 🔹 Modal de confirmación para cancelar */}
+<Dialog
+  open={openCancelModal}
+  onClose={() => setOpenCancelModal(false)}
+  aria-labelledby="alert-dialog-title"
+  aria-describedby="alert-dialog-description"
+>
+  <DialogTitle id="alert-dialog-title" sx={{ fontWeight: 600 }}>
+    ¿Deseas cancelar el registro de la obra?
+  </DialogTitle>
+  <DialogContent>
+    <Typography id="alert-dialog-description" sx={{ mt: 1 }}>
+      Si confirmas, se borrarán los datos ingresados en este formulario y no se guardará la información.
+    </Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpenCancelModal(false)} color="inherit">
+      No, continuar registrando
+    </Button>
+    <Button
+      onClick={handleCancelarConfirmado}
+      color="error"
+      variant="contained"
+      autoFocus
+    >
+      Sí, cancelar
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
     </Box>
 
 
 
 
   );
+
+
+
 };
 
 

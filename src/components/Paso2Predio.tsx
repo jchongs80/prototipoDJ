@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useImperativeHandle, forwardRef, useRef } from "react";
 import {
   Box,
   Typography,
@@ -27,8 +27,12 @@ import {
   Divider,
 } from "@mui/material";
 
+import HelpTooltip from "./helpTooltip";
+import TipoTransferencia from "./tipoTransferencia";
+
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
 
 import datosPredioIcon from './../assets/casa.png';
 import condicionPropiedadIcon from './../assets/contrato.png';
@@ -50,18 +54,51 @@ import predio7 from '../assets/predio7.png';
 import predio8 from '../assets/predio8.png';
 import predio9 from '../assets/predio9.png';
 import predio10 from '../assets/predio10.png';
+import InfoCallout from "./InfoCallout";
 
 interface Paso2PredioProps {
   formData: any;
-  handleChange: (
-    e:
-      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-      | import("@mui/material/Select").SelectChangeEvent
-  ) => void;
-  registerValidator?: (fn: () => boolean) => void; 
+  handleChange: (e:any) => void;
 }
 
-const Paso2Predio: React.FC<Paso2PredioProps> = ({ formData, handleChange, registerValidator, }) => {
+
+const Paso2Predio = forwardRef (({ formData, handleChange} :Paso2PredioProps, ref) => {
+
+
+useImperativeHandle(ref, () => ({
+  validarPaso2: () => {
+    let valido = true;
+
+    // 📄 Validar documento PDF de transferencia
+    if (!formData.docAdquisicion) {
+      setErrorArchivoAdquisicion(
+        "Debe adjuntar el documento PDF que acredita la transferencia."
+      );
+      valido = false;
+    } else {
+      setErrorArchivoAdquisicion("");
+    }
+
+    // 💰 Validar Valor de adquisición (en soles o dólares)
+    const valorSoles = parseFloat(formData.valorSoles || "0");
+    const valorDolares = parseFloat(formData.valorDolares || "0");
+
+    if ((!valorSoles || valorSoles <= 0) && (!valorDolares || valorDolares <= 0)) {
+      setErrorValorAdq(true);
+      valido = false;
+    } else {
+      setErrorValorAdq(false);
+    }
+
+    return valido;
+  },
+}));
+
+
+
+
+
+
   const [codigoPU, setCodigoPU] = useState("");
   const [openBuscarDireccion, setOpenBuscarDireccion] = useState(false);
   const [tipoViaBusqueda, setTipoViaBusqueda] = useState("");
@@ -82,6 +119,7 @@ const Paso2Predio: React.FC<Paso2PredioProps> = ({ formData, handleChange, regis
   const [debeValidar, setDebeValidar] = useState(false); // ✅ controla si se debe mostrar error
 
 
+
   // Util para mostrar "—" cuando no hay valor
   const view = (v?: string) => (v && `${v}`.trim() !== "" ? v : "—");
 
@@ -99,6 +137,8 @@ useEffect(() => {
 
 const handleBuscarDireccion = () => {
   //setDebeValidar(false);
+
+
 resetValidacionArchivo(); // 🧹 limpia validación antes de buscar
   setLoadingBusqueda(true);
   setTimeout(() => {
@@ -186,23 +226,6 @@ const handleBuscarPU = () => {
   setMostrarDetallePredio(true);
 };
 
-useEffect(() => {
-  if (registerValidator) {
-    registerValidator(() => {
-      setDebeValidar(true); // 🔹 activa validación visual solo al presionar Siguiente
-
-      if (!formData.docAdquisicion || formData.docAdquisicion.trim() === "") {
-        setErrorArchivoAdquisicion(
-          "No se ha seleccionado el archivo que acredite la transferencia del predio."
-        );
-        return false;
-      }
-
-      setErrorArchivoAdquisicion("");
-      return true;
-    });
-  }
-}, [registerValidator, formData.docAdquisicion]);
 
 // Limpia errores al buscar predio o cargar datos automáticos
 const resetValidacionArchivo = () => {
@@ -210,8 +233,99 @@ const resetValidacionArchivo = () => {
   setErrorArchivoAdquisicion("");
 };
 
+const [errorTipoVia, setErrorTipoVia] = useState("");
+const [errorNombreCalle, setErrorNombreCalle] = useState("");
+
+const [paginaActual, setPaginaActual] = useState(1);
+const resultadosPorPagina = 5;
+const totalPaginas = Math.ceil(resultadosBusqueda.length / resultadosPorPagina);
+const inicio = (paginaActual - 1) * resultadosPorPagina;
+const fin = inicio + resultadosPorPagina;
+const resultadosPagina = resultadosBusqueda.slice(inicio, fin);
+
+
+const [errorTipoTransferencia, setErrorTipoTransferencia] = useState(false);
+const [errorCondicionProp, setErrorCondicionProp] = useState(false);
+const [errorPorcentaje, setErrorPorcentaje] = useState(false);
+const [errorFechaAdq, setErrorFechaAdq] = useState(false);
+const [errorValorAdq, setErrorValorAdq] = useState(false);
+
+const [openImagenPredio, setOpenImagenPredio] = useState(false);
+const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
+
+/*
+// ===================== VALIDACIÓN DEL PASO 2 =====================
+ const validarPaso2 = (): Boolean => {
+  let valido = true;
+
+
+  if (!formData.docAdquisicion) {
+    setErrorArchivoAdquisicion("Debe adjuntar el documento PDF que acredita la transferencia.");
+    valido = false;
+  } else {
+    setErrorArchivoAdquisicion("");
+  }
+
+  // 🔹 Tipo de Transferencia
+  if (!formData.tipoTransferencia) {
+    setErrorTipoTransferencia(true);
+    valido = false;
+  }
+
+  // 🔹 PDF obligatorio si hay tipo de transferencia
+  if (formData.tipoTransferencia && !formData.docAdquisicion) {
+    setErrorArchivoAdquisicion("Debe adjuntar el PDF que acredita la transferencia.");
+    setDebeValidar(true);
+    valido = false;
+  }
+
+  // 🔹 Condición de propiedad
+  if (!formData.condicionPropiedad) {
+    setErrorCondicionProp(true);
+    valido = false;
+  }
+
+  // 🔹 Porcentaje de propiedad
+  if (
+    !formData.porcentajePropiedad ||
+    formData.porcentajePropiedad <= 0 ||
+    formData.porcentajePropiedad > 100
+  ) {
+    setErrorPorcentaje(true);
+    valido = false;
+  }
+
+  // 🔹 Fecha de adquisición
+  if (!formData.fechaAdquisicion) {
+    setErrorFechaAdq(true);
+    valido = false;
+  }
+
+  // 🔹 Valor de adquisición
+  if (!formData.valorSoles && !formData.valorDolares) {
+    setErrorValorAdq(true);
+    valido = false;
+  }
+
+
+// ✅ Exponemos la función al componente padre (RegistrarDJ)
+  useImperativeHandle(ref, () => ({
+    validarPaso2,
+  }));
+
+  return valido;
+};
+*/
+
   return (
-    <Box sx={{ p: 3 }}>
+    <Box sx={{ p: 1 }}>
+
+     <InfoCallout
+    title="Información del Predio"
+    body="Registra el código PU o busca la dirección. Completa los datos de transferencia y adjunta el documento que acredita la adquisición del predio."
+  />
+
+
       <Typography variant="h6" sx={{ fontWeight: 600, color: "#003366", mb: 2 }}>
         <img
         src={datosPredioIcon}
@@ -222,242 +336,467 @@ const resetValidacionArchivo = () => {
       </Typography>
 
       {/* CABECERA DE BÚSQUEDA */}
-      <Box sx={{ border: "1px solid #e0e0e0", bgcolor: "#fff",display: "flex", p: 2.5,alignItems: "center", gap: 2, flexWrap: "wrap", mb: 3 }}>
-        <Box sx={{ display: "flex", flexDirection: "column" }}>
-        <Tooltip
-          title="Ingrese el código de PU (Predio Urbano) que aparece en el PU de la cuponera."
-          arrow
-        >
-          <TextField
-            label="Código PU"
-            value={codigoPU}
-            onChange={(e) => {
-              setCodigoPU(e.target.value);
-              if (errorCodigoPU) setErrorCodigoPU(""); // limpiar mensaje mientras escribe
-            }}
-            size="small"
-            sx={{ width: 220 }}
-            error={Boolean(errorCodigoPU)} // 🔴 activa color rojo en el borde
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <InfoOutlinedIcon sx={{ color: "#003366" }} fontSize="small" />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Tooltip>
-        {errorCodigoPU && (
-          <Typography
-            variant="caption"
-            sx={{ color: "red", fontSize: "0.75rem", mt: 0.3, ml: 0.5 }}
-          >
-            {errorCodigoPU}
-          </Typography>
-        )}
-      </Box>
-        
-        <Button variant="contained" color="success" startIcon={<SearchIcon />} onClick={handleBuscarPU}>
-          Buscar por PU
-        </Button>
+      <Box
+  sx={{
+    border: "1px solid #e0e0e0",
+    bgcolor: "#fff",
+    display: "flex",
+    alignItems: "flex-start", // 👈 mantiene la alineación superior
+    p: 2.5,
+    gap: 2,
+    flexWrap: "wrap",
+    mb: 3,
+  }}
+>
+  {/* Contenedor del campo + error */}
+  <Box sx={{ display: "flex", flexDirection: "column", minWidth: 220 }}>
+    <Tooltip
+      title="Ingrese el código de PU (Predio Urbano) que aparece en el PU de la cuponera."
+      arrow
+    >
+      <TextField
+        label="Código PU"
+        value={codigoPU}
+        onChange={(e) => {
+          setCodigoPU(e.target.value);
+          if (errorCodigoPU) setErrorCodigoPU("");
+        }}
+        size="small"
+        sx={{ width: 220 }}
+        error={Boolean(errorCodigoPU)}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <InfoOutlinedIcon sx={{ color: "#003366" }} fontSize="small" />
+            </InputAdornment>
+          ),
+        }}
+      />
+    </Tooltip>
 
-        <Button
-          variant="outlined"
-          startIcon={<SearchIcon />}
-          onClick={() => setOpenBuscarDireccion(true)}
-          sx={{ borderColor: "#003366", color: "#003366", "&:hover": { bgcolor: "rgba(0,51,102,0.05)" } }}
-        >
-          Buscar por Dirección
-        </Button>
-      </Box>
+    {/* Mensaje de error controlado */}
+    <Typography
+      variant="caption"
+      sx={{
+        color: "red",
+        fontSize: "0.75rem",
+        minHeight: 18, // 👈 asegura altura fija del espacio
+        mt: 0.3,
+        ml: 0.5,
+      }}
+    >
+      {errorCodigoPU || ""}
+    </Typography>
+  </Box>
+
+  {/* Botones de acción */}
+  <Button
+    variant="contained"
+    color="success"
+    startIcon={<SearchIcon />}
+    onClick={handleBuscarPU}
+    sx={{ height: 40 }}
+  >
+    Buscar por PU
+  </Button>
+
+  <Button
+    variant="outlined"
+    startIcon={<SearchIcon />}
+    onClick={() => setOpenBuscarDireccion(true)}
+    sx={{
+      borderColor: "#003366",
+      color: "#003366",
+      height: 40,
+      "&:hover": { bgcolor: "rgba(0,51,102,0.05)" },
+    }}
+  >
+    Buscar por Dirección
+  </Button>
+</Box>
 
       {/* DETALLE VISUAL (solo si ya se buscó/seleccionó) */}
       {mostrarDetallePredio && (
         <>
-        <Paper
-          sx={{
-            p: 3,
-            borderRadius: 3,
-            //boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-            //borderLeft: "6px solid #003366",
-            mt: 2,
-          }}
-        >
-          <Typography variant="h6" sx={{ color: "#003366", fontWeight: 600, mb: 2 }}>
-            📍 Ubicación del Predio
-          </Typography>
-
-          {/* Layout principal con Box (sin Grid) */}
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", md: "row" },
-              gap: 3,
-            }}
-          >
-            {/* Columna IZQUIERDA */}
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              {/* Dirección completa */}
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="subtitle2" sx={{ color: "#555", mb: 0.5 }}>
-                  Dirección Completa:
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    bgcolor: "#f4f6f8",
-                    p: 0.5,
-                    borderRadius: 2,
-                    border: "1px solid #e0e0e0",
-                  }}
-                >
-                  {view(formData.direccionCompletaPredio) || "Cercado de Lima, Jr. Camaná, 499, Lima"}
-                </Typography>
-              </Box>
-
-              {/* Detalle en dos columnas (ordenado y limpio) */}
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
-                  gap: 1.25,
-                }}
-              >
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Tipo de Vía:</strong> {view(formData.tipoViaPredio) || "Jirón"}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Descripción vía:</strong> {view(formData.descViaPredio) || "Camaná"}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Tipo de Denominación Urbana:</strong> {view(formData.tipoDenomUrbPredio)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Nombre Denominación Urbana:</strong> {view(formData.descDenomUrbPredio)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Número:</strong> {view(formData.numMun1) || "499"}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Lote:</strong> {view(formData.lotePredio)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Int:</strong> {view(formData.interiorPredio)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Piso:</strong> {view(formData.piso)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Edif.:</strong> {view(formData.edificioPredio)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Tda.:</strong> {view(formData.tda)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Dpto.:</strong> {view(formData.dpto)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Oficina:</strong> {view(formData.ofic)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Ingreso:</strong> {view(formData.ingreso)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>Letra:</strong> {view(formData.letra)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666" }}>
-                  <strong>SubLote:</strong> {view(formData.subLote)}
-                </Typography>
-              </Box>
-
-              <Divider sx={{ my: 2 }} />
-
-             {/* Sección: ¿Predio ubicado en edificio? + Partida Registral */}
-<Box
+       
+<Paper
   sx={{
-    display: "flex",
-    alignItems: "center",
-    gap: 3,
-    flexWrap: "wrap",
-    mt: 2,
+    mt: 3,
+    p: 3,
+    borderRadius: 3,
+    backgroundColor: "#fafafa",
+    borderLeft: "3px solid #1565c0",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
   }}
 >
-  <Box sx={{ flex: 1 }}>
-    <Typography variant="subtitle2" sx={{ color: "#555", mb: 0.5 }}>
-      ¿Predio ubicado en edificio?
-    </Typography>
-    <RadioGroup
-      row
-      name="predioEdificio"
-      value={formData.predioEdificio || "No"}
-      onChange={handleChange}
-    >
-      <FormControlLabel value="Si" control={<Radio color="primary" />} label="Sí" />
-      <FormControlLabel value="No" control={<Radio color="primary" />} label="No" />
-    </RadioGroup>
-  </Box>
-
-  <Box sx={{ flex: 1 }}>
-    <Typography variant="subtitle2" sx={{ color: "#555", mb: 0.5 }}>
-      Partida Registral N°
-    </Typography>
-    <TextField
-      fullWidth
-      size="small"
-      placeholder="Ingrese N° de partida registral"
-      name="partidaRegistral"
-      value={formData.partidaRegistral || ""}
-      onChange={handleChange}
+  <Typography
+    variant="h6"
+    sx={{
+      color: "#1565c0",
+      fontWeight: 600,
+      mb: 2,
+      display: "flex",
+      alignItems: "center",
+      gap: 1,
+    }}
+  >
+    <Box
+      component="span"
       sx={{
-        maxWidth: 280,
+        display: "inline-block",
+        width: 8,
+        height: 8,
+        borderRadius: "50%",
+        bgcolor: "#1565c0",
       }}
     />
+    Ubicación del Predio
+  </Typography>
+
+  <Box
+    sx={{
+      display: "flex",
+      flexDirection: { xs: "column", md: "row" },
+      gap: 3,
+    }}
+  >
+    {/* 🗺️ Columna izquierda: mapa + imagen */}
+    <Box sx={{ flex: 1, borderRadius: 2, overflow: "hidden" }}>
+      <Box
+        sx={{
+          borderRadius: 2,
+          overflow: "hidden",
+          border: "1px solid #e0e0e0",
+          bgcolor: "#fff",
+        }}
+      >
+        <iframe
+          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1950.9719709145008!2d-77.03470702140892!3d-12.047378097912183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8c9e3ae9203%3A0x9c33f80e960a0b0!2sJr.%20Caman%C3%A1%20499%2C%20Lima!5e0!3m2!1ses-419!2spe!4v1759029434785!5m2!1ses-419!2spe"
+          style={{ border: 0, width: "100%", height: "180px" }}
+          loading="lazy"
+        />
+       
+
+        {/* 🖼️ Imagen del predio con overlay interactivo */}
+<Box
+  sx={{
+    position: "relative",
+    width: "100%",
+    height: "180px",
+    borderTop: "1px solid #e0e0e0",
+    overflow: "hidden",
+    borderRadius: "0 0 8px 8px",
+  }}
+>
+  <Box
+    component="img"
+    src={formData.imagenPredio || predio1}
+    alt="Imagen del predio"
+    sx={{
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      transition: "all 0.3s ease",
+      "&:hover": { filter: "brightness(0.9)" },
+    }}
+    onError={(e: any) => (e.target.src = predio1)}
+  />
+
+  {/* 🔍 Overlay: Ver imagen */}
+  <Box
+    sx={{
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      opacity: 0,
+      transition: "opacity 0.3s ease",
+      bgcolor: "rgba(0,0,0,0.25)",
+      cursor: "pointer",
+      "&:hover": { opacity: 1 },
+    }}
+    onClick={() => {
+      setImagenPredioModal(formData.imagenPredio || predio1);
+      setOpenImagenPredio(true);
+    }}
+  >
+    <Box
+      sx={{
+        bgcolor: "rgba(255,255,255,0.85)",
+        px: 2.5,
+        py: 0.8,
+        borderRadius: 2,
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+        transition: "all 0.2s ease",
+        "&:hover": { bgcolor: "rgba(255,255,255,0.95)" },
+      }}
+    >
+      <Typography
+        variant="body2"
+        sx={{ color: "#1565c0", fontWeight: 600, display: "flex", gap: 0.5 }}
+      >
+        🔍 Ver imagen
+      </Typography>
+    </Box>
   </Box>
 </Box>
-            </Box>
 
-            {/* Columna DERECHA (Mapa + Imagen) */}
-            <Box sx={{ flexBasis: { md: "420px" }, flexShrink: 0 }}>
-              <Box
-                sx={{
-                  borderRadius: 2,
-                  overflow: "hidden",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  mb: 2,
-                }}
-              >
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1950.9719709145008!2d-77.03470702140892!3d-12.047378097912183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8c9e3ae9203%3A0x9c33f80e960a0b0!2sJr.%20Caman%C3%A1%20499%2C%20Lima%2015001!5e0!3m2!1ses-419!2spe!4v1759029434785!5m2!1ses-419!2spe"
-                  style={{ border: 0, width: "100%", height: "160px" }}
-                  allowFullScreen
-                  loading="lazy"
-                />
-              </Box>
 
-              <Box
-                component="img"
-                src={predio1}
-                alt="Imagen del predio"
-                sx={{
-                  width: "100%",
-                  borderRadius: 2,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                  objectFit: "cover",
-                }}
-              />
-            </Box>
+
+
+
+      </Box>
+    </Box>
+
+    {/* 📋 Columna derecha: datos del predio */}
+    <Box sx={{ flex: 1.5 }}>
+      {/* Dirección completa */}
+      <Typography
+        variant="subtitle2"
+        sx={{
+          color: "#1976d2",
+          fontWeight: 600,
+          mb: 0.5,
+        }}
+      >
+        Dirección Completa
+      </Typography>
+      <Box
+        sx={{
+          bgcolor: "#f3f6fa",
+          p: 1,
+          px: 1.5,
+          borderRadius: 2,
+          border: "1px solid #e0e0e0",
+          mb: 2,
+          fontSize: "0.9rem",
+          color: "#333",
+          fontWeight: 500,
+        }}
+      >
+        {formData.direccionCompletaPredio || "—"}
+      </Box>
+
+      {/* Datos principales (4 columnas por fila) */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            md: "repeat(4, 1fr)",
+          },
+          gap: 1,
+          mb: 2,
+        }}
+      >
+        {/* Fila 1: Vía y Denominación */}
+        {[
+          ["Tipo de Vía", formData.tipoViaPredio],
+          ["Vía", formData.descViaPredio],
+          ["Tipo Denom. Urb.", formData.tipoDenomUrbPredio],
+          ["Denom. Urb.", formData.descDenomUrbPredio],
+        ].map(([label, value]) => (
+          <Box
+            key={label}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              p: 1,
+              borderRadius: 1.5,
+              bgcolor: "#fff",
+              border: "1px solid #e0e0e0",
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{ color: "#555", fontWeight: 500, fontSize: "0.85rem" }}
+            >
+              {label}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color:
+                  value && String(value).trim() !== "" ? "#1a1a1a" : "#9e9e9e",
+                fontFamily: "monospace",
+                fontSize: "0.85rem",
+              }}
+            >
+              {value && String(value).trim() !== "" ? value : "—"}
+            </Typography>
           </Box>
-        </Paper>
+        ))}
 
-                
+        {/* Fila 2 y 3: Número, Lote/SubLote, etc */}
+        {[
+          ["Número", formData.numMun1],
+          [
+            "Lote / SubLote",
+            (formData.lotePredio
+              ? formData.lotePredio
+              : "—") +
+              " / " +
+              (formData.subLote ? formData.subLote : "—"),
+          ],
+          ["Int.", formData.interiorPredio],
+          ["Piso", formData.piso],
+          ["Edif.", formData.edificioPredio],
+          ["Dpto.", formData.dpto],
+          ["Ingreso", formData.ingreso],
+          ["Letra", formData.letra],
+        ].map(([label, value]) => (
+          <Box
+            key={label}
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              p: 1,
+              borderRadius: 1.5,
+              bgcolor: "#fff",
+              border: "1px solid #e0e0e0",
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{ color: "#555", fontWeight: 500, fontSize: "0.85rem" }}
+            >
+              {label}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                color:
+                  value && String(value).trim() !== "" ? "#1a1a1a" : "#9e9e9e",
+                fontFamily: "monospace",
+                fontSize: "0.85rem",
+              }}
+            >
+              {value && String(value).trim() !== "" ? value : "—"}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+
+      {/* 🔘 Predio en edificio + Partida registral */}
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { sm: "center" },
+          gap: 2,
+          mt: 1,
+        }}
+      >
+        {/* ✅ Predio ubicado en edificio */}
+        <Box>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              color: "#1976d2",
+              fontWeight: 600,
+              mb: 0.5,
+            }}
+          >
+            Predio ubicado en edificio:
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              variant={
+                formData.predioUbicadoEnEdificio === true
+                  ? "contained"
+                  : "outlined"
+              }
+              size="small"
+              onClick={() =>
+                handleChange({
+                  target: { name: "predioUbicadoEnEdificio", value: true },
+                } as any)
+              }
+              sx={{
+                textTransform: "none",
+                borderColor: "#90caf9",
+                color: "#1565c0",
+                "&.MuiButton-contained": {
+                  backgroundColor: "#1565c0",
+                  color: "#fff",
+                },
+              }}
+            >
+              Sí
+            </Button>
+            <Button
+              variant={
+                formData.predioUbicadoEnEdificio === false ||
+                formData.predioUbicadoEnEdificio === undefined
+                  ? "contained"
+                  : "outlined"
+              }
+              size="small"
+              onClick={() =>
+                handleChange({
+                  target: { name: "predioUbicadoEnEdificio", value: false },
+                } as any)
+              }
+              sx={{
+                textTransform: "none",
+                borderColor: "#90caf9",
+                color: "#1565c0",
+                "&.MuiButton-contained": {
+                  backgroundColor: "#1565c0",
+                  color: "#fff",
+                },
+              }}
+            >
+              No
+            </Button>
+          </Box>
+        </Box>
+
+        {/* 📄 Partida registral */}
+        <Box sx={{ flex: 1 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              color: "#1976d2",
+              fontWeight: 600,
+              mb: 0.5,
+              display: "flex",
+              alignItems: "center",
+              gap: 0.5,
+            }}
+          >
+            Partida registral
+            <HelpTooltip text="Ingrese el número de partida registral del predio, según SUNARP." />
+          </Typography>
+          <TextField
+            size="small"
+            name="partidaRegistral"
+            fullWidth
+            value={formData.partidaRegistral || ""}
+            onChange={handleChange}
+            placeholder="Ingrese N° de partida registral"
+          />
+        </Box>
+      </Box>
+    </Box>
+  </Box>
+</Paper>
+
+
 {/* ====================== CONDICIÓN DE PROPIEDAD ====================== */}
 <Paper
   sx={{
     p: 3,
     mt: 3,
     borderRadius: 3,
-    //boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-    //borderLeft: "6px solid #3ba935",
   }}
 >
   <Typography
@@ -465,194 +804,97 @@ const resetValidacionArchivo = () => {
     sx={{ color: "#003366", fontWeight: 600, mb: 3 }}
   >
     <img
-        src={condicionPropiedadIcon}
-        alt="Valor Adquisicion"
-        style={{ width: 30, height: 30, marginRight: 8 }}
+      src={condicionPropiedadIcon}
+      alt="Valor Adquisicion"
+      style={{ width: 30, height: 30, marginRight: 8 }}
     /> 
-             Condición de Propiedad
+    Condición de Propiedad
   </Typography>
 
-  {/* === Fila 1: 4 columnas === */}
+  {/* === Fila 1: Distribución 50%-50% === */}
+ 
+ 
+  <Box
+  sx={{
+    display: "grid",
+    gridTemplateColumns: {
+      xs: "1fr",
+      md: "2fr 1fr 1fr 1fr", // 👈 Tipo de Transferencia ocupa ~45%
+    },
+    columnGap: 2,
+    alignItems: "start",
+  }}
+>
+  {/* 1️⃣ Tipo de Transferencia */}
   <Box
     sx={{
-      display: "grid",
-      gridTemplateColumns: {
-        xs: "1fr",
-        sm: "repeat(2, 1fr)",
-        md: "repeat(4, 1fr)",
-      },
-      gap: 2,
-      mb: 3,
+      width: "100%",
+      overflow: "visible", // ✅ permite que el label se vea completo
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "flex-start",
     }}
   >
-    {/* 1️⃣ Tipo de Transferencia con PDF embebido */}
-    <Box>
-     <TextField
-    select
-    fullWidth
-    size="small"
-    label="Tipo de Transferencia"
-    name="tipoTransferencia"
-    value={formData.tipoTransferencia || ""}
-    onChange={handleChange}
-    InputProps={{
-      endAdornment: (
-        <InputAdornment position="end">
-          <Tooltip
-            title="Si escoge un tipo de transferencia debe adjuntar el PDF que acredite la transferencia del predio."
-            arrow
-          >
-            <IconButton
-              color="success"
-              onClick={() => document.getElementById("fileAdquisicion")?.click()}
-              sx={{
-                bgcolor: "rgba(76,175,80,0.08)",
-                "&:hover": { bgcolor: "rgba(76,175,80,0.2)" },
-                width: 36,
-                height: 36,
-              }}
-            >
-              <UploadFileIcon sx={{ fontSize: 22 }} />
-            </IconButton>
-          </Tooltip>
-          <input
-            id="fileAdquisicion"
-            type="file"
-            accept="application/pdf"
-            hidden
-            onChange={(e) => {
-              const file = e.target.files?.[0] || null;
-              if (file && file.type === "application/pdf") {
-                // ✅ limpia error y simula validación
-                setErrorArchivoAdquisicion("");
-                setLoadingArchivoAdquisicion(true);
-                setDebeValidar(false); // 🔹 evita mostrar error tras selección
-                setTimeout(() => {
-                  const url = URL.createObjectURL(file);
-                  handleChange({
-                    target: { name: "docAdquisicion", value: file.name },
-                  } as any);
-                  handleChange({
-                    target: { name: "urlAdquisicion", value: url },
-                  } as any);
-                  setLoadingArchivoAdquisicion(false);
-                }, 3000);
-              } else {
-                setErrorArchivoAdquisicion(
-                  "No se ha seleccionado el archivo que acredite la transferencia del predio."
-                );
-                handleChange({
-                  target: { name: "docAdquisicion", value: "" },
-                } as any);
-                handleChange({
-                  target: { name: "urlAdquisicion", value: "" },
-                } as any);
-              }
-            }}
-          />
-        </InputAdornment>
-      ),
-    }}
-  >
-    <MenuItem value="">--Seleccione--</MenuItem>
-    <MenuItem value="Compra">Compra</MenuItem>
-    <MenuItem value="Sucesión">Sucesión</MenuItem>
-    <MenuItem value="Anticipo de Legítima">Anticipo de Legítima</MenuItem>
-    <MenuItem value="Adjudicación">Adjudicación</MenuItem>
-    <MenuItem value="Otros">Otros</MenuItem>
-  </TextField>
+    <TipoTransferencia
+      formData={formData}
+      handleChange={handleChange}
+      errorArchivoAdquisicion={errorArchivoAdquisicion}
+      setErrorArchivoAdquisicion={setErrorArchivoAdquisicion}
+    />
+  </Box>
 
-  {/* ❌ Error rojo */}
-  {debeValidar && errorArchivoAdquisicion && !loadingArchivoAdquisicion && (
-    <Typography
-      variant="caption"
-      sx={{ color: "red", fontSize: "0.75rem", mt: 0.5, display: "block" }}
-    >
-      {errorArchivoAdquisicion}
-    </Typography>
-  )}
-
-  {/* 🕒 Estado de carga */}
-  {loadingArchivoAdquisicion && (
-    <Typography
-      variant="caption"
-      sx={{
-        color: "#1976d2",
-        fontStyle: "italic",
-        mt: 0.8,
-        display: "block",
-      }}
-    >
-      ⏳ Procesando validación de PDF…
-    </Typography>
-  )}
-
-  {/* ✅ Archivo válido */}
-  {!loadingArchivoAdquisicion &&
-    !errorArchivoAdquisicion &&
-    (formData.docAdquisicion || formData.urlAdquisicion) && (
-      <Box
-        sx={{
-          mt: 0.8,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-        }}
-      >
-        <Typography variant="caption" sx={{ color: "#2e7d32", fontWeight: 500 }}>
-          ✅ Archivo válido — Nro Folios: 4
-        </Typography>
-        {formData.urlAdquisicion && (
-          <Typography
-            component="a"
-            href={formData.urlAdquisicion}
-            target="_blank"
-            rel="noopener"
-            sx={{
-              fontSize: "0.75rem",
-              color: "#1e88e5",
-              textDecoration: "none",
-              "&:hover": { textDecoration: "underline" },
-            }}
-          >
-            Ver archivo
-          </Typography>
-        )}
-      </Box>
-    )}
-    </Box>
-
-    {/* 2️⃣ Condición de la Propiedad */}
-    <FormControl size="small" fullWidth>
-      <InputLabel>Condición de la Propiedad</InputLabel>
-      <Select
-        label="Condición de la Propiedad"
-        name="condicionPropiedad"
-        value={formData.condicionPropiedad || "Propietario único"}
-        onChange={handleChange}
-      >
-        <MenuItem value="Propietario único">Propietario único</MenuItem>
-        <MenuItem value="Condominio">Condominio</MenuItem>
-        <MenuItem value="Concesionario">Concesionario</MenuItem>
-        <MenuItem value="Responsable">Responsable</MenuItem>
-      </Select>
-    </FormControl>
-
-    {/* 3️⃣ % Propiedad */}
+  {/* 2️⃣ Condición de la Propiedad */}
+  <Box sx={{ width: "100%" }}>
     <TextField
-      label="% de Propiedad"
+      select
+      fullWidth
+      size="small"
+      label={
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          Condición de la Propiedad
+          <HelpTooltip text="Seleccione la condición bajo la cual figura el contribuyente como titular del predio (propietario, condominio, concesionario, etc.)." />
+        </Box>
+      }
+      name="condicionPropiedad"
+      value={formData.condicionPropiedad || "Propietario único"}
+      onChange={handleChange}
+      InputProps={{ sx: { fontSize: "0.85rem" } }}
+    >
+      <MenuItem value="Propietario único">Propietario único</MenuItem>
+      <MenuItem value="Condominio">Condominio</MenuItem>
+      <MenuItem value="Concesionario">Concesionario</MenuItem>
+      <MenuItem value="Responsable">Responsable</MenuItem>
+    </TextField>
+  </Box>
+
+  {/* 3️⃣ % de Propiedad */}
+  <Box sx={{ width: "100%" }}>
+    <TextField
+      label={
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          % de Propiedad
+          <HelpTooltip text="Indique el porcentaje del predio que le pertenece al contribuyente (por ejemplo, 100 si es propietario único)." />
+        </Box>
+      }
       name="porcentajePropiedad"
       value={formData.porcentajePropiedad || ""}
       onChange={handleChange}
       size="small"
       placeholder="100"
       fullWidth
+      InputProps={{ sx: { fontSize: "0.85rem" } }}
     />
+  </Box>
 
-    {/* 4️⃣ Fecha de Adquisición */}
+  {/* 4️⃣ Fecha de Adquisición */}
+  <Box sx={{ width: "100%" }}>
     <TextField
-      label="Fecha de Adquisición"
+      label={
+        <Box sx={{ display: "flex", alignItems: "center" }}>
+          Fecha de Adquisición
+          <HelpTooltip text="Seleccione la fecha en que se efectuó la adquisición o inscripción del predio." />
+        </Box>
+      }
       type="date"
       name="fechaAdquisicion"
       value={formData.fechaAdquisicion || ""}
@@ -660,16 +902,20 @@ const resetValidacionArchivo = () => {
       size="small"
       InputLabelProps={{ shrink: true }}
       fullWidth
+      InputProps={{ sx: { fontSize: "0.85rem" } }}
     />
   </Box>
+</Box>
 
-  {/* === Fila 2: 2 columnas (Valor + Condición especial) === */}
+
+  {/* === Fila 2: Valor de adquisición + Condición especial === */}
   <Box
     sx={{
       display: "grid",
       gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
       gap: 3,
       alignItems: "stretch",
+      mt: 3,
     }}
   >
     {/* 💰 Valor de adquisición */}
@@ -690,8 +936,7 @@ const resetValidacionArchivo = () => {
           mb: 1.5,
         }}
       >
-
-      Valor de Adquisición
+        Valor de Adquisición
       </Typography>
 
       <Box
@@ -708,19 +953,32 @@ const resetValidacionArchivo = () => {
             En Soles (S/)
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            
             <img
-                src={solesIcon}
-                alt="Valor Adquisicion"
-                style={{ width: 40, height: 40, marginRight: 8 }}
-            /> 
+              src={solesIcon}
+              alt="Valor Adquisicion"
+              style={{ width: 40, height: 40, marginRight: 8 }}
+            />
             <TextField
               name="valorSoles"
               value={formData.valorSoles || ""}
-              onChange={handleChange}
+             onChange={(e) => {
+                handleChange(e);
+                // 🔹 Si el usuario ingresa un valor, limpiar error
+                const valSoles = parseFloat(e.target.value || "0");
+                const valDolares = parseFloat(formData.valorDolares || "0");
+                if (valSoles > 0 || valDolares > 0) {
+                  setErrorValorAdq(false);
+                }
+              }}
               size="small"
               placeholder="0.00"
               sx={{ width: 120 }}
+              InputProps={{
+                sx: { fontSize: "0.85rem" },
+                endAdornment: (
+                  <HelpTooltip text="Ingrese el valor de adquisición en soles si la transacción fue en moneda nacional." />
+                ),
+              }}
             />
           </Box>
         </Box>
@@ -732,21 +990,48 @@ const resetValidacionArchivo = () => {
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <img
-                src={dolaresIcon}
-                alt="Valor Adquisicion"
-                style={{ width: 30, height: 30, marginRight: 8 }}
+              src={dolaresIcon}
+              alt="Valor Adquisicion"
+              style={{ width: 30, height: 30, marginRight: 8 }}
             />
             <TextField
               name="valorDolares"
               value={formData.valorDolares || ""}
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e);
+                const valDolares = parseFloat(e.target.value || "0");
+                const valSoles = parseFloat(formData.valorSoles || "0");
+                if (valSoles > 0 || valDolares > 0) {
+                  setErrorValorAdq(false);
+                }
+              }}
               size="small"
               placeholder="0.00"
               sx={{ width: 120 }}
+              InputProps={{
+                sx: { fontSize: "0.85rem" },
+                endAdornment: (
+                  <HelpTooltip text="Ingrese el valor de adquisición en dólares si la transacción fue en moneda extranjera." />
+                ),
+              }}
             />
           </Box>
         </Box>
       </Box>
+
+      {errorValorAdq && (
+  <Typography
+    variant="caption"
+    sx={{
+      color: "red",
+      fontSize: "0.75rem",
+      mt: 1,
+      display: "block",
+    }}
+  >
+    ⚠️ Debe ingresar el valor de adquisición (en soles o en dólares).
+  </Typography>
+)}
     </Paper>
 
     {/* 🏢 Condición Especial del Predio */}
@@ -779,27 +1064,41 @@ const resetValidacionArchivo = () => {
   </Box>
 </Paper>
 
-{/* ====================== USO DEL PREDIO ====================== */}
+
+
+
+{/* ====================== 🏢 USO DEL PREDIO ====================== */}
 <Paper
   sx={{
     p: 3,
     mt: 3,
     borderRadius: 3,
-    //boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-    //borderLeft: "6px solid #003366",
+    border: "1px solid #e0e0e0",
+    bgcolor: "#ffffff",
+    "& .MuiInputBase-input": { fontSize: "1rem", py: 0.7 },
+    "& .MuiInputLabel-root": { fontSize: "0.9rem" },
+    "& .MuiSelect-select": { fontSize: "0.85rem", py: "7px" },
   }}
 >
   <Typography
     variant="h6"
-    sx={{ color: "#003366", fontWeight: 600, mb: 3 }}
+    sx={{
+      color: "#003366",
+      fontWeight: 600,
+      mb: 3,
+      display: "flex",
+      alignItems: "center",
+    }}
   >
-     <img
-        src={usoPredioIcon}
-        alt="Valor Adquisicion"
-        style={{ width: 30, height: 30, marginRight: 8 }}
-    /> Uso del Predio
+    <img
+      src={usoPredioIcon}
+      alt="Uso del predio"
+      style={{ width: 30, height: 30, marginRight: 8 }}
+    />
+    Uso del Predio
   </Typography>
 
+  {/* === Fila: 4 columnas === */}
   <Box
     sx={{
       display: "grid",
@@ -809,67 +1108,84 @@ const resetValidacionArchivo = () => {
         md: "repeat(4, 1fr)",
       },
       gap: 2,
-      alignItems: "center",
     }}
   >
-    {/* 1️⃣ Clase de uso */}
-    <TextField
-      select
-      fullWidth
-      size="small"
-      label="Clase de Uso"
-      name="claseUso"
-      value={formData.claseUso || ""}
-      onChange={handleChange}
-    >
-      <MenuItem value="">--Seleccione--</MenuItem>
-      <MenuItem value="Residencial">Residencial</MenuItem>
-      <MenuItem value="Comercial">Comercial</MenuItem>
-      <MenuItem value="Recreacional">Recreacional</MenuItem>
-      <MenuItem value="Industrial">Industrial</MenuItem>
-      <MenuItem value="Otros">Otros</MenuItem>
-    </TextField>
+    {/* 1️⃣ Clase de Uso */}
+    <FormControl size="small" fullWidth>
+      <InputLabel>Clase de Uso</InputLabel>
+      <Select
+        label="Clase de Uso"
+        name="claseUso"
+        value={formData.claseUso || ""}
+        onChange={handleChange}
+        endAdornment={
+          <HelpTooltip
+            text="Seleccione la clase general del uso del predio: Vivienda, Comercio, Industria, etc."
+            placement="top"
+          />
+        }
+      >
+        <MenuItem value="">--Seleccione--</MenuItem>
+        <MenuItem value="Residencial">Residencial</MenuItem>
+        <MenuItem value="Comercial">Comercial</MenuItem>
+        <MenuItem value="Recreacional">Recreacional</MenuItem>
+        <MenuItem value="Industrial">Industrial</MenuItem>
+        <MenuItem value="Educación">Educación</MenuItem>
+        <MenuItem value="Salud">Salud</MenuItem>
+        <MenuItem value="Otros">Salud</MenuItem>
+      </Select>
+    </FormControl>
 
-    {/* 2️⃣ Subclase */}
-    <TextField
-      select
-      fullWidth
-      size="small"
-      label="Subclase de Uso"
-      name="subClaseUso"
-      value={formData.subClaseUso || ""}
-      onChange={handleChange}
-    >
-      <MenuItem value="">--Seleccione--</MenuItem>
-      <MenuItem value="Vivienda">Vivienda</MenuItem>
-      <MenuItem value="Cochera">Cochera</MenuItem>
-      <MenuItem value="Comercial Bienes">Comercial Bienes</MenuItem>
-      <MenuItem value="Comercial Servicios">Comercial Servicios</MenuItem>
-      <MenuItem value="Comercial Bienes o Servicios">
-        Comercial Bienes o Servicios
-      </MenuItem>
-      <MenuItem value="Otros">Otros</MenuItem>
-    </TextField>
+    {/* 2️⃣ Subclase de Uso */}
+    <FormControl size="small" fullWidth>
+      <InputLabel>Subclase de Uso</InputLabel>
+      <Select
+        label="Subclase de Uso"
+        name="subClaseUso"
+        value={formData.subClaseUso || ""}
+        onChange={handleChange}
+        endAdornment={
+          <HelpTooltip
+            text="Seleccione una subcategoría según el tipo de actividad o servicio (por ejemplo: Departamento, Tienda, Taller, Consultorio, etc.)."
+            placement="top"
+          />
+        }
+      >
+        <MenuItem value="">--Seleccione--</MenuItem>
+        <MenuItem value="Vivienda">Vivienda</MenuItem>
+        <MenuItem value="Cochera">Cochera</MenuItem>
+        <MenuItem value="Comercial Bienes">Comercial Bienes</MenuItem>
+        <MenuItem value="Comercial Servicios">Comercial Servicios</MenuItem>
+        <MenuItem value="Comercial Bienes o Servicios">Comercial Bienes o servicios</MenuItem>
+        <MenuItem value="Otros">Otros</MenuItem>
+      </Select>
+    </FormControl>
 
     {/* 3️⃣ Uso */}
-    <TextField
-      select
-      fullWidth
-      size="small"
-      label="Uso"
-      name="uso"
-      value={formData.uso || ""}
-      onChange={handleChange}
-    >
-      <MenuItem value="">--Seleccione--</MenuItem>
-      <MenuItem value="Vivienda">Vivienda</MenuItem>
-      <MenuItem value="Depósito de Vivienda">Depósito de Vivienda</MenuItem>
-      <MenuItem value="Cochera">Cochera</MenuItem>
-      <MenuItem value="Tienda / Supermercado">Tienda / Supermercado</MenuItem>
-      <MenuItem value="Otros">Otros</MenuItem>
-    </TextField>
+    <FormControl size="small" fullWidth>
+      <InputLabel>Uso</InputLabel>
+      <Select
+        label="Uso"
+        name="uso"
+        value={formData.uso || ""}
+        onChange={handleChange}
+        endAdornment={
+          <HelpTooltip
+            text="Indique el uso específico actual del predio (por ejemplo: Vivienda familiar, Restaurante, Almacén, Centro médico, etc.)."
+            placement="top"
+          />
+        }
+      >
+        <MenuItem value="">--Seleccione--</MenuItem>
+        <MenuItem value="Vivienda">Vivienda</MenuItem>
+        <MenuItem value="Depósito de Vivienda">Depósito de Vivienda</MenuItem>
+        <MenuItem value="Cochera">Cochera</MenuItem>
+        <MenuItem value="Tienda / Supermercado">Tienda / Supermercado</MenuItem>
+        <MenuItem value="Otros">Otros</MenuItem>
+      </Select>
+    </FormControl>
 
-    {/* 4️⃣ Fecha inicio de uso */}
+    {/* 4️⃣ Fecha de Inicio de Uso */}
     <TextField
       label="Fecha de Inicio de Uso"
       type="date"
@@ -879,6 +1195,14 @@ const resetValidacionArchivo = () => {
       size="small"
       InputLabelProps={{ shrink: true }}
       fullWidth
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip
+            text="Indique la fecha en que se inició el uso actual del predio. Si no la recuerda, coloque una fecha aproximada."
+            placement="top"
+          />
+        ),
+      }}
     />
   </Box>
 </Paper>
@@ -886,6 +1210,7 @@ const resetValidacionArchivo = () => {
 </>
 )}
 
+{/* MODAL DE BÚSQUEDA POR DIRECCIÓN */}
 {/* MODAL DE BÚSQUEDA POR DIRECCIÓN */}
 <Dialog
   open={openBuscarDireccion}
@@ -896,15 +1221,28 @@ const resetValidacionArchivo = () => {
   <DialogTitle sx={{ fontWeight: 600, color: "#003366" }}>
     Búsqueda de Predio por Dirección
   </DialogTitle>
+
   <DialogContent dividers>
-    {/* Fila única de filtros */}
+    {/* Estados de error para validación */}
+    {/** Añadir arriba del return del componente:
+     const [errorTipoVia, setErrorTipoVia] = useState("");
+     const [errorNombreCalle, setErrorNombreCalle] = useState("");
+     const [paginaActual, setPaginaActual] = useState(1);
+     const resultadosPorPagina = 5;
+     const totalPaginas = Math.ceil(resultadosBusqueda.length / resultadosPorPagina);
+     const inicio = (paginaActual - 1) * resultadosPorPagina;
+     const fin = inicio + resultadosPorPagina;
+     const resultadosPagina = resultadosBusqueda.slice(inicio, fin);
+    */}
+
+    {/* FILA DE FILTROS */}
     <Box
       sx={{
         display: "flex",
-        flexWrap: "nowrap",
-        alignItems: "center",
+        flexWrap: "wrap",
+        alignItems: "flex-start",
         gap: 1.5,
-        mb: 3,
+        mb: 2,
       }}
     >
       <TextField
@@ -915,40 +1253,76 @@ const resetValidacionArchivo = () => {
         sx={{ width: 200 }}
       />
 
-      <FormControl size="small" sx={{ minWidth: 160 }}>
-        <InputLabel>Tipo de Vía</InputLabel>
-        <Select
-          value={tipoViaBusqueda}
-          onChange={(e) => setTipoViaBusqueda(e.target.value)}
-          label="Tipo de Vía"
-        >
-          <MenuItem value="">--Seleccione--</MenuItem>
-          <MenuItem value="Avenida">Avenida</MenuItem>
-          <MenuItem value="Jirón">Jirón</MenuItem>
-          <MenuItem value="Calle">Calle</MenuItem>
-          <MenuItem value="Pasaje">Pasaje</MenuItem>
-          <MenuItem value="Parque">Parque</MenuItem>
-        </Select>
-      </FormControl>
+      {/* Tipo de vía */}
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <FormControl size="small" sx={{ minWidth: 160 }}>
+          <InputLabel>Tipo de Vía</InputLabel>
+          <Select
+            value={tipoViaBusqueda}
+            onChange={(e) => {
+              setTipoViaBusqueda(e.target.value);
+              setErrorTipoVia("");
+            }}
+            label="Tipo de Vía"
+          >
+            <MenuItem value="">--Seleccione--</MenuItem>
+            <MenuItem value="Avenida">Avenida</MenuItem>
+            <MenuItem value="Jirón">Jirón</MenuItem>
+            <MenuItem value="Calle">Calle</MenuItem>
+            <MenuItem value="Pasaje">Pasaje</MenuItem>
+            <MenuItem value="Parque">Parque</MenuItem>
+          </Select>
+        </FormControl>
+        {errorTipoVia && (
+          <Typography variant="caption" sx={{ color: "red", mt: 0.3, fontSize: "0.75rem" }}>
+            {errorTipoVia}
+          </Typography>
+        )}
+      </Box>
 
-      <FormControl size="small" sx={{ minWidth: 200 }}>
-        <InputLabel>Nombre de Calle</InputLabel>
-        <Select
-          value={nombreCalle}
-          onChange={(e) => setNombreCalle(e.target.value)}
-          label="Nombre de Calle"
-        >
-          <MenuItem value="">--Seleccione--</MenuItem>
-          {[
-            "Camaná", "Arequipa", "Tacna", "Colonial", "Brasil",
-            "Salaverry", "La Mar", "Sucre", "Bolívar", "Junín",
-            "Angamos", "Pardo", "Petit Thouars", "Abancay",
-            "Prolongación Iquitos", "Santa Rosa"
-          ].map((c) => (
-            <MenuItem key={c} value={c}>{c}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      {/* Nombre de calle */}
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <FormControl size="small" sx={{ minWidth: 200 }}>
+          <InputLabel>Nombre de Calle</InputLabel>
+          <Select
+            value={nombreCalle}
+            onChange={(e) => {
+              setNombreCalle(e.target.value);
+              setErrorNombreCalle("");
+            }}
+            label="Nombre de Calle"
+          >
+            <MenuItem value="">--Seleccione--</MenuItem>
+            {[
+              "Camaná",
+              "Arequipa",
+              "Tacna",
+              "Colonial",
+              "Brasil",
+              "Salaverry",
+              "La Mar",
+              "Sucre",
+              "Bolívar",
+              "Junín",
+              "Angamos",
+              "Pardo",
+              "Petit Thouars",
+              "Abancay",
+              "Prolongación Iquitos",
+              "Santa Rosa",
+            ].map((c) => (
+              <MenuItem key={c} value={c}>
+                {c}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        {errorNombreCalle && (
+          <Typography variant="caption" sx={{ color: "red", mt: 0.3, fontSize: "0.75rem" }}>
+            {errorNombreCalle}
+          </Typography>
+        )}
+      </Box>
 
       <TextField
         label="Número de Puerta"
@@ -962,7 +1336,20 @@ const resetValidacionArchivo = () => {
         variant="contained"
         color="success"
         startIcon={<SearchIcon />}
-        onClick={handleBuscarDireccion}
+        onClick={() => {
+          let valido = true;
+          if (!tipoViaBusqueda) {
+            setErrorTipoVia("Debe seleccionar un tipo de vía.");
+            valido = false;
+          }
+          if (!nombreCalle) {
+            setErrorNombreCalle("Debe seleccionar un nombre de calle.");
+            valido = false;
+          }
+          if (!valido) return;
+          handleBuscarDireccion();
+          setPaginaActual(1);
+        }}
         disabled={loadingBusqueda}
         sx={{ height: 40 }}
       >
@@ -970,85 +1357,112 @@ const resetValidacionArchivo = () => {
       </Button>
     </Box>
 
+    {/* RESULTADOS */}
     {loadingBusqueda ? (
       <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
         <CircularProgress />
       </Box>
     ) : resultadosBusqueda.length > 0 ? (
-      <Table size="small">
-        <TableHead>
-          <TableRow>
-            <TableCell>Imagen</TableCell>
-            <TableCell>Código</TableCell>
-            <TableCell>Dirección</TableCell>
-            <TableCell>Propietario</TableCell>
-          </TableRow>
-        </TableHead>
-        
-        <TableBody>
-  {resultadosBusqueda.map((r, i) => (
-    <TableRow
-      key={i}
-      hover
-      sx={{
-        cursor: "pointer",
-        "& td": { py: 0.1, px: 1.5 }, // 👈 reduce espacio vertical (py) y horizontal (px)
-      }}
-      onClick={() => {
-        handleChange({ target: { name: "codigoPredio", value: r.codigo } } as any);
-        handleChange({ target: { name: "direccionCompletaPredio", value: r.direccion } } as any);
-        handleChange({ target: { name: "tipoViaPredio", value: r.tipoVia } } as any);
-        handleChange({ target: { name: "descViaPredio", value: r.descripcionVia } } as any);
-        handleChange({ target: { name: "numMun1", value: r.numero } } as any);
-        setCodigoPU(r.codigo);
-        setMostrarDetallePredio(true);
-        setOpenBuscarDireccion(false);
-      }}
-    >
-      <TableCell>
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            setSelectedPredio(r);
-            setOpenImagen(true);
-          }}
-        >
-          <Box
-            component="img"
-            src={r.imagen}
-            alt="Predio"
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: 1,
-              border: "1px solid #ddd",
-              objectFit: "cover",
-            }}
-            onError={(e: any) => {
-              e.target.src = predio1; // fallback si no carga
-            }}
-          />
-        </IconButton>
-      </TableCell>
-      <TableCell>{r.codigo}</TableCell>
-      <TableCell>{r.direccion}</TableCell>
-      <TableCell>{r.propietario}</TableCell>
-    </TableRow>
-  ))}
-</TableBody>
+      <>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Imagen</TableCell>
+              <TableCell>Código</TableCell>
+              <TableCell>Dirección</TableCell>
+              <TableCell>Propietario</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {resultadosPagina.map((r, i) => (
+              <TableRow
+                key={i}
+                hover
+                sx={{
+                  cursor: "pointer",
+                  "& td": { py: 0.3, px: 1.5 },
+                }}
+                onClick={() => {
+                  handleChange({ target: { name: "codigoPredio", value: r.codigo } } as any);
+                  handleChange({ target: { name: "direccionCompletaPredio", value: r.direccion } } as any);
+                  handleChange({ target: { name: "tipoViaPredio", value: r.tipoVia } } as any);
+                  handleChange({ target: { name: "descViaPredio", value: r.descripcionVia } } as any);
+                  handleChange({ target: { name: "numMun1", value: r.numero } } as any);
+                  handleChange({ target: { name: "imagenPredio", value: r.imagen } } as any); // 👈 agrega imagen
+                  setCodigoPU(r.codigo);
+                  setMostrarDetallePredio(true);
+                  setOpenBuscarDireccion(false);
+                }}
+              >
+                <TableCell>
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPredio(r);
+                      setOpenImagen(true);
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={r.imagen}
+                      alt="Predio"
+                      sx={{
+                        width: 80, // doble tamaño
+                        height: 60,
+                        borderRadius: 1,
+                        border: "1px solid #ddd",
+                        objectFit: "cover",
+                      }}
+                      onError={(e: any) => {
+                        e.target.src = predio1;
+                      }}
+                    />
+                  </IconButton>
+                </TableCell>
+                <TableCell>{r.codigo}</TableCell>
+                <TableCell>{r.direccion}</TableCell>
+                <TableCell>{r.propietario}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-      </Table>
+        {/* PAGINACIÓN */}
+        {totalPaginas > 1 && (
+          <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mt: 3 }}>
+            <Button
+              variant="outlined"
+              size="small"
+              disabled={paginaActual === 1}
+              onClick={() => setPaginaActual(paginaActual - 1)}
+            >
+              Anterior
+            </Button>
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              Página {paginaActual} de {totalPaginas}
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              disabled={paginaActual === totalPaginas}
+              onClick={() => setPaginaActual(paginaActual + 1)}
+            >
+              Siguiente
+            </Button>
+          </Box>
+        )}
+      </>
     ) : (
       <Typography variant="body2" sx={{ color: "text.secondary", fontStyle: "italic" }}>
         No hay resultados para mostrar.
       </Typography>
     )}
   </DialogContent>
+
   <DialogActions>
     <Button onClick={() => setOpenBuscarDireccion(false)}>Cerrar</Button>
   </DialogActions>
 </Dialog>
-     
   
 <Dialog open={openImagen} onClose={() => setOpenImagen(false)}>
   <DialogTitle sx={{ fontWeight: 600, color: "#003366" }}>
@@ -1075,8 +1489,84 @@ const resetValidacionArchivo = () => {
 </Dialog>
 
 
+
+    {/* ====================== MODAL IMAGEN DEL PREDIO ====================== */}
+<Dialog
+  open={openImagenPredio}
+  onClose={() => setOpenImagenPredio(false)}
+  maxWidth="md"
+  fullWidth
+  sx={{
+    "& .MuiDialog-paper": {
+      borderRadius: 3,
+      bgcolor: "#5379acff",
+      color: "#fff",
+      boxShadow: "0 8px 20px rgba(230, 227, 227, 0.5)",
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      color: "#fff",
+      borderBottom: "1px solid rgba(231, 227, 227, 0.1)",
+      pb: 1,
+    }}
+  >
+    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+      Imagen del Predio
+    </Typography>
+    <IconButton
+      onClick={() => setOpenImagenPredio(false)}
+      sx={{ color: "#fff" }}
+    >
+      <CloseIcon />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent
+    sx={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      p: 0,
+      backgroundColor: "#000",
+    }}
+  >
+    {imagenPredioModal ? (
+      <Box
+        component="img"
+        src={imagenPredioModal}
+        alt="Imagen del predio"
+        sx={{
+          width: "100%",
+          height: "auto",
+          maxHeight: "80vh",
+          objectFit: "contain",
+        }}
+        onError={(e: any) => (e.target.src = predio1)}
+      />
+    ) : (
+      <Typography
+        variant="body2"
+        sx={{ color: "#ccc", textAlign: "center", py: 5 }}
+      >
+        No se encontró imagen para este predio.
+      </Typography>
+    )}
+  </DialogContent>
+</Dialog>
+
+
+
+
+
+
     </Box>
   );
-};
+});
+
 
 export default Paso2Predio;

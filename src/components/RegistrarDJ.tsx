@@ -1,5 +1,5 @@
 // src/components/Dashboard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   AppBar,
@@ -55,15 +55,60 @@ import Paso2Predio from "./Paso2Predio";
 import Paso3Terreno from './Paso3Terreno';
 import Paso4Construccion from './Paso4Construccion';
 import Paso5Resumen from './Paso5Resumen';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import PersonIcon from "@mui/icons-material/Person";
+import HomeWorkIcon from "@mui/icons-material/HomeWork";
+import StraightenIcon from "@mui/icons-material/Straighten";
+import ConstructionIcon from "@mui/icons-material/Construction";
+import DescripIcon from "@mui/icons-material/Description";
+import VolumeUpIcon from "@mui/icons-material/VolumeUp";
+import CircularProgress from "@mui/material/CircularProgress";
+import sonidoMensaje from "../assets/sonidoMensaje.mp3";
+import audioTributito from "../assets/audio-tributito.mp3";
+import usuario from './../assets/usuario.png';
 
 interface Props {
   onLogout?: () => void;
 }
 
+
+
+
+const wizardTheme = createTheme({
+components: {
+      MuiStepConnector: {
+        styleOverrides: {
+          line: {
+            borderColor: "#b0bec5",
+            borderTopWidth: 3,
+            borderRadius: 1,
+          },
+        },
+      },
+      MuiStepLabel: {
+        styleOverrides: {
+          label: {
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            color: "#546e7a",
+            marginTop: 2,
+            "&.Mui-active": { color: "#1565c0", fontWeight: 700 },
+            "&.Mui-completed": { color: "#2e7d32" },
+          },
+        },
+      },
+    },
+});
+
+
+
 /* ======================
    COMPONENTE PRINCIPAL
 ====================== */
 const RegistrarDJ: React.FC<Props> = ({ onLogout }) => {
+
+  const paso2Ref = useRef<any>(null);
+
   const [darkMode, setDarkMode] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -71,10 +116,19 @@ const RegistrarDJ: React.FC<Props> = ({ onLogout }) => {
 
 const [validarPaso2, setValidarPaso2] = useState<(() => boolean) | null>(null);
   
+// 🎧 Estados y referencias para sonido y efecto de carga
+const [isThinking, setIsThinking] = useState(false);
+const [puedeReproducir, setPuedeReproducir] = useState(false);
+const [puedeReproducirSonido, setPuedeReproducirSonido] = useState(false);
+const [mensajeInicialEscrito, setMensajeInicialEscrito] = useState(false); // ✅ nuevo
 
+const audioMensajeRef = useRef<HTMLAudioElement | null>(null);
+const audioTributitoRef = useRef<HTMLAudioElement | null>(null);
+const typingIntervalRef = useRef<NodeJS.Timeout | null>(null); // ✅ nuevo
 
-  const location = useLocation();
-  const navigate = useNavigate();
+const location = useLocation();
+const navigate = useNavigate();
+
 
   const { numPredios, tipoPersona, predioDeclarados: declaradosDesdeRuta = 0, tipoDocConyuge,
   nroDocConyuge,
@@ -107,41 +161,59 @@ useEffect(() => {
 
   const [activeStep, setActiveStep] = useState(0);
 
+  const [usuarioInteraccion, setUsuarioInteraccion] = useState(false);
 
-  // Cambia los mensajes cuando cambia el paso activo
+  useEffect(() => {
+    const activar = () => setUsuarioInteraccion(true);
+    window.addEventListener("click", activar, { once: true });
+    window.addEventListener("keydown", activar, { once: true });
+    window.addEventListener("scroll", activar, { once: true });
+
+    return () => {
+      window.removeEventListener("click", activar);
+      window.removeEventListener("keydown", activar);
+      window.removeEventListener("scroll", activar);
+    };
+  }, []);
+
+
+
 useEffect(() => {
-  const paso = mensajesPorPaso[activeStep];
-
-  if (!paso) return; // seguridad
-
-  // 👇 Construimos los mensajes dinámicamente
-  const nuevosMensajes: string[] = [];
-
-  if (paso.intro) {
-    nuevosMensajes.push(paso.intro);
+  // Si es el primer paso y aún no se ha mostrado el mensaje inicial
+  if (activeStep === 0 && !mensajeInicialEscrito) {
+    const timer = setTimeout(() => {
+      const paso = mensajesPorPaso[0];
+      if (paso?.descripcion) {
+        escribirMensajeTributito(paso.descripcion);
+        setMensajeInicialEscrito(true);
+        ultimoPasoMostradoRef.current = 0; // Guarda paso actual
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
   }
 
-  if (paso.descripcion) {
-    nuevosMensajes.push(`🤖 Tributito: ${paso.descripcion}`);
+  // Si cambia a otro paso y no se ha mostrado mensaje en este paso
+  if (activeStep !== ultimoPasoMostradoRef.current) {
+    const paso = mensajesPorPaso[activeStep];
+    if (paso?.descripcion) {
+      escribirMensajeTributito(paso.descripcion);
+      ultimoPasoMostradoRef.current = activeStep; // Marca que ya se mostró
+    }
   }
-
-  setMessages(nuevosMensajes);
 }, [activeStep]);
 
 
 
 
   const [showChat, setShowChat] = useState(true);
-  const [messages, setMessages] = useState<string[]>([
-    "👋 ¡Hola! Soy Tributito, tu asistente virtual. Te guiaré en el proceso de tu Declaración Jurada.",
-  ]);
+  const [messages, setMessages] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
 
   const steps = [
     "Datos del Contribuyente",
     "Datos del Predio",
     "Valor del Terreno",
-    "Construcción y Obras Complementarias",
+    "Construcción y Obras",
     "Resumen",
   ];
 
@@ -176,8 +248,8 @@ useEffect(() => {
     }
 
     if (!valid) {
-      setSeveritySnackbar("error");
-      setMensajeSnackbar("⚠️ Corrige los errores antes de continuar.");
+      setSeveritySnackbar("info");
+      setMensajeSnackbar("⚠️ Por favor, revisar los mensajes de error en el formulario");
       setOpenSnackbar(true);
       return;
     }
@@ -185,23 +257,33 @@ useEffect(() => {
 
   // 🔸 Validación del Paso 2
   if (activeStep === 1 && (!formData.codigoPredio || formData.codigoPredio.trim() === "")) {
-    setSeveritySnackbar("error");
+    setSeveritySnackbar("info");
   setMensajeSnackbar("⚠️ Debe seleccionar un predio antes de continuar.");
   setOpenSnackbar(true);
   return;
   }
 
-  if (activeStep === 1) { // Paso 2 (recordando que paso 0 es el contribuyente)
+if (activeStep === 1) {
+  const valido = paso2Ref.current?.validarPaso2();
 
-      if (validarPaso2 && !validarPaso2()) {
-    if (!formData.docAdquisicion) {
-       setSeveritySnackbar("error");
-      setMensajeSnackbar("⚠️ Debe adjuntar el documento PDF del tipo de transferencia");
-      setOpenSnackbar(true);
-    }
-    return; // 🚫 Detiene el avance
+  if (!valido) {
+    // ⚠️ Mensaje unificado y claro
+    setSeveritySnackbar("info");
+    setMensajeSnackbar(
+      "⚠️ Revise los datos del paso: debe adjuntar el documento PDF y registrar el valor de adquisición (en soles o dólares)."
+    );
+    setOpenSnackbar(true);
+    return;
   }
-  
+}
+
+ if (activeStep === 1) { // Paso 2: Datos del Predio y Condición de Propiedad
+  if (validarPaso2 && !validarPaso2()) {
+    setSeveritySnackbar("info");
+    setMensajeSnackbar("⚠️ Por favor, revise los datos en Condición de Propiedad antes de continuar.");
+    setOpenSnackbar(true);
+    return; // 🚫 Detiene el avance si algo falla
+  }
 }
 
   // ✅ Si todo bien, avanzar
@@ -211,30 +293,13 @@ setMensajeSnackbar("✅ Se guardaron los datos del paso anterior correctamente."
 setOpenSnackbar(true);
 };
 
-
+const ultimoPasoMostradoRef = useRef<number | null>(null);
 
   const handleBack = () => setActiveStep((prev) => prev - 1);
   const handleGuardar = () =>
     alert("✅ Tu progreso ha sido guardado para continuar después.");
   
-  const handleSendMessage = () => {
-  if (!inputValue.trim()) return;
-
-  // Mostrar mensaje del usuario
-  setMessages((prev) => [...prev, `🧾 Tú: ${inputValue}`]);
-  const currentStep = activeStep;
-
-  // Limpiar input
-  setInputValue("");
-
-  // Mostrar respuesta automática
-  setTimeout(() => {
-    setMessages((prev) => [
-      ...prev,
-      `🤖 Tributito: ${respuestasDemo[currentStep] || "Gracias por tu mensaje. Estoy procesando tu consulta..."}`,
-    ]);
-  }, 1000);
-};
+  
 
   // 🕒 Estado para mostrar la fecha y hora en tiempo real
 const [dateTime, setDateTime] = useState(new Date());
@@ -260,11 +325,29 @@ const formattedDateTime = dateTime.toLocaleString("es-PE", {
 
 
 
+
+useEffect(() => {
+  const habilitarSonido = () => setPuedeReproducir(true);
+  document.addEventListener("click", habilitarSonido, { once: true });
+  return () => document.removeEventListener("click", habilitarSonido);
+}, []);
+
+// 🟢 Reproduce el sonido del primer mensaje en cuanto el usuario habilite audio
+useEffect(() => {
+  if (puedeReproducirSonido && activeStep === 0 && messages.length > 0) {
+    const audio = new Audio(sonidoMensaje);
+    setTimeout(() => {
+      audio.play().catch(() => {});
+    }, 300); // ligero retardo para sincronizar con el texto
+  }
+}, [puedeReproducirSonido]);
+
+
+
 // Mensajes automáticos del asistente por paso
 const mensajesPorPaso = [
   {
-    intro: "👋 ¡Hola! Soy Tributito, tu asistente virtual. Te guiaré en el proceso de tu Declaración Jurada.",
-    descripcion: "En este paso debes registrar tus datos personales y, si corresponde, los de tu cónyuge. Además, adjunta los documentos solicitados como el recibo de servicio y tu condición especial si aplica."
+    descripcion: "¡Hola! Soy Tributito, tu asistente virtual. Te guiaré en el proceso de tu Declaración Jurada.. En este paso debes registrar tus datos personales y, si corresponde, los de tu cónyuge. Además, adjunta los documentos solicitados como el recibo de servicio y tu condición especial si aplica."
   },
   {
     descripcion: "Aquí registrarás la información de tu predio: su código, dirección, tipo de transferencia y documento de adquisición (PDF)."
@@ -304,10 +387,10 @@ const [formData, setFormData] = useState({
     tipoPersona: "Natural",
     tipoDocumento: "DNI/Libreta Electoral",
     nroDocumento: "12345678",
-    apellidosNombres: "Juan Victor Pérez García",
-    telefonoFijo: "0000000",
-    celular: "000000000",
-    correo: "victorhugo@gmail.com",
+    apellidosNombres: "JUAN VICTOR GARCIA PEREZ",
+    telefonoFijo: "",
+    celular: "995862532",
+    correo: "vperezg@gmail.com",
     fechaNacimiento: "1975-01-01",
 
     // Cónyuge
@@ -396,6 +479,8 @@ const [formData, setFormData] = useState({
 
   // Estado para mostrar el bloque de dirección editable
 const [mostrarDireccionDetallada, setMostrarDireccionDetallada] = useState(false);
+
+const [posicionTributito, setPosicionTributito] = useState<"abajo" | "arriba">("abajo");
 
 
 // Manejo de cambios de texto
@@ -501,6 +586,30 @@ const handlePresentarDeclaracion = () => {
 
 
 
+useEffect(() => {
+  const habilitarSonido = () => {
+    setPuedeReproducirSonido(true);
+    // Reproduce un sonido silencioso para desbloquear el contexto de audio
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const buffer = audioContext.createBuffer(1, 1, 22050);
+    const source = audioContext.createBufferSource();
+    source.buffer = buffer;
+    source.connect(audioContext.destination);
+    source.start(0);
+  };
+
+  document.addEventListener("click", habilitarSonido, { once: true });
+  document.addEventListener("keydown", habilitarSonido, { once: true });
+  document.addEventListener("scroll", habilitarSonido, { once: true });
+
+  return () => {
+    document.removeEventListener("click", habilitarSonido);
+    document.removeEventListener("keydown", habilitarSonido);
+    document.removeEventListener("scroll", habilitarSonido);
+  };
+}, []);
+
+
 
 
 // ✅ Ref para el contenedor del chat
@@ -516,6 +625,251 @@ React.useEffect(() => {
   }
 }, [messages]);
 
+
+// 💬 Base de datos simulada de respuestas de Tributito
+const respuestasPorPaso: Record<number, string[]> = {
+  // 🧍 Paso 1: Datos del contribuyente
+  0: [
+    "😄 ¡Perfecto! Asegúrate de ingresar correctamente tus nombres y apellidos completos.",
+    "📄 Recuerda adjuntar tu recibo de agua o luz, es un requisito esencial para continuar.",
+    "🤓 Si eres sociedad conyugal, no olvides completar los datos de tu cónyuge.",
+    "💡 Te recomiendo verificar que tu correo y celular estén actualizados para recibir notificaciones.",
+    "🧠 Consejo: guarda tu progreso si necesitas pausar el registro, ¡así no perderás datos!",
+    "👍 Todo va muy bien, solo revisa los campos obligatorios antes de avanzar.",
+    "👀 Si tienes una condición especial, recuerda adjuntar el documento que lo sustente.",
+  ],
+
+  // 🏠 Paso 2: Datos del predio
+  1: [
+    "🏡 No olvides indicar el tipo de transferencia y adjuntar el documento de adquisición (PDF).",
+    "📍 Verifica que la dirección del predio esté completa y sin errores de escritura.",
+    "🧾 Si no has adjuntado tu documento de adquisición, no podrás continuar al siguiente paso.",
+    "📬 Es importante que la dirección fiscal coincida con la del predio declarado.",
+    "💬 Consejo: usa nombres cortos y claros para las urbanizaciones o vías.",
+    "✅ ¡Todo bien! Recuerda revisar los datos del predio antes de avanzar.",
+    "📂 Si el predio tiene varias secciones o interiores, asegúrate de registrar los detalles correctamente.",
+  ],
+
+  // 📏 Paso 3: Datos del terreno
+  2: [
+    "📐 Asegúrate de ingresar correctamente el área total y el frontis del predio.",
+    "💰 No olvides el valor arancelario, es clave para calcular el autovalúo.",
+    "🌎 Si tienes dudas sobre el valor del terreno, revisa la tabla de valores arancelarios del SAT.",
+    "📏 El área total debe incluir tanto área propia como área común.",
+    "🧮 Revisa que el valor total del terreno se calcule automáticamente antes de avanzar.",
+    "🌱 Excelente, ¡vas avanzando! Recuerda que este paso define el valor base del predio.",
+    "🧾 Si tu predio tiene fracciones o subdivisiones, decláralas por separado.",
+  ],
+
+  // 🧱 Paso 4: Construcción y obras complementarias
+  3: [
+    "🏗️ Registra los pisos o edificaciones que tenga tu predio, incluso si son antiguas.",
+    "🧱 No olvides detallar los materiales de construcción (muros, techos, pisos, etc.).",
+    "💡 Consejo: ingresa correctamente las fechas de construcción para un cálculo exacto.",
+    "🪚 Si tienes obras complementarias como cercos, techos o depósitos, inclúyelos también.",
+    "🏠 Puedes agregar varios niveles, cada uno con sus propios datos.",
+    "🧰 ¡Muy bien! Mientras más precisos sean tus datos, más exacto será el autovalúo.",
+    "📸 Guarda planos o documentos por si los necesitas para una inspección.",
+  ],
+
+  // 🧾 Paso 5: Resumen final
+  4: [
+    "📑 ¡Ya casi terminas! Revisa cuidadosamente todos los datos antes de presentar.",
+    "✅ Si todo está correcto, puedes hacer clic en 'Presentar Declaración Jurada'.",
+    "👀 Consejo: asegúrate de haber adjuntado todos los documentos requeridos.",
+    "💬 Puedes volver a cualquier paso si detectas un error, antes de presentar.",
+    "🎉 ¡Excelente trabajo! Has completado todos los pasos correctamente.",
+    "🧾 Recuerda que podrás descargar la constancia de presentación al finalizar.",
+    "🙌 Tributito está orgulloso de ti por completar tu declaración sin errores.",
+  ],
+};
+
+// 🔁 Función para elegir una respuesta al azar por paso
+const obtenerRespuestaAleatoria = (paso: number): string => {
+  const lista = respuestasPorPaso[paso] || [];
+  if (lista.length === 0) return "🙂 Continúa con tu declaración.";
+  const randomIndex = Math.floor(Math.random() * lista.length);
+  return `${lista[randomIndex]}`;
+};
+
+// Efecto de escritura del mensaje
+const [isTyping, setIsTyping] = useState(false);
+const [typedText, setTypedText] = useState("");
+
+const escribirMensajeTributito = (texto: string) => {
+  // 🧹 Limpieza absoluta de intervalos anteriores
+  if (typingIntervalRef.current) {
+    clearInterval(typingIntervalRef.current);
+    typingIntervalRef.current = null;
+  }
+
+  // Reinicia estados
+  setIsThinking(false);
+  setIsTyping(false);
+  setTypedText("");
+
+  let cancelado = false; // ⚠️ bandera para prevenir loops infinitos
+
+  // Delay breve antes de comenzar a escribir
+  setTimeout(() => {
+    if (cancelado) return;
+    setIsTyping(true);
+
+    const letras = texto.split("");
+    let currentIndex = 0;
+
+    typingIntervalRef.current = setInterval(() => {
+      if (cancelado) return;
+
+      // Cuando termina de escribir
+      if (currentIndex >= letras.length) {
+        clearInterval(typingIntervalRef.current!);
+        typingIntervalRef.current = null;
+        setIsTyping(false);
+        setMessages((prev) => [...prev, `Tributito: ${texto}`]);
+
+        // Reproducir sonido una sola vez
+        const audio = new Audio(sonidoMensaje);
+        audio.play().catch(() => {});
+        return;
+      }
+
+      // Escribir letra por letra
+      setTypedText(letras.slice(0, currentIndex + 1).join(""));
+      currentIndex++;
+    }, 50);
+  }, 100);
+
+  // 🧹 Asegurar que si el usuario cambia de paso o desmonta, se cancela
+  return () => {
+    cancelado = true;
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+  };
+};
+
+const handleSendMessage = () => {
+  if (!inputValue.trim()) return;
+
+  // Muestra el mensaje del usuario
+  setMessages((prev) => [...prev, `Tú: ${inputValue}`]);
+  const currentStep = activeStep;
+  setInputValue("");
+
+  // Simula que Tributito está pensando
+  setIsThinking(true);
+  setIsTyping(false);
+  setTypedText("");
+
+  setTimeout(() => {
+    setIsThinking(false);
+    setIsTyping(false);
+    setTypedText("");
+
+    const respuestaCompleta = obtenerRespuestaAleatoria(currentStep);
+
+    setTimeout(() => {
+      setIsTyping(true);
+
+      const letras = respuestaCompleta.split("");
+      let currentIndex = 0; // ✅ Variable local
+
+      typingIntervalRef.current = setInterval(() => {
+        // ✅ Verificación estricta
+        if (currentIndex >= letras.length) {
+          if (typingIntervalRef.current) {
+            clearInterval(typingIntervalRef.current);
+            typingIntervalRef.current = null;
+          }
+          setIsTyping(false);
+          setMessages((prev) => [...prev, `Tributito: ${respuestaCompleta}`]);
+
+          const audio = new Audio(sonidoMensaje);
+          audio.play().catch(() => {});
+          
+          return; // ✅ Salir
+        }
+
+        // ✅ Usar slice en lugar de concatenación
+        setTypedText(letras.slice(0, currentIndex + 1).join(""));
+        currentIndex++;
+        
+      }, 50);
+    }, 100);
+  }, 2500);
+};
+
+
+// 🔽 Efecto: mantener scroll abajo mientras Tributito escribe
+React.useEffect(() => {
+  if (chatContainerRef.current) {
+    chatContainerRef.current.scrollTo({
+      top: chatContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }
+}, [typedText, isThinking, isTyping, messages]);
+
+useEffect(() => {
+  const chatContainer = chatContainerRef.current;
+  if (!chatContainer) return;
+
+  let iniciado = false;
+
+  const actualizarPosicion = () => {
+    requestAnimationFrame(() => {
+      if (!chatContainer) return;
+
+      const alturaTotal = chatContainer.scrollHeight;
+      const alturaVisible = chatContainer.clientHeight;
+      const distanciaAlFinal =
+        alturaTotal - chatContainer.scrollTop - alturaVisible;
+
+      if (!iniciado) {
+        iniciado = true;
+        return;
+      }
+
+      // 🔒 Solo actualiza si realmente cambió
+      setPosicionTributito((prev) => {
+        const nueva =
+          alturaTotal > alturaVisible * 1.1 && distanciaAlFinal < 120
+            ? "arriba"
+            : "abajo";
+        return prev === nueva ? prev : nueva; // ❗ Evita re-render innecesario
+      });
+    });
+  };
+
+  const mutationObserver = new MutationObserver(actualizarPosicion);
+  mutationObserver.observe(chatContainer, { childList: true, subtree: true });
+
+  chatContainer.addEventListener("scroll", actualizarPosicion);
+  const resizeObserver = new ResizeObserver(actualizarPosicion);
+  resizeObserver.observe(chatContainer);
+
+  const timer = setTimeout(actualizarPosicion, 500);
+
+  return () => {
+    clearTimeout(timer);
+    mutationObserver.disconnect();
+    resizeObserver.disconnect();
+    chatContainer.removeEventListener("scroll", actualizarPosicion);
+  };
+}, [activeStep]);
+
+
+  // 🧹 Limpieza al desmontar el componente
+useEffect(() => {
+  return () => {
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+  };
+}, []);
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f7fa' }}>
@@ -681,84 +1035,288 @@ React.useEffect(() => {
       maxHeight: '100%',
     }}
   >
-    {/* 🔹 ENCABEZADO */}
-    <Box
+
+  {/* 🔹 ENCABEZADO GENERAL */}
+<Box
+  sx={{
+    background: "linear-gradient(90deg, #fdfdfd 0%, #e6f0fb 100%)",
+    borderBottom: "2px solid #d5e3f3",
+    py: 1,
+    px: 2,
+    mb: 1,
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      flexWrap: "wrap",
+      gap: 2,
+      color: "#1a1a1a",
+    }}
+  >
+    {/* 🏛️ Título principal */}
+    <Typography
+      variant="h6"
       sx={{
-        bgcolor: '#e3f2fd',
-        borderLeft: '5px solid #003366',
-        borderRadius: 1,
-        mb: 1,
-        p: 2.5,
-        boxShadow: '0 2px 6px rgba(0,0,0,0.08)',
+        fontWeight: 700,
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        fontSize: "1.1rem",
+        color: "#1e497d",
       }}
     >
-      <Typography variant="h5" sx={{ fontWeight: 700, color: '#003366', mb: 1 }}>
-        Registro de Declaración Jurada
-      </Typography>
-      <Box sx={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-        <Typography variant="body1" sx={{ color: '#333', fontWeight: 500 }}>
-          🏠 Número de predios:{' '}
-          <Typography component="span" sx={{ color: '#1e5ba8', fontWeight: 600 }}>
-            {numPredios}
-          </Typography>
-        </Typography>
-        <Typography variant="body1" sx={{ color: '#333', fontWeight: 500 }}>
-          👤 Tipo de persona:{' '}
-          <Typography component="span" sx={{ color: '#1e5ba8', fontWeight: 600 }}>
-            {tipoPersona}
-          </Typography>
-        </Typography>
-      </Box>
-    </Box>
+      <DescriptionIcon sx={{ fontSize: 22, color: "#1e497d" }} />
+      Registro de Declaración Jurada
+    </Typography>
 
-    {/* 🔹 STEPPER */}
-    <Box sx={{ mt: '-8px', mb: 1, px: 2 }}>
-      <Stepper
-        activeStep={activeStep}
-        alternativeLabel
+    {/* ℹ️ Datos complementarios */}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 3,
+        flexWrap: "wrap",
+        fontSize: "0.95rem",
+      }}
+    >
+      {/* 🔹 Número de predios con badge */}
+      <Typography sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
+        🏠 Número de predios:&nbsp;
+        <Box
+          component="span"
+          sx={{
+            backgroundColor: "#1cb457ff",
+            color: "#e1f5e5ff",
+            fontWeight: 700,
+            //borderRadius: "50%",
+            width: 28,
+            height: 28,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1rem",
+          }}
+        >
+          {numPredios}
+        </Box>
+      </Typography>
+
+      {/* 🔹 Tipo de persona */}
+      <Typography sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+        👤 Tipo de persona:&nbsp;
+        <span
+          style={{
+            fontWeight: 600,
+            color: "#0066cc",
+            fontSize: "1rem",
+            letterSpacing: "0.2px",
+          }}
+        >
+          {tipoPersona}
+        </span>
+      </Typography>
+
+      {/* 🔹 Versión */}
+      <Typography
         sx={{
-          '& .MuiStepLabel-label': { mt: '-6px', color: '#555' },
-          '& .MuiStepIcon-root': { fontSize: '1.8rem', transition: 'all 0.3s ease' },
+          display: "flex",
+          alignItems: "center",
+          gap: 0.3,
+          fontSize: "0.85rem",
+          color: "#777",
+          fontWeight: 400,
         }}
       >
-        {steps.map((label, index) => (
-          <Step key={label}>
-            <StepLabel
-              StepIconProps={{
-                sx: {
-                  color:
-                    index === activeStep
-                      ? '#4caf50 !important'
-                      : index < activeStep
-                      ? '#4caf50 !important'
-                      : '#cfd8dc !important',
-                },
+        <DescriptionIcon sx={{ fontSize: 16, color: "#aaa" }} />
+        v1.0.0
+      </Typography>
+    </Box>
+  </Box>
+</Box>
+
+    {/* 🔹 STEPPER */}
+    <ThemeProvider theme={wizardTheme}>
+    <Box sx={{
+      px: 3,
+      pt: 1,
+      pb: 0.1,
+      bgcolor: "#f9fafc",
+      borderBottom: "1px solid #e0e0e0",
+    }}>
+
+
+
+      {/* ====== STEPPER CON BARRA DE PROGRESO Y ESPACIADO OPTIMIZADO ====== */}
+<Box sx={{ position: "relative", mb: 2 }}>
+  {/* 🔹 Stepper principal */}
+ <Stepper
+  activeStep={activeStep}
+  alternativeLabel
+  connector={<></>}
+  sx={{
+    "& .MuiStepLabel-label": {
+      mt: 0.5,
+      fontSize: "0.9rem",
+      fontWeight: 500,
+      color: "#424242",
+      cursor: "pointer",
+      transition: "color 0.2s ease",
+      "&:hover": { color: "#1565c0" },
+    },
+    "& .MuiStepLabel-label.Mui-active": {
+      color: "#1565c0",
+      fontWeight: 600,
+    },
+    "& .MuiStepLabel-label.Mui-completed": {
+      color: "#4caf50",
+    },
+  }}
+>
+  {steps.map((label, index) => {
+    const icons: Record<number, React.ReactNode> = {
+      1: <PersonIcon />,
+      2: <HomeWorkIcon />,
+      3: <StraightenIcon />,
+      4: <ConstructionIcon />,
+      5: <DescriptionIcon />,
+    };
+
+    const stepNumber = index + 1;
+    const clickable = index < activeStep; // ✅ Declaración correcta dentro del map()
+
+    return (
+      <Step key={label}>
+        <StepLabel
+          StepIconComponent={() => (
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color:
+                  stepNumber < activeStep + 1
+                    ? "#ffffff"
+                    : stepNumber === activeStep + 1
+                    ? "#ffffff"
+                    : "#90a4ae",
+                backgroundColor:
+                  stepNumber < activeStep + 1
+                    ? "#4caf50"
+                    : stepNumber === activeStep + 1
+                    ? "#1565c0"
+                    : "#e0e0e0",
+                boxShadow:
+                  stepNumber === activeStep + 1
+                    ? "0 0 0 4px rgba(21,101,192,0.2)"
+                    : "none",
+                transition: "all 0.3s ease",
+                cursor: clickable ? "pointer" : "default",
+                "&:hover": clickable
+                  ? { boxShadow: "0 0 8px rgba(21,101,192,0.3)" }
+                  : {},
+              }}
+              onClick={() => {
+                if (clickable) setActiveStep(index);
               }}
             >
-              {label}
-            </StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+              {icons[stepNumber]}
+            </Box>
+          )}
+          onClick={() => {
+            if (clickable) setActiveStep(index);
+          }}
+        >
+          {label}
+        </StepLabel>
+      </Step>
+    );
+  })}
+</Stepper>
+
+  {/* 🔹 Barra de progreso debajo del Stepper */}
+  <Box
+    sx={{
+      position: "absolute",
+      bottom: -6,
+      left: 0,
+      width: "100%",
+      height: 6,
+      borderRadius: 2,
+      backgroundColor: "#e3f2fd",
+      overflow: "hidden",
+    }}
+  >
+    <Box
+      sx={{
+        width: `${((activeStep + 1) / steps.length) * 100}%`,
+        height: "100%",
+        background: "linear-gradient(90deg, #1565c0 0%, #42a5f5 100%)",
+        transition: "width 0.4s ease",
+      }}
+    />
+  </Box>
+
+  {/* 🔹 Porcentaje de avance opcional */}
+      <Box
+      sx={{
+        display: "flex",
+        justifyContent: "flex-end",
+        mt: 1.5,
+        mr: 1,
+      }}
+    >
+      <Box
+        sx={{
+          px: 2,
+          py: 0.6,
+          borderRadius: "999px",
+          background:
+            "linear-gradient(90deg, #1565c0 0%, #42a5f5 100%)",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+          color: "#fff",
+          fontSize: "0.85rem",
+          fontWeight: 700,
+          letterSpacing: "0.5px",
+          textShadow: "0 1px 1px rgba(0,0,0,0.2)",
+          minWidth: "fit-content",
+        }}
+      >
+        {Math.round(((activeStep + 1) / steps.length) * 100)}% completado
+      </Box>
     </Box>
+</Box>
+
+
+      
+      
+    </Box>
+</ThemeProvider>
 
     {/* 🔹 CONTENIDO PRINCIPAL */}
     <Box
       sx={{
         flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-start', // ✅ CAMBIAR de 'space-between' a 'flex-start'
+        //display: 'flex',
+        //flexDirection: 'column',
+        //justifyContent: 'flex-start', // ✅ CAMBIAR de 'space-between' a 'flex-start'
         overflowY: 'auto', // ✅ CAMBIAR: permitir scroll vertical
         overflowX: 'hidden', // ✅ AGREGAR: evitar scroll horizontal
-        pb: 1,
+        //pb: 1,
+        p:0.5,
+        pt:1,
       }}
     >
    
       {activeStep === 0 && (
           <>
             {/* Paso 1 - Datos del Contribuyente */}
-            <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+            <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0.5 }}>
             <Paso1Contribuyente
               formData={formData}
               handleChange={handleChange}
@@ -775,38 +1333,40 @@ React.useEffect(() => {
         )}
 
       {activeStep === 1 && (
-        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
-        <Paso2Predio formData={formData} handleChange={handleChange} registerValidator={(fn) => setValidarPaso2(() => fn)} />
+        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0.5 }}>
+        <Paso2Predio ref={paso2Ref} formData={formData} handleChange={handleChange}  />
         </Box>
       )}
       {activeStep === 2 && (
-        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0.5 }}>
           <Paso3Terreno formData={formData} handleChange={handleChange} />
         </Box>
       )}
       {activeStep === 3 && (
-        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
-          <Paso4Construccion onChatMessage={(mensaje) => setMessages((prev) => [...prev, `🤖 Tributito: ${mensaje}`])} />
+        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0.5 }}>
+          <Paso4Construccion onChatMessage={(mensaje) => escribirMensajeTributito(mensaje)} />
         </Box>
       )}
       {activeStep === 4 && (
-        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
-          <Paso5Resumen />
+        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0.5 }}>
+          <Paso5Resumen formData={formData} />
         </Box>
       )}
 
       
-
-
-
-
-
-
-
-
-
       {/* 🔹 BOTONES */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
+      <Box sx={{
+          position: "sticky",
+          bottom: 0,
+          bgcolor: "#fff",
+          borderTop: "1px solid #ECEFF1",
+          py: 1,
+          px: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          zIndex: 2,
+        }}
+    >
   {/* Botón Anterior */}
   <Button
     disabled={activeStep === 0}
@@ -913,19 +1473,39 @@ React.useEffect(() => {
   </Box>
 
   {/* Botón cerrar UX */}
+  {/* 🎵 Botones de audio y cerrar */}
+<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+  <IconButton
+    onClick={() => {
+      const audio = new Audio(audioTributito);
+      audio.play();
+    }}
+    size="small"
+    sx={{
+      color: "white",
+      bgcolor: "rgba(255,255,255,0.2)",
+      "&:hover": { bgcolor: "rgba(255,255,255,0.35)" },
+      borderRadius: "50%",
+      transition: "all 0.2s ease",
+    }}
+  >
+    <VolumeUpIcon fontSize="small" />
+  </IconButton>
+
   <IconButton
     onClick={() => setShowChat(false)}
     size="small"
     sx={{
-      color: 'white',
-      bgcolor: 'rgba(255,255,255,0.2)',
-      '&:hover': { bgcolor: 'rgba(255,255,255,0.35)' },
-      borderRadius: '50%',
-      transition: 'all 0.2s ease',
+      color: "white",
+      bgcolor: "rgba(255,255,255,0.2)",
+      "&:hover": { bgcolor: "rgba(255,255,255,0.35)" },
+      borderRadius: "50%",
+      transition: "all 0.2s ease",
     }}
   >
     <CloseIcon fontSize="small" />
   </IconButton>
+</Box>
 
       </Box>
 
@@ -942,23 +1522,227 @@ React.useEffect(() => {
           gap: 1,
         }}
       >
-        {messages.map((msg, index) => (
+       {/* 🔹 MENSAJES DEL CHAT */}
+{messages.map((msg, index) => {
+  const esTributito = msg.startsWith("Tributito:");
+  const esUsuario = msg.startsWith("Tú:");
+
+  return (
+    <Box
+      key={index}
+      sx={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 1,
+        flexDirection: "row",
+        justifyContent: "flex-start",
+      }}
+    >
+      {/* Avatar a la izquierda */}
+      <Box
+        sx={{
+          width: 28,
+          height: 28,
+          borderRadius: "6px",
+          border: "1px solid #ddd",
+          bgcolor: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          mt: 0.5,
+          flexShrink: 0,
+        }}
+      >
+        {esTributito ? (
           <Box
-            key={index}
+            component="img"
+            src={tributito}
+            alt="Tributito"
             sx={{
-              alignSelf: msg.startsWith('🧾') ? 'flex-end' : 'flex-start',
-              bgcolor: msg.startsWith('🧾') ? '#e1f5e1' : '#fff',
-              p: 1.2,
-              borderRadius: 2,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              maxWidth: '80%',
+              width: "100%",
+              height: "100%",
+              borderRadius: "6px",
+              objectFit: "cover",
             }}
-          >
-            <Typography variant="body2" sx={{ color: '#333', whiteSpace: 'pre-line' }}>
-              {msg}
-            </Typography>
-          </Box>
+          />
+        ) : (
+          <Box
+    component="img"
+    src={usuario}
+    alt="Usuario"
+    sx={{
+      width: "100%",
+      height: "100%",
+      borderRadius: "6px",
+      objectFit: "cover",
+    }}
+  />
+        )}
+      </Box>
+
+      {/* Burbuja de mensaje */}
+      <Box
+        sx={{
+          bgcolor: esTributito ? "#fff" : "#e7f4ff",
+          p: 1.2,
+          borderRadius: 2,
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          maxWidth: "80%",
+        }}
+      >
+        <Typography
+          variant="body2"
+          sx={{
+            color: "#333",
+            whiteSpace: "pre-line",
+            lineHeight: 1.4,
+          }}
+        >
+          {esTributito ? (
+            <>
+              <b style={{ color: "#2e7d32" }}>Tributito:</b>{" "}
+              {msg.replace(/^Tributito:\s*/, "")}
+            </>
+          ) : (
+            msg
+          )}
+        </Typography>
+      </Box>
+    </Box>
+  );
+})}
+
+{/* 🔹 EFECTO “Tributito está escribiendo…” */}
+{isThinking && (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "center",
+      gap: 1,
+      pl: 0.5,
+      mt: 0.5,
+    }}
+  >
+    <Box
+      component="img"
+      src={tributito}
+      alt="Tributito"
+      sx={{
+        width: 28,
+        height: 28,
+        borderRadius: "6px",
+        border: "1px solid #ddd",
+        objectFit: "cover",
+        flexShrink: 0,
+      }}
+    />
+    <Box
+      sx={{
+        bgcolor: "#fff",
+        borderRadius: 2,
+        px: 1.5,
+        py: 0.8,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        display: "flex",
+        alignItems: "center",
+        gap: 0.5,
+      }}
+    >
+      {/* Tres puntos animados */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 0.4,
+        }}
+      >
+        {[0, 1, 2].map((i) => (
+          <Box
+            key={i}
+            sx={{
+              width: 6,
+              height: 6,
+              borderRadius: "50%",
+              bgcolor: "#888",
+              animation: `blink 1.4s infinite ${i * 0.2}s`,
+            }}
+          />
         ))}
+      </Box>
+    </Box>
+  </Box>
+)}
+
+{/* 💬 Efecto de escritura palabra por palabra */}
+{isTyping && (
+  <Box
+    sx={{
+      display: "flex",
+      alignItems: "flex-start",
+      gap: 1,
+      alignSelf: "flex-start",
+      maxWidth: "85%",
+      mt: 0.5,
+    }}
+  >
+    <Box
+      component="img"
+      src={tributito}
+      alt="Tributito"
+      sx={{
+        width: 28,
+        height: 28,
+        borderRadius: "6px",
+        border: "1px solid #ddd",
+        objectFit: "cover",
+        mt: 0.5,
+      }}
+    />
+    <Box
+      sx={{
+        bgcolor: "#fff",
+        p: 1.2,
+        borderRadius: 2,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        flex: 1,
+      }}
+    >
+      <Typography
+        variant="body2"
+        sx={{
+          color: "#333",
+          whiteSpace: "pre-line",
+          lineHeight: 1.4,
+        }}
+      >
+        <b>Tributito:</b> {typedText}
+        <span
+          style={{
+            opacity: 0.6,
+            fontWeight: 400,
+            marginLeft: "2px",
+            fontSize: "1rem",
+          }}
+        >
+          |
+        </span>
+      </Typography>
+    </Box>
+  </Box>
+)}
+
+{/* 🔹 Animación CSS para los tres puntos */}
+<style>
+{`
+@keyframes blink {
+  0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-2px); }
+}
+`}
+</style>
+
+
+
       </Box>
 
       {/* Input */}
@@ -1066,6 +1850,54 @@ React.useEffect(() => {
     {mensajeSnackbar}
   </Alert>
 </Snackbar>
+
+
+
+{/* 🔹 Imagen flotante de Tributito (parte superior derecha) */}
+
+
+<Box
+  component="img"
+  src={require("../assets/tributito2.png")}
+  alt="Tributito"
+  sx={{
+    position: "fixed",
+    right: 10,
+    width: 120,
+    height: "auto",
+    zIndex: 2000,
+    cursor: "pointer",
+    userSelect: "none",
+    animation: "flotar 3s ease-in-out infinite",
+    transition: `
+      top 1.3s cubic-bezier(0.19, 1, 0.22, 1),
+      bottom 1.3s cubic-bezier(0.19, 1, 0.22, 1),
+      transform 0.4s ease-in-out
+    `,
+    // 🔽 Posición inteligente:
+    bottom:
+      !showChat || posicionTributito === "abajo"
+        ? 110 // siempre abajo cuando chat está oculto o abajo
+        : "unset",
+    top:
+      showChat && posicionTributito === "arriba"
+        ? 140 // arriba solo cuando chat visible y lleno
+        : "unset",
+    "@keyframes flotar": {
+      "0%, 100%": { transform: "translateY(0)" },
+      "50%": { transform: "translateY(-8px)" },
+    },
+    "&:hover": {
+      transform: "translateY(-10px) scale(1.05)",
+    },
+  }}
+  onClick={() => {
+    if (!showChat) setShowChat(true); // 👈 Abre chat si está cerrado
+  }}
+/>
+
+
+
 
     </Box>
     
