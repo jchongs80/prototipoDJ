@@ -67,6 +67,7 @@ import sonidoMensaje from "../assets/sonidoMensaje.mp3";
 import audioTributito from "../assets/audio-tributito.mp3";
 import usuario from './../assets/usuario.png';
 
+
 interface Props {
   onLogout?: () => void;
 }
@@ -128,6 +129,10 @@ const typingIntervalRef = useRef<NodeJS.Timeout | null>(null); // ✅ nuevo
 
 const location = useLocation();
 const navigate = useNavigate();
+
+const themeMUI = useTheme();
+const isLaptop = useMediaQuery(themeMUI.breakpoints.down("lg")); // lg≈1280-1366
+
 
 
   const { numPredios, tipoPersona, predioDeclarados: declaradosDesdeRuta = 0, tipoDocConyuge,
@@ -323,7 +328,11 @@ const formattedDateTime = dateTime.toLocaleString("es-PE", {
   second: "2-digit",
 });
 
-
+useEffect(() => {
+  // Si estoy en laptop y el chat está abierto, ciérralo
+  if (isLaptop && showChat) setShowChat(false);
+  // Si vuelvo a pantallas grandes y estaba cerrado, no lo fuerces a abrir
+}, [isLaptop]);
 
 
 useEffect(() => {
@@ -1032,6 +1041,9 @@ useEffect(() => {
       overflow: 'hidden',
       mr: showChat ? 2 : 0,
       flexBasis: showChat ? 'calc(100% - 360px)' : '100%', // 🔹 expansión automática
+      maxWidth: { xs: "100%", md: "1200px" }, 
+      mx:"auto",
+      p: { xs: 1, md: 2 },
       maxHeight: '100%',
     }}
   >
@@ -1150,7 +1162,7 @@ useEffect(() => {
 
 
       {/* ====== STEPPER CON BARRA DE PROGRESO Y ESPACIADO OPTIMIZADO ====== */}
-<Box sx={{ position: "relative", mb: 2 }}>
+  <Box sx={{ overflowX: "auto", pb: 1 }}>
   {/* 🔹 Stepper principal */}
  <Stepper
   activeStep={activeStep}
@@ -1159,7 +1171,7 @@ useEffect(() => {
   sx={{
     "& .MuiStepLabel-label": {
       mt: 0.5,
-      fontSize: "0.9rem",
+      fontSize: { xs: "0.8rem", md: "0.9rem" },
       fontWeight: 500,
       color: "#424242",
       cursor: "pointer",

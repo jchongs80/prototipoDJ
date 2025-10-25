@@ -73,10 +73,10 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({ formData, handleChange }) =
   <Box
     sx={{
       flex: { xs: "1 1 100%", xl: "1 1 68%" },
-      minWidth: "680px",
-      display: "flex",
-      flexDirection: "column",
-      gap: 3,
+  minWidth: { xs: "100%", md: "540px", lg: "620px" }, // 👈 en laptop no se rompe
+    display: "flex",
+    flexDirection: "column",
+    gap: 3,
     }}
   >
           {/* Terreno Matriz */}
@@ -272,8 +272,8 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({ formData, handleChange }) =
       borderLeft: "6px solid #1a73e8",
       borderRadius: 2,
       bgcolor: "#f9fafc",
-      px: 3,
-      py: 3,
+      px: { xs: 2, md: 3 },
+    py: { xs: 2, md: 3 },
       boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
       transition: "all 0.3s ease",
     }}

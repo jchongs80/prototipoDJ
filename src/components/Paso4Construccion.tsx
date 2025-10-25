@@ -36,6 +36,7 @@ import { ListaTechos } from "./ListaTechos";
 import { ListaPuertasVentanas } from "./ListaPuertasVentanas";
 import InfoCallout from "./InfoCallout";
 import HelpTooltip from "./helpTooltip";
+import { TableContainer } from "@mui/material";
 
 // ✅ 1️⃣ INTERFACE CORRECTA
 type Paso4ConstruccionProps ={
@@ -566,6 +567,7 @@ const handleCancelarConfirmado = () => {
               </Button>
             </Box>
           <ThemeProvider theme={compactTableTheme}>
+            <TableContainer sx={{ overflowX: "auto" }}>
             <Table size="small">
               <TableHead sx={{ bgcolor: "#f0f4f8" }}>
                 <TableRow>
@@ -681,6 +683,7 @@ const handleCancelarConfirmado = () => {
                 ))}
               </TableBody>
             </Table>
+            </TableContainer>
             </ThemeProvider>
             <Typography sx={{ textAlign: "right", fontWeight: 600, mt: 2 }}>
               Total de Construcción (S/): {totalConstruccion.toFixed(2)}
@@ -708,14 +711,14 @@ const handleCancelarConfirmado = () => {
   <Box
     sx={{
       flex: 1,
-      minWidth: 400,
-      p: 2,
+      minWidth: { xs: "100%", md: "360px", lg: "400px" },
+      p: { xs: 1.5, md: 2 },
       borderRadius: 2,
       backgroundColor: "#f8f9fa",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      gap: 2,
+      gap: { xs: 1, md: 2 },
     }}
   >
     <TextField
@@ -762,14 +765,14 @@ const handleCancelarConfirmado = () => {
   <Box
     sx={{
       flex: 1,
-      minWidth: 400,
-      p: 2,
+      minWidth: { xs: "100%", md: "360px", lg: "400px" },
+      p: { xs: 1.5, md: 2 },
       borderRadius: 2,
       backgroundColor: "#f8f9fa",
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      gap: 2,
+      gap: { xs: 1, md: 2 },
     }}
   >
     <TextField
