@@ -1052,10 +1052,10 @@ useEffect(() => {
 <Box
   sx={{
     background: "linear-gradient(90deg, #fdfdfd 0%, #e6f0fb 100%)",
-    borderBottom: "2px solid #d5e3f3",
-    py: 1,
+    borderBottom: "1px solid #d5e3f3",
+    py: 0.5, // 🔹 menos altura
     px: 2,
-    mb: 1,
+    mb: 0.5,
   }}
 >
   <Box
@@ -1151,22 +1151,24 @@ useEffect(() => {
 
     {/* 🔹 STEPPER */}
     <ThemeProvider theme={wizardTheme}>
-    <Box sx={{
-      px: 3,
-      pt: 1,
-      pb: 0.1,
-      bgcolor: "#f9fafc",
-      borderBottom: "1px solid #e0e0e0",
-    }}>
+    <Box 
+    sx={{
+    px: 2,           // 🔹 menos padding horizontal
+    pt: 0.5,         // 🔹 reduce altura superior
+    pb: 1,
+    bgcolor: "#f9fafc",
+    borderBottom: "1px solid #e0e0e0",
+  }}
+    
+    >
 
 
 
       {/* ====== STEPPER CON BARRA DE PROGRESO Y ESPACIADO OPTIMIZADO ====== */}
-  <Box sx={{ overflowX: "auto", pb: 1 }}>
+  <Box sx={{ overflowX: "auto", pb: 1 ,position: "relative"}}>
   {/* 🔹 Stepper principal */}
  <Stepper
   activeStep={activeStep}
-  alternativeLabel
   connector={<></>}
   sx={{
     "& .MuiStepLabel-label": {
@@ -1205,8 +1207,8 @@ useEffect(() => {
           StepIconComponent={() => (
             <Box
               sx={{
-                width: 40,
-                height: 40,
+                width: 28,
+                height: 28,
                 borderRadius: "50%",
                 display: "flex",
                 alignItems: "center",
@@ -1225,7 +1227,7 @@ useEffect(() => {
                     : "#e0e0e0",
                 boxShadow:
                   stepNumber === activeStep + 1
-                    ? "0 0 0 4px rgba(21,101,192,0.2)"
+                    ? "0 0 0 3px rgba(21,101,192,0.2)" // 🔹 menor grosor
                     : "none",
                 transition: "all 0.3s ease",
                 cursor: clickable ? "pointer" : "default",
@@ -1254,11 +1256,11 @@ useEffect(() => {
   {/* 🔹 Barra de progreso debajo del Stepper */}
   <Box
     sx={{
-      position: "absolute",
-      bottom: -6,
+       position: "absolute",
+      bottom: 0,
       left: 0,
       width: "100%",
-      height: 6,
+      height: 4, // 🔹 más delgada
       borderRadius: 2,
       backgroundColor: "#e3f2fd",
       overflow: "hidden",
@@ -1283,24 +1285,20 @@ useEffect(() => {
         mr: 1,
       }}
     >
-      <Box
-        sx={{
-          px: 2,
-          py: 0.6,
-          borderRadius: "999px",
-          background:
-            "linear-gradient(90deg, #1565c0 0%, #42a5f5 100%)",
-          boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
-          color: "#fff",
-          fontSize: "0.85rem",
-          fontWeight: 700,
-          letterSpacing: "0.5px",
-          textShadow: "0 1px 1px rgba(0,0,0,0.2)",
-          minWidth: "fit-content",
-        }}
-      >
+      
+        <Typography
+  align="right"
+  sx={{
+    mt: 0.5,
+    mr: 0.5,
+    fontSize: "0.8rem",
+    fontWeight: 600,
+    color: "#1565c0",
+  }}
+>
         {Math.round(((activeStep + 1) / steps.length) * 100)}% completado
-      </Box>
+        </Typography>
+  
     </Box>
 </Box>
 
