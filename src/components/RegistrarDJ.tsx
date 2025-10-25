@@ -1015,36 +1015,42 @@ useEffect(() => {
     justifyContent: 'space-between',
     alignItems: 'stretch',
     bgcolor: '#f5f7fa',
-    ml: `${drawerWidth - 2}px`, // 🔹 más pegado al sidebar
+   // ml: `${drawerWidth - 2}px`, // 🔹 más pegado al sidebar
     mt: '64px',
     flexGrow: 1,
     flexWrap: 'nowrap',
     height: 'calc(100vh - 96px)', // 🔹 altura ajustada sin pasar el footer
     overflow: 'auto',
     transition: 'all 0.4s ease',
-    p: '10px 10px 10px 0px',
-    pr: showChat ? 0 : 4,
+    pl: 0, // sin padding izquierdo
+    pr: showChat ? 0 : 2,
+    pt: 0,
+    pb: 0,
+    //pr: showChat ? 0 : 4,
   }}
 >
   {/* ========== WIZARD PRINCIPAL ========== */}
   <Box
    sx={{
-      flexGrow: 1,
-      minWidth: 0,
-      bgcolor: '#fff',
-      borderRadius: 2,
-      borderTopLeftRadius: 0, // 🔹 pegado visualmente al sidebar
-      boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
-      display: 'flex',
-      flexDirection: 'column',
-      transition: 'width 0.4s ease, margin 0.4s ease',
-      overflow: 'hidden',
-      mr: showChat ? 2 : 0,
-      flexBasis: showChat ? 'calc(100% - 360px)' : '100%', // 🔹 expansión automática
-      maxWidth: { xs: "100%", md: "1200px" }, 
-      mx:"auto",
-      p: { xs: 1, md: 2 },
-      maxHeight: '100%',
+     flexGrow: 1,
+    minWidth: 0,
+    bgcolor: '#fff',
+    borderRadius: 2,
+    borderTopLeftRadius: 0,
+    boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+    display: 'flex',
+    flexDirection: 'column',
+    transition: 'width 0.4s ease, margin 0.4s ease',
+    overflow: 'hidden',
+    mr: showChat ? 2 : 0,
+    flexBasis: showChat ? 'calc(100% - 360px)' : '100%',
+    maxWidth: '100%',
+    ml: 0,
+    px: 0, // ✅ elimina padding horizontal
+    py: 1,
+    pt: 0.5, // pequeño respiro arriba
+    pb: 1, // pequeño respiro abajo
+    maxHeight: '100%',
     }}
   >
 
@@ -1165,7 +1171,7 @@ useEffect(() => {
 
 
       {/* ====== STEPPER CON BARRA DE PROGRESO Y ESPACIADO OPTIMIZADO ====== */}
-  <Box sx={{ overflowX: "auto", pb: 1 ,position: "relative"}}>
+  <Box sx={{ overflowX: "auto", pb: 1,position: "relative"}}>
   {/* 🔹 Stepper principal */}
  <Stepper
   activeStep={activeStep}
@@ -1289,12 +1295,19 @@ useEffect(() => {
         <Typography
   align="right"
   sx={{
-    mt: 0.5,
-    mr: 0.5,
-    fontSize: "0.8rem",
-    fontWeight: 600,
-    color: "#1565c0",
-  }}
+      px: 1,
+      py: 0.2,
+      borderRadius: "999px",
+      background:
+        "linear-gradient(90deg, #1565c0 0%, #42a5f5 100%)",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.15)",
+      color: "#fff",
+      fontSize: "0.80rem",
+      fontWeight: 550,
+      letterSpacing: "0.5px",
+      textShadow: "0 1px 1px rgba(0,0,0,0.2)",
+      minWidth: "fit-content",
+    }}
 >
         {Math.round(((activeStep + 1) / steps.length) * 100)}% completado
         </Typography>
