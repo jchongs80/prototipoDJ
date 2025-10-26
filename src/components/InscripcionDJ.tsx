@@ -357,7 +357,7 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
             sx={{
               width: "85%",
               bgcolor: "white",
-              p: 2,
+              p: 1,
               borderRadius: 2,
               boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
               mx: "auto",
@@ -420,8 +420,8 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
               width: "85%",
               bgcolor: "white",
               mt: 4,
-              mb: 3,
-              p: 2,
+              mb: 2,
+              p: 1,
               borderRadius: 2,
               boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
               mx: "auto",
@@ -432,7 +432,7 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
             </Typography>
 
             {prediosRecientes.length === 0 ? (
-              <Typography sx={{ color: "#888", py: 2 }}>No tiene predios declarados recientemente.</Typography>
+              <Typography sx={{ color: "#888", py: 1 }}>No tiene predios declarados recientemente.</Typography>
             ) : (
               <Table>
                 <TableHead>
