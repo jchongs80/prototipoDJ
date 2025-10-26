@@ -302,23 +302,6 @@ const { onChatMessage } = props; // 🔹 evita sombrear el tipo
     valorDepreciado: "15",
     valorFinal: "90",
   },
-  {
-    tipoNivel: "Piso",
-    nroPiso: "3",
-    fechaConstruccion: "2025-10",
-    areaPropia: "20",
-    areaComun: "0",
-    material: "Concreto",
-    estadoConserv: "Bueno",
-    muros: "B",
-    techos: "B",
-    puertasVentanas: "D",
-    valorUnitario: "100",
-    incremento: "5",
-    depreciacion: "15",
-    valorDepreciado: "15",
-    valorFinal: "90",
-  },
 ]);
 
  const [nuevoPiso, setNuevoPiso] = useState<Piso>(pisoInicial);
@@ -586,7 +569,7 @@ const handleCancelarConfirmado = () => {
                   <TableCell sx={{ bgcolor: "#f7f7f7" }}>Deprec. (S/.)</TableCell>
                   <TableCell sx={{ bgcolor: "#f7f7f7" }}>Valor Unit. Deprec. (S/.)</TableCell>
                   <TableCell sx={{ bgcolor: "#f7f7f7" }}>Valor Total Construcción (S/.)</TableCell>
-                  <TableCell>Acciones</TableCell>
+                  <TableCell align="center" sx={{ width: 40, p: 0 }} />
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -668,12 +651,21 @@ const handleCancelarConfirmado = () => {
                     <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.depreciacion}</TableCell>
                     <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.valorDepreciado}</TableCell>
                     <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.valorFinal}</TableCell>
-                    <TableCell>
+                    <TableCell align="center"
+                      sx={{
+                        p: 0.3,
+                        width: 40,
+                      }}>
                       <Tooltip title="Eliminar">
                         <Button
                           color="error"
                           size="small"
                           onClick={() => setPisos(pisos.filter((_, idx) => idx !== i))}
+                          sx={{
+                            minWidth: "auto",
+                            p: 0.3,
+                            "&:hover": { bgcolor: "rgba(211, 47, 47, 0.08)" },
+                          }}
                         >
                           <DeleteIcon fontSize="small" />
                         </Button>
@@ -1043,7 +1035,7 @@ const handleCancelarConfirmado = () => {
                   <TableCell sx={{ bgcolor: "#f7f7f7" }}>Valor Obra Deprec.</TableCell>
                   <TableCell sx={{ bgcolor: "#f7f7f7" }}>Factor Ofic.</TableCell>
                   <TableCell sx={{ bgcolor: "#f7f7f7" }}>Valor Total Obras</TableCell>
-                  <TableCell>Acciones</TableCell>
+                  <TableCell align="center" sx={{ width: 40, p: 0 }} />
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -1065,12 +1057,21 @@ const handleCancelarConfirmado = () => {
                     <TableCell sx={{ bgcolor: "#f7f7f7" }}>{o.valorObraDepreciada}</TableCell>
                     <TableCell sx={{ bgcolor: "#f7f7f7" }}>{o.factorOfic}</TableCell>
                     <TableCell sx={{ bgcolor: "#f7f7f7" }}>{o.valorTotalObras}</TableCell>
-                    <TableCell>
+                    <TableCell align="center"
+                      sx={{
+                        p: 0.3,
+                        width: 40,
+                      }}>
                       <Tooltip title="Eliminar">
                         <Button
                           color="error"
                           size="small"
                           onClick={() => setObras(obras.filter((_, idx) => idx !== i))}
+                          sx={{
+                            minWidth: "auto",
+                            p: 0.3,
+                            "&:hover": { bgcolor: "rgba(211, 47, 47, 0.08)" },
+                          }}
                         >
                           <DeleteIcon fontSize="small" />
                         </Button>

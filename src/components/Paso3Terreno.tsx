@@ -105,61 +105,73 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({ formData, handleChange }) =
               Datos del Terreno Matriz
             </Typography>
 
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
-                gap: 2,
-              }}
-            >
-              <TextField
-                label="Área del terreno matriz (m²)"
-                name="areaMatriz"
-                value={formData.areaMatriz}
-                onChange={handleChange}
-                size="small"
-                fullWidth
-                placeholder="0.00"
-                InputProps={{
-                  endAdornment: (
-                    <HelpTooltip text="Área del terreno según la partida matriz (m²)" />
-                  ),
-                  sx: { fontSize: "0.85rem" },
-                }}
-              />
+           {/* === DATOS DEL TERRENO MATRIZ === */}
+<Box
+  sx={{
+    display: "flex",
+    flexDirection: { xs: "column", md: "row" },
+    flexWrap: "nowrap",
+    justifyContent: "space-between",
+    gap: 1.5,
+  }}
+>
+  {/* Área del terreno matriz */}
+  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
+    <TextField
+      fullWidth
+      label="Área del terreno matriz (m²)"
+      name="areaMatriz"
+      size="small"
+      value={formData.areaMatriz}
+      onChange={handleChange}
+      error={!!formData.errors?.areaMatriz}
+      helperText={formData.errors?.areaMatriz}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Área total del terreno matriz expresada en metros cuadrados." />
+        ),
+      }}
+    />
+  </Box>
 
-              <TextField
-                label="% de bien común"
-                name="porcentajeBienComun"
-                value={formData.porcentajeBienComun}
-                onChange={handleChange}
-                size="small"
-                fullWidth
-                placeholder="0%"
-                InputProps={{
-                  endAdornment: (
-                    <HelpTooltip text="Porcentaje de área común que le corresponde al predio" />
-                  ),
-                  sx: { fontSize: "0.85rem" },
-                }}
-              />
+  {/* % de bien común */}
+  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
+    <TextField
+      fullWidth
+      label="% de bien común"
+      name="porcBienComun"
+      size="small"
+      value={formData.porcBienComun}
+      onChange={handleChange}
+      error={!!formData.errors?.porcBienComun}
+      helperText={formData.errors?.porcBienComun}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Porcentaje de participación de áreas comunes." />
+        ),
+      }}
+    />
+  </Box>
 
-              <TextField
-                label="Frontis del predio (m)"
-                name="frontis"
-                value={formData.frontis}
-                onChange={handleChange}
-                size="small"
-                fullWidth
-                placeholder="0.00"
-                InputProps={{
-                  endAdornment: (
-                    <HelpTooltip text="Medida del frente del predio hacia la vía pública" />
-                  ),
-                  sx: { fontSize: "0.85rem" },
-                }}
-              />
-            </Box>
+  {/* Frontis del predio */}
+  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
+    <TextField
+      fullWidth
+      label="Frontis del predio (m)"
+      name="frontis"
+      size="small"
+      value={formData.frontis}
+      onChange={handleChange}
+      error={!!formData.errors?.frontis}
+      helperText={formData.errors?.frontis}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Longitud del frente del predio expresada en metros lineales." />
+        ),
+      }}
+    />
+  </Box>
+</Box>
           </Box>
 
           {/* Área del Terreno */}
@@ -186,55 +198,72 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({ formData, handleChange }) =
               Área del Terreno
             </Typography>
 
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
-                gap: 2,
-              }}
-            >
-              <TextField
-                label="Área Propia (m²)"
-                name="areaPropia"
-                value={formData.areaPropia}
-                onChange={handleChange}
-                size="small"
-                fullWidth
-                placeholder="0.00"
-                InputProps={{
-                  endAdornment: (
-                    <HelpTooltip text="Área del terreno que corresponde exclusivamente al contribuyente" />
-                  ),
-                  sx: { fontSize: "0.85rem" },
-                }}
-              />
+           <Box
+  sx={{
+    display: "flex",
+    flexDirection: { xs: "column", md: "row" },
+    flexWrap: "nowrap",
+    justifyContent: "space-between",
+    gap: 1.5,
+  }}
+>
+  {/* Área Propia */}
+  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
+    <TextField
+      fullWidth
+      label="Área Propia (m²)"
+      name="areaPropia"
+      size="small"
+      value={formData.areaPropia}
+      onChange={handleChange}
+      error={!!formData.errors?.areaPropia}
+      helperText={formData.errors?.areaPropia}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Área propia del terreno según el título de propiedad." />
+        ),
+      }}
+    />
+  </Box>
 
-              <TextField
-                label="Área Común (m²)"
-                name="areaComun"
-                value={formData.areaComun}
-                onChange={handleChange}
-                size="small"
-                fullWidth
-                placeholder="0.00"
-                InputProps={{
-                  endAdornment: (
-                    <HelpTooltip text="Área compartida con otros propietarios del mismo terreno" />
-                  ),
-                  sx: { fontSize: "0.85rem" },
-                }}
-              />
+  {/* Área Común */}
+  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
+    <TextField
+      fullWidth
+      label="Área Común (m²)"
+      name="areaComun"
+      size="small"
+      value={formData.areaComun}
+      onChange={handleChange}
+      error={!!formData.errors?.areaComun}
+      helperText={formData.errors?.areaComun}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Área compartida con otros copropietarios (m²)." />
+        ),
+      }}
+    />
+  </Box>
 
-              <TextField
-                label="Área Total (m²)"
-                name="areaTotal"
-                value={formData.areaTotal}
-                size="small"
-                fullWidth
-                disabled
-                InputProps={{ sx: { fontSize: "0.85rem" } }}
-              />
-            </Box>
+  {/* Área Total */}
+  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
+    <TextField
+      fullWidth
+      label="Área Total (m²)"
+      name="areaTotal"
+      size="small"
+      value={formData.areaTotal}
+      disabled
+      error={!!formData.errors?.areaTotal}
+      helperText={formData.errors?.areaTotal}
+      InputProps={{
+        endAdornment: (
+          <HelpTooltip text="Suma de área propia y común. Calculada automáticamente." />
+        ),
+      }}
+    />
+  </Box>
+</Box>
 
             {errorArea && (
               <Typography
