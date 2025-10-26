@@ -623,7 +623,7 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
           </Grid>
 
           {/* Footer info */}
-          <Box sx={{ mt: 6, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
             <HelpOutlineIcon sx={{ color: '#666', fontSize: '1.2rem' }} />
             <Typography variant="body2" sx={{ color: '#666' }}>
               Si tienes alguna duda, puedes consultar nuestra{' '}

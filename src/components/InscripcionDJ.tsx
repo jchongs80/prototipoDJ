@@ -175,6 +175,15 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
     second: "2-digit",
   });
 
+    const sidebarItems = [
+      { icon: <HomeIcon />, label: 'Inicio', active: true },
+      { icon: <AssignmentIcon />, label: 'Trámites', active: false },
+      { icon: <DescriptionIcon />, label: 'Consultas', active: false },
+      { icon: <AccountCircleIcon />, label: 'Mi Perfil', active: false },
+      { icon: <HelpOutlineIcon />, label: 'Ayuda', active: false }
+    ];
+  
+
   const prediosAnteriores = [
     { codigo: "DJ-2023-0001", direccion: "Jr. Puno 421", uso: "VIVIENDA", anio: "2023" },
   ];
@@ -194,14 +203,14 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
       {/* ===== APPBAR ===== */}
       <AppBar position="fixed" sx={{ zIndex: (t) => t.zIndex.drawer + 1, bgcolor: "#1e5ba8" }}>
         <Toolbar sx={{ minHeight: "64px!important" }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "1.5rem", mr: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", fontSize: "1.5rem", mr: 3 }} translate="no">
             SAT
           </Typography>
 
           {/* Fecha y hora */}
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <ScheduleIcon sx={{ fontSize: "1.2rem" }} />
-            <Typography variant="body2" sx={{ fontSize: "0.875rem", textTransform: "capitalize" }}>
+            <Typography variant="body2" sx={{ fontSize: "0.875rem", textTransform: "capitalize" }} translate="no">
               {formattedDateTime}
             </Typography>
           </Box>
@@ -236,55 +245,81 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
       </AppBar>
 
       {/* ===== SIDEBAR ===== */}
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          "& .MuiDrawer-paper": {
-            width: drawerWidth,
-            boxSizing: "border-box",
-            bgcolor: "#003d7a",
-            border: "none",
-            mt: "64px",
-            height: "calc(100vh - 64px)",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-          },
-        }}
-      >
-        <List sx={{ p: 0 }}>
-          {[HomeIcon, AssignmentIcon, DescriptionIcon, AccountCircleIcon, HelpOutlineIcon].map(
-            (Icon, i) => (
-              <ListItem key={i} disablePadding>
-                <ListItemButton sx={{ flexDirection: "column", py: 2, color: "white" }}>
-                  <ListItemIcon sx={{ minWidth: "auto", color: "white", mb: 0.5 }}>
-                    <Icon />
-                  </ListItemIcon>
-                </ListItemButton>
-              </ListItem>
-            )
-          )}
-        </List>
-
-        <Box sx={{ mb: 2 }}>
-                  <ListItemButton
-                    onClick={() => navigate("/")}
-                    sx={{
-                      flexDirection: "column",
-                      py: 2,
-                      color: "white",
-                      "&:hover": { bgcolor: "rgba(255,255,255,0.08)" },
-                    }}
-                  >
-                    <ExitToAppIcon sx={{ mb: 0.5 }} />
-                    <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
-                      Salir
-                    </Typography>
-                  </ListItemButton>
-                </Box>
-      </Drawer>
+     {/* Sidebar */}
+           <Drawer
+             variant="permanent"
+             sx={{
+               width: drawerWidth,
+               flexShrink: 0,
+               '& .MuiDrawer-paper': {
+                 width: drawerWidth,
+                 boxSizing: 'border-box',
+                 bgcolor: '#003d7a',
+                 border: 'none',
+                 mt: '64px',
+                 height: 'calc(100vh - 64px)',
+                 display: 'flex',
+                 flexDirection: 'column',
+                 justifyContent: 'space-between',
+               },
+             }}
+           >
+             <List sx={{ p: 0 }}>
+               {sidebarItems.map((item, index) => (
+                 <ListItem key={index} disablePadding>
+                   <ListItemButton
+                     sx={{
+                       flexDirection: 'column',
+                       py: 2,
+                       color: 'white',
+                       bgcolor: item.active ? 'rgba(255,255,255,0.1)' : 'transparent',
+                       borderLeft: item.active ? '3px solid #40e0d0' : '3px solid transparent',
+                       '&:hover': {
+                         bgcolor: 'rgba(255,255,255,0.05)'
+                       }
+                     }}
+                   >
+                     <ListItemIcon sx={{ 
+                       minWidth: 'auto',
+                       color: 'white',
+                       mb: 0.5
+                     }}>
+                       {item.icon}
+                     </ListItemIcon>
+                     <Typography 
+                       variant="caption" 
+                       sx={{ 
+                         fontSize: '0.65rem',
+                         textAlign: 'center'
+                       }}
+                     >
+                       {item.label}
+                     </Typography>
+                   </ListItemButton>
+                 </ListItem>
+               ))}
+             </List>
+             
+             {/* Logout button at bottom */}
+             <Box sx={{ mb: 2 }}>
+               <ListItemButton
+               onClick={onLogout} // 👈 acá cerrará sesión
+                 sx={{
+                   flexDirection: 'column',
+                   py: 2,
+                   color: 'white',
+                   '&:hover': {
+                     bgcolor: 'rgba(255,255,255,0.05)'
+                   }
+                 }}
+               >
+                 <ExitToAppIcon sx={{ mb: 0.5 }} />
+                 <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                   Salir
+                 </Typography>
+               </ListItemButton>
+             </Box>
+           </Drawer>
 
       {/* ===== CONTENIDO PRINCIPAL ===== */}
       <Box
@@ -298,6 +333,9 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
             textAlign: "center",
             overflowX: "hidden",
             pb: 12,
+            transform: { lg: 'scale(0.85)', xl: 'scale(0.85)' },
+            transformOrigin: 'top left',
+            width: { lg: '118%', xl: '118%' }, // compensa espacio lateral 
           }}
       >
         <Typography variant="h6" sx={{ fontWeight: "bold", color: "#003366", mb: 3 }}>
@@ -634,7 +672,7 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
           zIndex: 1000,
         }}
       >
-        <Typography variant="caption" sx={{ color: "#666", ml: 2 }}>
+        <Typography variant="caption" sx={{ color: "#666", ml: 2 }} translate="no">
           Copyright © 2025 SAT Lima — Todos los derechos reservados.
         </Typography>
         <Typography variant="caption" sx={{ color: "#666", mr: 2 }}>
