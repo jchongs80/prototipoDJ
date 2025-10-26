@@ -18,6 +18,7 @@ import {
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import { useNavigate } from "react-router-dom";   // 👈 agregado
+import { useTheme, useMediaQuery } from "@mui/material";
 
 interface LoginPageProps {
   onLogin?: () => void;
@@ -35,6 +36,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
     numeroDocumento: '',
     contrasena: ''
   });
+
+  const theme = useTheme();
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "lg")); // 600–1200 px
+  const isLaptop = useMediaQuery(theme.breakpoints.up("lg")); // ≥1200 px
+  const isPhone = useMediaQuery(theme.breakpoints.down("sm")); // ≤600 px
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const navigate = useNavigate(); // 👈 agregado
 
@@ -99,38 +106,32 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   return (
     <Box sx={{ 
       display: 'flex', 
+      flexDirection: { xs: "column", md: "row" }, // 🔹 stack en móvil
       minHeight: '100vh',
       bgcolor: '#f0f2f5'
     }}>
       {/* Panel Izquierdo - Azul */}
       <Box
         sx={{
-          width: '40%',
+          width: isTablet ? "35%" : isLaptop ? "40%" : "100%",
+          display: { xs: "none", sm: "none", md: "flex" },
           bgcolor: '#1e5ba8',
           color: 'white',
-          display: { xs: 'none', md: 'flex' },
           flexDirection: 'column',
-          p: 5,
+          p: { xs: 2, md: 4, lg: 5 },
           position: 'relative'
         }}
       >
         {/* Logo y texto SAT */}
         <Box sx={{ mb: 6 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Typography 
-              variant="h4" 
-              sx={{ 
-                fontWeight: 'bold',
-                fontSize: '2.5rem',
-                letterSpacing: '0.5px'
-              }}
-            >
+            <Typography variant="h4" sx={{ fontWeight: 'bold', fontSize: { xs: '2rem', md: '2.3rem', lg: '2.5rem' } }}>
               SAT
             </Typography>
           </Box>
-          <Typography 
-            sx={{ 
-              fontSize: '0.65rem',
+          <Typography
+            sx={{
+              fontSize: { xs: '0.6rem', md: '0.7rem' },
               letterSpacing: '0.3px',
               lineHeight: 1.3,
               opacity: 0.95
@@ -223,7 +224,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          p: 4,
+          p: { xs: 2, md: 4 },
           bgcolor: '#f0f2f5'
         }}
       >
@@ -234,7 +235,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               p: 5,
               borderRadius: 2,
               width: '100%',
-              maxWidth: '480px',
+              maxWidth: { xs: "100%", sm: "420px", md: "480px" },
               boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
             }}
           >
@@ -379,27 +380,27 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
               />
 
               {/* Botón Consultar */}
-              <Button
-            fullWidth
-            variant="contained"
-            type="submit"
-            sx={{
-              mb: 2,
-              py: 1.5,
-              bgcolor: '#003d7a',
-              fontSize: '0.95rem',
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: 1,
-              boxShadow: 'none',
-              '&:hover': {
-                bgcolor: '#002a56',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-              }
-            }}
-          >
-            Ingresar
-          </Button>
+             <Button
+                fullWidth
+                variant="contained"
+                type="submit"
+                sx={{
+                  mb: 2,
+                  py: { xs: 1.2, md: 1.5 },
+                  bgcolor: '#003d7a',
+                  fontSize: { xs: '0.9rem', md: '0.95rem' },
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  borderRadius: 1,
+                  boxShadow: 'none',
+                  '&:hover': {
+                    bgcolor: '#002a56',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  },
+                }}
+              >
+                Ingresar
+              </Button>
 
               {/* Link Olvidé mi contraseña */}
               <Box sx={{ textAlign: 'center', mb: 3 }}>
