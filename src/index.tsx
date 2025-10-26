@@ -14,11 +14,14 @@ const RootContainer = () => {
   return (
     <div
       style={{
-        zoom: isLaptop ? 0.85 : 1, // 🔹 Escalado global
+        zoom: isLaptop ? 0.85 : 1,           // Escalado global solo en laptops
         transformOrigin: "top center",
-        overflowX: "hidden", // 🔹 Evita scroll horizontal
+        overflowX: "hidden",
         backgroundColor: "#f5f7fa",
+        height: "calc(100vh / 0.85)",        // 👈 compensa el espacio del zoom
+        minHeight: "100vh",
       }}
+      translate='no'
     >
       <App />
     </div>
@@ -31,7 +34,7 @@ const root = ReactDOM.createRoot(
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={theme}>
-        <RootContainer />
+        <App />
     </ThemeProvider>
   </React.StrictMode>
 );

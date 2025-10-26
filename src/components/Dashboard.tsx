@@ -352,11 +352,14 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
-          ml: `${drawerWidth}px`,
-          mt: '64px',
-          p: 4,
-          bgcolor: '#f5f7fa',
+         flexGrow: 1,
+    ml: `${drawerWidth}px`,
+    mt: '64px',
+    p: 4,
+    bgcolor: '#f5f7fa',
+    maxWidth: { lg: '85%', xl: '80%' }, // 🔹 reduce ancho en pantallas grandes
+    mx: 'auto',                        // 🔹 centra el contenido
+    transition: 'all 0.3s ease',
         }}
       >
         {/* Welcome Section */}
