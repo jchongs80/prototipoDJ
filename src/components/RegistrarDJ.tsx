@@ -436,6 +436,8 @@ const [formData, setFormData] = useState({
     direccionCompleta: "Cercado de Lima, Jr. Camaná 499, Lima",
     reciboServicio: "",
 
+    imagenPredio: "./../assets/predio1.png",
+
     // Paso 3 – Predio
     codigoPredio: "",
     valorSoles: "",
@@ -880,6 +882,118 @@ useEffect(() => {
   };
 }, []);
 
+
+
+// ------------------- ESTADOS DE LOS RESÚMENES -------------------
+const [resumenPredio, setResumenPredio] = useState<{
+  codigo: string;
+  direccion: string;
+  uso: string;
+  claseUso?: string;
+  subClaseUso?: string;
+  condicionPropiedad: string;
+  porcentajePropiedad?: number;
+  fechaAdquisicion?: string;
+  areaTotal: number;
+  valorTotalTerreno: number;
+  imagen?: string;
+  tipoPersona?: string;
+  nombreCompleto?: string;
+  tipoDocumento?: string;
+  numeroDocumento?: string;
+  tipoDocumentoConyuge?: string;
+  numeroDocumentoConyuge?: string;
+  nombreConyuge?: string;
+}>({
+  codigo: "",
+  direccion: "",
+  uso: "",
+  condicionPropiedad: "",
+  areaTotal: 0,
+  valorTotalTerreno: 0,
+});
+
+// Datos de construcción (simulación, puedes reemplazar con los reales del paso 4)
+const [pisos, setPisos] = useState<any[]>([]);
+const [obras, setObras] = useState<any[]>([]);
+
+
+// Obras complementarias (también simuladas)
+
+
+// === Recibir pisos y obras desde Paso4 ===
+const handleActualizarConstruccion = (pisosActualizados: any[], obrasActualizadas: any[]) => {
+  setPisos(pisosActualizados);
+  setObras(obrasActualizadas);
+};
+
+
+
+// Totales calculados (puedes ajustarlos a tus cálculos reales)
+const totalConstruccion = pisos.reduce(
+  (acc, p) => acc + Number(p.valorFinal || 0),
+  0
+);
+const totalObrasComplementarias = obras.reduce(
+  (acc, o) => acc + Number(o.valorTotalObras || 0),
+  0
+);
+
+// Estado para el spinner y mensaje
+const [procesando, setProcesando] = useState(false);
+const [exito, setExito] = useState(false);
+
+
+// ------------------- FUNCIÓN AL PRESENTAR LA DJ -------------------
+const handlePresentarDJ = () => {
+  setProcesando(true);
+  setTimeout(() => {
+    setProcesando(false);
+    setExito(true);
+    setTimeout(() => navigate("/inicio"), 2500);
+  }, 2500);
+};
+
+
+
+
+
+// 🔄 Actualizar resumenPredio cuando cambian los datos del formulario (pasos 2 o 3)
+useEffect(() => {
+  setResumenPredio({
+    codigo: formData.codigoPredio || "",
+    direccion: formData.direccionCompletaPredio || formData.direccionCompleta || "",
+    uso: formData.uso || formData.subClaseUso || "",
+    claseUso: formData.claseUso || "",
+    subClaseUso: formData.subClaseUso || "",
+    condicionPropiedad: formData.condicionPropiedad || "",
+    porcentajePropiedad: Number(formData.porcentajePropiedad) || 100,
+    fechaAdquisicion: formData.fechaAdquisicion || "",
+    areaTotal: Number(formData.areaTotal) || 0,
+    valorTotalTerreno: Number(formData.valorTotalTerreno) || 0,
+    imagen: formData.imagenPredio, // puedes reemplazar por el valor real si lo tienes
+
+    // 🔹 Datos del contribuyente
+    tipoPersona: formData.tipoPersona || "",
+    nombreCompleto: formData.apellidosNombres || "",
+    tipoDocumento: formData.tipoDocumento || "",
+    numeroDocumento: formData.nroDocumento || "",
+    // 🔹 Datos del cónyuge (solo si aplica)
+    tipoDocumentoConyuge: formData.tipoDocConyuge || "",
+    numeroDocumentoConyuge: formData.nroDocConyuge || "",
+    nombreConyuge: formData.apellidosConyuge || "",
+  });
+}, [formData]);
+
+
+
+
+
+
+
+
+
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f7fa' }}>
       {/* ======= APPBAR ======= */}
@@ -1102,7 +1216,7 @@ useEffect(() => {
     >
       {/* 🔹 Número de predios con badge */}
       <Typography sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-        🏠 Número de predios:&nbsp;
+        🏠 Número de predios a declarar:&nbsp;
         <Box
           component="span"
           sx={{
@@ -1367,12 +1481,19 @@ useEffect(() => {
       )}
       {activeStep === 3 && (
         <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0.5 }}>
-          <Paso4Construccion onChatMessage={(mensaje) => escribirMensajeTributito(mensaje)} />
+          <Paso4Construccion pisos={pisos} obras={obras} onChatMessage={(mensaje) => escribirMensajeTributito(mensaje)} onActualizarConstruccion={handleActualizarConstruccion} />
         </Box>
       )}
       {activeStep === 4 && (
         <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 0.5 }}>
-          <Paso5Resumen formData={formData} />
+          <Paso5Resumen
+            resumenPredio={resumenPredio}
+            pisos={pisos}
+            obras={obras}
+            totalConstruccion={totalConstruccion}
+            totalObrasComplementarias={totalObrasComplementarias}
+            theme={theme}
+          />
         </Box>
       )}
 

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Autocomplete,
@@ -40,7 +40,10 @@ import { TableContainer } from "@mui/material";
 
 // ✅ 1️⃣ INTERFACE CORRECTA
 type Paso4ConstruccionProps ={
+   pisos?: any[];
+  obras?: any[];
   onChatMessage?: (mensaje: string) => void;
+  onActualizarConstruccion?: (pisos: any[], obras: any[]) => void;
 }
 
 
@@ -49,6 +52,8 @@ const tipoNivelList = ["Piso", "Mezzanine", "Sótano", "Azotea", "Aires"];
 const materialList = ["Concreto", "Ladrillo", "Adobe"];
 const estadoConservList = ["Muy bueno", "Bueno", "Regular", "Malo"];
 const unidadMedidaList = ["m2", "m3", "litros", "metros"];
+
+
 
 
 const descripcionesObra = [
@@ -98,6 +103,9 @@ const getColorByLetra = (letra: string) => {
     case "C": return "#f9a825"; // amarillo
     case "D": return "#ef6c00"; // naranja
     case "E": return "#6a1b9a"; // morado
+    case "F": return "#00838f"; // Turquesa
+    case "G": return "#757575"; // Gris
+    case "H": return "#616161"; // Gris oscuro
     default: return "#607d8b"; // gris por defecto
   }
 };
@@ -161,9 +169,6 @@ interface Obra {
 
 
 
-
-
-
 // === Catálogo ampliado de Obras Complementarias (extracto del PDF SAT 2025) ===
 const obrasCatalogo = [
   { categoria: "Muros perimétricos o cercos", descripcion: "Muro de concreto armado que incluye armadura y cimentación, espesor hasta 0.25 m. Altura hasta 2.40 m.", unidad: "m2", valor: 446.51 },
@@ -210,6 +215,7 @@ const { onChatMessage } = props; // 🔹 evita sombrear el tipo
       "⚙️ Estás registrando una nueva obra complementaria. Completa los campos de descripción, categoría, materiales y medidas.\n\n💬 Si tienes dudas sobre cómo llenar este formulario para agregar una obra complementaria, solo preguntame y yo estaré gustoso de ayudarte en el registro de tu DJ."
     );
   };
+
 
 
   // ✅ 4️⃣ HANDLERS DE BOTONES
@@ -402,7 +408,13 @@ const handleAgregarPiso = () => {
 
 
   // ✅ Si todo está bien, agrega el piso
-  setPisos((prev) => [...prev, { ...nuevoPiso }]);
+  const nuevosPisos = [...pisos, { ...nuevoPiso }];
+
+  setPisos(nuevosPisos);
+
+  // 🔹 Avisar al padre (RegistrarDJ)
+  props.onActualizarConstruccion?.(nuevosPisos, obras);
+
   setNuevoPiso(pisoInicial);
   setErroresPiso({});
   setMostrarFormPiso(false); // ✅ Cierra formulario y vuelve a mostrar todo
@@ -426,7 +438,12 @@ const handleAgregarPiso = () => {
     return; // Detiene si hay campos vacíos
   }
 
-  setObras((prev) => [...prev, { ...nuevaObra }]);
+  const nuevasObras = [...obras, { ...nuevaObra }];
+  setObras(nuevasObras);
+
+  // 🔹 Avisar al componente padre (RegistrarDJ)
+  props.onActualizarConstruccion?.(pisos, nuevasObras);
+
   setNuevaObra({
     descripcion: "",
     tipoNivel: "",
@@ -451,6 +468,14 @@ const handleAgregarPiso = () => {
   setOpenSnackbar(true);
 };
 
+
+const handleActualizarConstruccion = (pisosActualizados: any[], obrasActualizadas: any[]) => {
+  setPisos(pisosActualizados);
+  setObras(obrasActualizadas);
+};
+
+
+
   const totalConstruccion = pisos.reduce(
     (acc, p) => acc + parseFloat(p.valorFinal || "0"),
     0
@@ -459,6 +484,8 @@ const handleAgregarPiso = () => {
     (acc, o) => acc + parseFloat(o.valorTotalObras || "0"),
     0
   );
+
+
 
 const handleObraChange = (
   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>
@@ -507,6 +534,89 @@ const handleCancelarConfirmado = () => {
   setOpenCancelModal(false);
   setMostrarFormObra(false);
 };
+
+
+useEffect(() => {
+
+   let nuevosPisos: any[] = props.pisos ? [...props.pisos] : [];
+  let nuevasObras: any[] = props.obras ? [...props.obras] : [];
+
+  if (!props.pisos || props.pisos.length === 0) {
+    nuevosPisos = [
+      {
+        tipoNivel: "Piso",
+        nroPiso: "1",
+        fechaConstruccion: "2025-10",
+        areaPropia: "30",
+        areaComun: "0",
+        material: "Concreto",
+        estadoConserv: "Bueno",
+        muros: "A",
+        techos: "A",
+        puertasVentanas: "B",
+        valorUnitario: "100",
+        incremento: "5",
+        depreciacion: "15",
+        valorDepreciado: "15",
+        valorFinal: "90",
+      },
+      {
+        tipoNivel: "Piso",
+        nroPiso: "1",
+        fechaConstruccion: "2025-10",
+        areaPropia: "30",
+        areaComun: "0",
+        material: "Concreto",
+        estadoConserv: "Bueno",
+        muros: "A",
+        techos: "A",
+        puertasVentanas: "B",
+        valorUnitario: "100",
+        incremento: "5",
+        depreciacion: "15",
+        valorDepreciado: "15",
+        valorFinal: "90",
+      },
+    ];
+    setPisos(nuevosPisos);
+  }else{
+    setPisos(props.pisos);
+  }
+
+  if (!props.obras || props.obras.length === 0) {
+    nuevasObras =[
+      {
+        descripcion: "Puerta de fierro o aluminio h=2.20m, ancho ≤2.00m.",
+        tipoNivel: "Piso",
+        nroPiso: "1",
+        material: "Concreto",
+        estadoConserv: "Bueno",
+        categoria: "Portones y puertas",
+        cantidad: "1",
+        unidadMedida: "m2",
+        metrado: "4",
+        mesAnio: "2024-10",
+        valorObra: "601.80",
+        incremento: "0",
+        depreciacion: "0",
+        valorObraDepreciada: "0",
+        factorOfic: "0.68",
+        valorTotalObras: "2407.44",
+      },
+    ];
+    setObras(nuevasObras);
+  }else {
+    setObras(props.obras);
+  }
+  props.onActualizarConstruccion?.(nuevosPisos, nuevasObras);
+}, []); // 👈 ejecuta solo al montar
+
+
+// Busca la descripción correspondiente según el valor (A, B, C...)
+const obtenerDescripcion = (lista: any[], valor: string) =>
+  lista.find((item) => item.value === valor)?.label || "Sin descripción";
+
+
 
   return (
     <Box sx={{ p: 1}}>
@@ -582,75 +692,105 @@ const handleCancelarConfirmado = () => {
                     <TableCell>{p.areaComun}</TableCell>
                     <TableCell>{p.material}</TableCell>
                     <TableCell>{p.estadoConserv}</TableCell>
-                    <TableCell align="center"
-                      sx={{
-                        verticalAlign: "middle",
-                        padding: 0,
-                      }}><Box
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: 22,
-                          height: 22,
-                          borderRadius: "50%",
-                          bgcolor: getColorByLetra(p.muros), // azul SAT
-                          color: "#fff",
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          mx: "auto",
-                        }}
+                    <TableCell align="center" sx={{ verticalAlign: "middle", padding: 0 }}>
+                      <Tooltip
+                        title={
+                          <Typography sx={{ fontSize: "0.85rem", textAlign: "center" }}>
+                            {obtenerDescripcion(ListaMuros, p.muros)}
+                          </Typography>
+                        }
+                        arrow
+                        placement="top"
                       >
-                        {p.muros}
-                      </Box></TableCell>
-                                        <TableCell align="center"
-                      sx={{
-                        verticalAlign: "middle",
-                        padding: 0,
-                      }}><Box
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: 22,
-                          height: 22,
-                          borderRadius: "50%",
-                          bgcolor: getColorByLetra(p.techos), // verde SAT
-                          color: "#fff",
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          mx: "auto",
-                        }}
-                      >
-                        {p.techos}
-                      </Box></TableCell>
-                                        <TableCell align="center"
-                      sx={{
-                        verticalAlign: "middle",
-                        padding: 0,
-                      }}><Box
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          width: 22,
-                          height: 22,
-                          borderRadius: "50%",
-                          bgcolor: getColorByLetra(p.puertasVentanas), // morado SAT
-                          color: "#fff",
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          mx: "auto",
-                        }}
-                      >
-                        {p.puertasVentanas}
-                      </Box>
+                        <Box
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 26,
+                            height: 26,
+                            borderRadius: "50%",
+                            bgcolor: getColorByLetra(p.muros),
+                            color: "#fff",
+                            fontSize: "0.8rem",
+                            fontWeight: 600,
+                            mx: "auto",
+                            cursor: "help",
+                          }}
+                        >
+                          {p.muros}
+                        </Box>
+                      </Tooltip>
                     </TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.valorUnitario}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.incremento}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.depreciacion}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.valorDepreciado}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{p.valorFinal}</TableCell>
+                    
+
+                    <TableCell align="center" sx={{ verticalAlign: "middle", padding: 0 }}>
+                      <Tooltip
+                        title={
+                          <Typography sx={{ fontSize: "0.85rem", textAlign: "center" }}>
+                            {obtenerDescripcion(ListaTechos, p.techos)}
+                          </Typography>
+                        }
+                        arrow
+                        placement="top"
+                      >
+                        <Box
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 26,
+                            height: 26,
+                            borderRadius: "50%",
+                            bgcolor: getColorByLetra(p.techos),
+                            color: "#fff",
+                            fontSize: "0.8rem",
+                            fontWeight: 600,
+                            mx: "auto",
+                            cursor: "help",
+                          }}
+                        >
+                          {p.techos}
+                        </Box>
+                      </Tooltip>
+                    </TableCell>
+                    
+                    <TableCell align="center" sx={{ verticalAlign: "middle", padding: 0 }}>
+                      <Tooltip
+                        title={
+                          <Typography sx={{ fontSize: "0.85rem", textAlign: "center" }}>
+                            {obtenerDescripcion(ListaPuertasVentanas, p.puertasVentanas)}
+                          </Typography>
+                        }
+                        arrow
+                        placement="top"
+                      >
+                        <Box
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            width: 26,
+                            height: 26,
+                            borderRadius: "50%",
+                            bgcolor: getColorByLetra(p.puertasVentanas),
+                            color: "#fff",
+                            fontSize: "0.8rem",
+                            fontWeight: 600,
+                            mx: "auto",
+                            cursor: "help",
+                          }}
+                        >
+                          {p.puertasVentanas}
+                        </Box>
+                      </Tooltip>
+                    </TableCell>
+                    
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(p.valorUnitario).toFixed(2)}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(p.incremento).toFixed(2)}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(p.depreciacion).toFixed(2)}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(p.valorDepreciado).toFixed(2)}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(p.valorFinal).toFixed(2)}</TableCell>
                     <TableCell align="center"
                       sx={{
                         p: 0.3,
@@ -660,7 +800,13 @@ const handleCancelarConfirmado = () => {
                         <Button
                           color="error"
                           size="small"
-                          onClick={() => setPisos(pisos.filter((_, idx) => idx !== i))}
+                          onClick={() => {
+                            const nuevosPisos = pisos.filter((_, idx) => idx !== i);
+                            setPisos(nuevosPisos);
+
+                            // 🔹 Avisar al componente padre (RegistrarDJ)
+                            props.onActualizarConstruccion?.(nuevosPisos, obras);
+                          }}
                           sx={{
                             minWidth: "auto",
                             p: 0.3,
@@ -1051,12 +1197,12 @@ const handleCancelarConfirmado = () => {
                     <TableCell>{o.unidadMedida}</TableCell>
                     <TableCell>{o.metrado}</TableCell>
                     <TableCell>{o.mesAnio}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{o.valorObra}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{o.incremento}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{o.depreciacion}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{o.valorObraDepreciada}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{o.factorOfic}</TableCell>
-                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{o.valorTotalObras}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(o.valorObra).toFixed(2)}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(o.incremento).toFixed(2)}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(o.depreciacion).toFixed(2)}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(o.valorObraDepreciada).toFixed(2)}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(o.factorOfic).toFixed(2)}</TableCell>
+                    <TableCell sx={{ bgcolor: "#f7f7f7" }}>{Number(o.valorTotalObras).toFixed(2)}</TableCell>
                     <TableCell align="center"
                       sx={{
                         p: 0.3,
@@ -1066,7 +1212,13 @@ const handleCancelarConfirmado = () => {
                         <Button
                           color="error"
                           size="small"
-                          onClick={() => setObras(obras.filter((_, idx) => idx !== i))}
+                          onClick={() => {
+                            const nuevasObras = obras.filter((_, idx) => idx !== i);
+                            setObras(nuevasObras);
+
+                            // 🔹 Notificar al padre (RegistrarDJ)
+                            props.onActualizarConstruccion?.(pisos, nuevasObras);
+                          }}
                           sx={{
                             minWidth: "auto",
                             p: 0.3,
