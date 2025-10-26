@@ -357,9 +357,6 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
           mt: '64px',
           p: 4,
           bgcolor: '#f5f7fa',
-          transform: { lg: 'scale(0.85)', xl: 'scale(0.85)' },   // 🔹 reduce a 85 %
-          transformOrigin: 'top left',                            // mantiene alineado al borde
-          width: { lg: '118%', xl: '118%' },   
         }}
       >
         {/* Welcome Section */}

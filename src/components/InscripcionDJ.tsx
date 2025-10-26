@@ -333,9 +333,6 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
             textAlign: "center",
             overflowX: "hidden",
             pb: 12,
-            transform: { lg: 'scale(0.85)', xl: 'scale(0.85)' },
-            transformOrigin: 'top left',
-            width: { lg: '118%', xl: '118%' }, // compensa espacio lateral 
           }}
       >
         <Typography variant="h6" sx={{ fontWeight: "bold", color: "#003366", mb: 3 }}>
