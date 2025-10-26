@@ -54,8 +54,9 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ title, description, icon, onC
     <Card 
       onClick={onClick}
       sx={{
-        width: 380,                 // 🔹 ancho fijo (ajustable)
-        height: 120,                // 🔹 altura uniforme
+        width: { xs: 320, md: 340, lg: 310 },
+        //width: 380,                 // 🔹 ancho fijo (ajustable)
+        height: 110,                // 🔹 altura uniforme
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
@@ -201,13 +202,14 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
               fontSize: '1.5rem',
               mr: 3
             }}
+            translate="no"
           >
             SAT
           </Typography>
           
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <ScheduleIcon sx={{ fontSize: '1.2rem' }} />
-            <Typography variant="body2" sx={{ fontSize: '0.875rem', textTransform: "capitalize"  }}>
+            <Typography variant="body2" sx={{ fontSize: '0.875rem', textTransform: "capitalize"  }} translate="no">
              {formattedDateTime}
             </Typography>
           </Box>
