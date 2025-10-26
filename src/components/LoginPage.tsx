@@ -125,7 +125,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
         {/* Logo y texto SAT */}
         <Box sx={{ mb: 6 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold', fontSize: { xs: '2rem', md: '2.3rem', lg: '2.5rem' } }}>
+            <Typography variant="h4" sx={{ fontWeight: 'bold', fontSize: { xs: '2rem', md: '2.3rem', lg: '2.5rem' } }} translate="no">
               SAT
             </Typography>
           </Box>
