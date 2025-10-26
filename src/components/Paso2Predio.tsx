@@ -813,23 +813,23 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
 
   {/* === Fila 1: Distribución 50%-50% === */}
  
- 
-  <Box
+  {/* === Nueva distribución visual === */}
+<Box
   sx={{
     display: "grid",
-    gridTemplateColumns: {
-      xs: "1fr",
-      md: "2fr 1fr 1fr 1fr", // 👈 Tipo de Transferencia ocupa ~45%
-    },
-    columnGap: 2,
-    alignItems: "start",
+    gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+    gap: 3,
+    alignItems: "stretch",
   }}
 >
-  {/* 1️⃣ Tipo de Transferencia */}
-  <Box
+  {/* 🔹 Bloque 1: Tipo de transferencia (izquierda, ancho grande) */}
+  <Paper
+    variant="outlined"
     sx={{
-      width: "100%",
-      overflow: "visible", // ✅ permite que el label se vea completo
+      p: 2,
+      borderRadius: 2,
+      bgcolor: "#f9f9f9",
+      border: "1px solid #e0e0e0",
       display: "flex",
       flexDirection: "column",
       justifyContent: "flex-start",
@@ -841,10 +841,22 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       errorArchivoAdquisicion={errorArchivoAdquisicion}
       setErrorArchivoAdquisicion={setErrorArchivoAdquisicion}
     />
-  </Box>
+  </Paper>
 
-  {/* 2️⃣ Condición de la Propiedad */}
-  <Box sx={{ width: "100%" }}>
+  {/* 🔹 Bloque 2: Condición de Propiedad (derecha) */}
+  <Paper
+    variant="outlined"
+    sx={{
+      p: 2,
+      borderRadius: 2,
+      bgcolor: "#f4f6f8",
+      border: "1px solid #e0e0e0",
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+      gap: 2,
+    }}
+  >
+    {/* Condición de la Propiedad */}
     <TextField
       select
       fullWidth
@@ -865,10 +877,8 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       <MenuItem value="Concesionario">Concesionario</MenuItem>
       <MenuItem value="Responsable">Responsable</MenuItem>
     </TextField>
-  </Box>
 
-  {/* 3️⃣ % de Propiedad */}
-  <Box sx={{ width: "100%" }}>
+    {/* % de Propiedad */}
     <TextField
       label={
         <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -884,10 +894,8 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       fullWidth
       InputProps={{ sx: { fontSize: "0.85rem" } }}
     />
-  </Box>
 
-  {/* 4️⃣ Fecha de Adquisición */}
-  <Box sx={{ width: "100%" }}>
+    {/* Fecha de Adquisición */}
     <TextField
       label={
         <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -904,9 +912,9 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       fullWidth
       InputProps={{ sx: { fontSize: "0.85rem" } }}
     />
-  </Box>
+  </Paper>
 </Box>
-
+  
 
   {/* === Fila 2: Valor de adquisición + Condición especial === */}
   <Box
