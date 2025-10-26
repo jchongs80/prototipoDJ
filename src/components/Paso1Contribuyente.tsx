@@ -188,10 +188,20 @@ const handleAutoCompleteChange = (name: string, value: any) => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
         <AccountCircleOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
         <Box>
-          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: { xs: "0.75rem", md: "0.8rem" } }}>
+          <Typography variant="subtitle2" sx={{
+    color: "text.secondary",
+    fontSize: { xs: "0.8rem", md: "0.85rem" },
+    lineHeight: 1.1, // 🔹 más compacto
+    mb: 0.2,         // 🔹 separa solo un poquito del valor
+  }}>
             Apellidos y Nombres
           </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222", fontSize: { xs: "0.85rem", md: "0.9rem" } }}
+          <Typography variant="body2" sx={{
+    fontWeight: 600,
+    color: "#222",
+    fontSize: { xs: "0.85rem", md: "0.9rem" },
+    lineHeight: 1.2, // 🔹 más ajustado
+  }}
           >
             {formData.apellidosNombres}
           </Typography>
@@ -202,10 +212,20 @@ const handleAutoCompleteChange = (name: string, value: any) => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
         <DescriptionOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
         <Box>
-          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: { xs: "0.75rem", md: "0.8rem" } }}>
+          <Typography variant="subtitle2" sx={{
+    color: "text.secondary",
+    fontSize: { xs: "0.8rem", md: "0.85rem" },
+    lineHeight: 1.1, // 🔹 más compacto
+    mb: 0.2,         // 🔹 separa solo un poquito del valor
+  }}>
             Tipo de Documento
           </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222", fontSize: { xs: "0.85rem", md: "0.9rem" } }}>
+          <Typography variant="body2" sx={{
+    fontWeight: 600,
+    color: "#222",
+    fontSize: { xs: "0.85rem", md: "0.9rem" },
+    lineHeight: 1.2, // 🔹 más ajustado
+  }}>
             {formData.tipoDocumento}
           </Typography>
         </Box>
@@ -215,10 +235,20 @@ const handleAutoCompleteChange = (name: string, value: any) => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
         <DescriptionOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
         <Box>
-          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: { xs: "0.75rem", md: "0.8rem" } }}>
+          <Typography variant="subtitle2" sx={{
+    color: "text.secondary",
+    fontSize: { xs: "0.8rem", md: "0.85rem" },
+    lineHeight: 1.1, // 🔹 más compacto
+    mb: 0.2,         // 🔹 separa solo un poquito del valor
+  }}>
             N° Documento
           </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222", fontSize: { xs: "0.85rem", md: "0.9rem" } }}>
+          <Typography variant="body2" sx={{
+    fontWeight: 600,
+    color: "#222",
+    fontSize: { xs: "0.85rem", md: "0.9rem" },
+    lineHeight: 1.2, // 🔹 más ajustado
+  }}>
             {formData.nroDocumento}
           </Typography>
         </Box>
@@ -240,10 +270,20 @@ const handleAutoCompleteChange = (name: string, value: any) => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
         <TodayOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
         <Box>
-          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: { xs: "0.75rem", md: "0.8rem" } }}>
+          <Typography variant="subtitle2" sx={{
+    color: "text.secondary",
+    fontSize: { xs: "0.8rem", md: "0.85rem" },
+    lineHeight: 1.1, // 🔹 más compacto
+    mb: 0.2,         // 🔹 separa solo un poquito del valor
+  }}>
             Fecha de Nacimiento
           </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222", fontSize: { xs: "0.85rem", md: "0.9rem" } }}>
+          <Typography variant="body2" sx={{
+    fontWeight: 600,
+    color: "#222",
+    fontSize: { xs: "0.85rem", md: "0.9rem" },
+    lineHeight: 1.2, // 🔹 más ajustado
+  }}>
             {formData.fechaNacimiento}
           </Typography>
         </Box>
@@ -253,10 +293,20 @@ const handleAutoCompleteChange = (name: string, value: any) => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
         <PhoneIphoneOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
         <Box>
-          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: { xs: "0.75rem", md: "0.8rem" } }}>
+          <Typography variant="subtitle2" sx={{
+    color: "text.secondary",
+    fontSize: { xs: "0.8rem", md: "0.85rem" },
+    lineHeight: 1.1, // 🔹 más compacto
+    mb: 0.2,         // 🔹 separa solo un poquito del valor
+  }}>
             Celular
           </Typography>
-          <Typography variant="body2" sx={{ fontWeight: 600, color: "#222", fontSize: { xs: "0.85rem", md: "0.9rem" } }}>
+          <Typography variant="body2" sx={{
+    fontWeight: 600,
+    color: "#222",
+    fontSize: { xs: "0.85rem", md: "0.9rem" },
+    lineHeight: 1.2, // 🔹 más ajustado
+  }}>
             {formData.celular}
           </Typography>
         </Box>
@@ -266,10 +316,15 @@ const handleAutoCompleteChange = (name: string, value: any) => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
         <EmailOutlined sx={{ color: "#0056b3", fontSize: 18 }} />
         <Box>
-          <Typography variant="subtitle2" sx={{ color: "text.secondary", fontSize: { xs: "0.75rem", md: "0.8rem" } }}>
+          <Typography variant="subtitle2" sx={{
+    color: "text.secondary",
+    fontSize: { xs: "0.8rem", md: "0.85rem" },
+    lineHeight: 1.1, // 🔹 más compacto
+    mb: 0.2,         // 🔹 separa solo un poquito del valor
+  }}>
             Correo Electrónico
           </Typography>
-          <Typography variant="body2" sx={{ fontSize: { xs: "0.85rem", md: "0.9rem" }, fontWeight: 600, color: "#222", wordBreak: "break-word" }}>
+          <Typography variant="body2" sx={{ fontSize: { xs: "0.85rem", md: "0.9rem" }, fontWeight: 600, color: "#222", wordBreak: "break-word", lineHeight: 1.2,  }}>
             {formData.correo}
           </Typography>
         </Box>

@@ -62,23 +62,25 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({ formData, handleChange }) =
       {/* 🔹 CONTENEDOR PRINCIPAL FLEXIBLE */}
 <Box
   sx={{
-    display: "flex",
-    flexWrap: "wrap",
+   display: "flex",
+    flexDirection: { xs: "column", md: "row" }, // 🔹 en tablet se apilan, en laptop se alinean
     justifyContent: "space-between",
     alignItems: "flex-start",
     gap: 2,
+    flexWrap: "nowrap", // 🔹 evita que la caja derecha se baje
+    width: "100%",
   }}
 >
   {/* IZQUIERDA */}
-  <Box
-    sx={{
-      flex: { xs: "1 1 100%", xl: "1 1 68%" },
-  minWidth: { xs: "100%", md: "540px", lg: "620px" }, // 👈 en laptop no se rompe
-    display: "flex",
-    flexDirection: "column",
-    gap: 3,
-    }}
-  >
+    <Box
+        sx={{
+        flex: { xs: "1 1 100%", md: "1 1 68%" },
+        minWidth: 0, // 🔹 evita overflow horizontal
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        }}
+        >
           {/* Terreno Matriz */}
           <Box
             sx={{
@@ -265,17 +267,16 @@ const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({ formData, handleChange }) =
        {/* DERECHA */}
   <Box
     sx={{
-      flex: { xs: "1 1 100%", xl: "1 1 30%" },
-      minWidth: "360px",
-      maxWidth: "420px",
-      border: "1px solid #c5d9f5",
-      borderLeft: "6px solid #1a73e8",
-      borderRadius: 2,
-      bgcolor: "#f9fafc",
-      px: { xs: 2, md: 3 },
+      flex: { xs: "1 1 100%", md: "1 1 32%" }, // 🔹 ocupa el resto del espacio
+    minWidth: { xs: "100%", md: "300px" },   // 🔹 tamaño mínimo para estabilidad
+    maxWidth: { md: "360px", lg: "380px" },
+    border: "1px solid #c5d9f5",
+    borderLeft: "6px solid #1a73e8",
+    borderRadius: 2,
+    bgcolor: "#f9fafc",
+    px: { xs: 2, md: 3 },
     py: { xs: 2, md: 3 },
-      boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-      transition: "all 0.3s ease",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
     }}
   >
     <Typography
