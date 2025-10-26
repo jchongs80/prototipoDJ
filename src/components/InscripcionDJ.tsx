@@ -69,8 +69,8 @@ const InfoButton: React.FC<InfoButtonProps> = ({ title, color, items }) => {
           backgroundColor: color,
           color: "white",
           borderRadius: "10px",
-          px: 3,
-          py: 2.5,
+          px: { xs: 2, md: 3 },
+          py: { xs: 2, md: 2.5 },
           height: "100%",
           display: "flex",
           alignItems: "center",
@@ -82,7 +82,16 @@ const InfoButton: React.FC<InfoButtonProps> = ({ title, color, items }) => {
           "&:hover": { transform: "scale(1.04)" },
         }}
       >
-        <Typography variant="h6" sx={{ fontSize: "1rem", whiteSpace: "nowrap" }}>
+        <Typography
+          variant="h6"
+          sx={{
+            fontSize: { xs: "0.9rem", md: "1rem" },
+            mx: 1, // 🔹 margen interno horizontal
+            lineHeight: 1.3,
+            textAlign: "center",
+            whiteSpace: "normal", // 🔹 permite saltos de línea si es necesario
+          }}
+        >
           {title}
         </Typography>
       </Box>
@@ -281,21 +290,31 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
       <Box
         component="main"
         sx={{
-          flexGrow: 1,
-          ml: `${drawerWidth}px`,
-          mt: "64px",
-          p: 4,
-          textAlign: "center",
-          overflowX: "hidden",
-          pb: 10,
-        }}
+            flexGrow: 1,
+            ml: { xs: `${drawerWidth}px`, sm: `${drawerWidth}px` },
+            mt: "64px",
+            px: { xs: 2, md: 4 },
+            py: { xs: 3, md: 4 },
+            textAlign: "center",
+            overflowX: "hidden",
+            pb: 12,
+          }}
       >
         <Typography variant="h6" sx={{ fontWeight: "bold", color: "#003366", mb: 3 }}>
           Antes de iniciar el registro de tu Declaración Jurada de Impuesto Predial, ten en cuenta lo siguiente:
         </Typography>
 
         {/* ==== BOTONES ==== */}
-        <Box sx={{ position: "relative", display: "flex", justifyContent: "center", gap: 3, mb: 6, flexWrap: "wrap" }}>
+        <Box
+            sx={{
+              position: "relative",
+              display: "flex",
+              justifyContent: "center",
+              gap: { xs: 2, md: 3 },
+              mb: { xs: 4, md: 6 },
+              flexWrap: "wrap",
+            }}
+          >
           <InfoButton
             title="¿Qué puedes declarar?"
             color="#1e88e5"
@@ -338,7 +357,7 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
             sx={{
               width: "85%",
               bgcolor: "white",
-              p: 3,
+              p: 2,
               borderRadius: 2,
               boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
               mx: "auto",
@@ -370,6 +389,30 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
           </Box>
         </Fade>
 
+
+        {/* ==== BOTÓN INICIAR PROCESO DE DECLARACIÓN ==== */}
+       {/* <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+          <Button
+            variant="contained"
+            sx={{
+              bgcolor: "#1e5ba8",
+              textTransform: "none",
+              px: { xs: 2, md: 3 },
+              py: { xs: 1, md: 1.5 },
+              fontSize: { xs: "0.9rem", md: "1rem" },
+              fontWeight: 500,
+              borderRadius: 1.5,
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+              "&:hover": {
+                bgcolor: "#164a87",
+              },
+            }}
+            onClick={handleOpen}
+          >
+            Iniciar Proceso de Declaración Jurada
+          </Button>
+        </Box>*/}
+
         {/* ==== TABLA RECIENTES ==== */}
         <Fade in timeout={900}>
           <Box
@@ -378,7 +421,7 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
               bgcolor: "white",
               mt: 4,
               mb: 3,
-              p: 3,
+              p: 2,
               borderRadius: 2,
               boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
               mx: "auto",

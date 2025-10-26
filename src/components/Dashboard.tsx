@@ -114,6 +114,9 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "lg")); // 600–1200 px
+  const isDesktop = useMediaQuery(theme.breakpoints.up("lg")); // >=1200 px
+
   const nuevosPredios = location.state?.nuevosPredios || 0;
 
   // 🕒 Estado para fecha y hora
@@ -364,7 +367,7 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
               mb: 1
             }}
           >
-            Hola VICTOR, <Typography 
+            Hola Víctor, <Typography 
               component="span" 
               variant="h4"
               sx={{ fontWeight: 400 }}
@@ -375,46 +378,147 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
         </Box>
 
         {/* Quick Actions */}
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-            <Card sx={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  bgcolor: '#e8f4fd',
-                  border: '1px solid #b3d9f2',
-                  p: 2,
-                  flexWrap: 'wrap',
-                  mb: 3,
-                }}>
-              <CardContent sx={{ py: 1.5, px: 3 }}>
-                <Typography variant="body2" sx={{ color: '#666', fontSize: '0.875rem' }}>
-                  Conoce qué trámites puedes realizar aquí
-                </Typography>
-              </CardContent>
+        
+        <Box
+  sx={{
+    mb: 4,
+    display: "flex",
+    flexDirection: { xs: "column", md: "row" }, // apila en tablet/móvil
+    gap: 2,
+    flexWrap: "wrap",
+  }}
+>
+  {/* MESA DE PARTES VIRTUAL */}
+  <Box
+    sx={{
+      flex: 1,
+      minWidth: { xs: "100%", md: "48%" },
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      bgcolor: "#e8f4fd",
+      border: "1px solid #b3d9f2",
+      borderRadius: 1.5,
+      p: { xs: 2, md: 3 },
+      flexWrap: "wrap",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+    }}
+  >
+    <Box sx={{ flex: 1, pr: 2 }}>
+      <Typography
+        sx={{
+          color: "#1e5ba8",
+          fontWeight: 600,
+          fontSize: { xs: "1rem", md: "1.1rem" },
+        }}
+      >
+        Accede a la Mesa de Partes Virtual
+      </Typography>
+      <Typography
+        sx={{
+          color: "#555",
+          fontSize: { xs: "0.85rem", md: "0.9rem" },
+          mt: 0.5,
+        }}
+      >
+        Conoce qué trámites puedes realizar aquí
+      </Typography>
+    </Box>
 
-              <Button 
-              variant="contained"
-              sx={{ 
-                bgcolor: '#1e5ba8',
-                textTransform: 'none',
-                px: 3,
-                py: 1.5,
-                alignSelf: 'center',
-                '&:hover': {
-                  bgcolor: '#164a87'
-                }
-              }}
-            >
-              Ingresar a Mesa de Partes Virtual
-            </Button>
+    <Button
+      variant="contained"
+      sx={{
+        bgcolor: "#1e5ba8",
+        textTransform: "none",
+        px: { xs: 2, md: 3 },
+        py: { xs: 1, md: 1.5 },
+        fontSize: "0.9rem",
+        borderRadius: 1,
+        fontWeight: 500,
+        "&:hover": {
+          bgcolor: "#164a87",
+        },
+      }}
+    >
+      Ingresar a Mesa de Partes Virtual
+    </Button>
+  </Box>
 
+  {/* CASILLA ELECTRÓNICA MTC */}
+<Box
+  sx={{
+    flex: 1,
+    minWidth: { xs: "100%", md: "48%" },
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    bgcolor: "#e8f4fd",
+    border: "1px solid #b3d9f2",
+    borderRadius: 1.5,
+    p: { xs: 2, md: 3 },
+    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+  }}
+>
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      flexWrap: "wrap",
+    }}
+  >
+    <Typography
+      sx={{
+        color: "#1e5ba8",
+        fontWeight: 600,
+        fontSize: { xs: "1rem", md: "1.1rem" },
+        mb: { xs: 1, md: 0 },
+      }}
+    >
+      Consulta tus notificaciones y resoluciones
+    </Typography>
 
-            </Card>
-            
-            
-          </Box>
-          </Box>
+    {/* 🔹 Botón claro/blanco */}
+    <Button
+      variant="outlined"
+      sx={{
+        textTransform: "none",
+        borderColor: "#b3d9f2",
+        color: "#1e5ba8",
+        backgroundColor: "#ffffff",
+        px: { xs: 2, md: 3 },
+        py: { xs: 1, md: 1.5 },
+        fontSize: "0.9rem",
+        fontWeight: 500,
+        borderRadius: 1,
+        boxShadow: "0 2px 4px rgba(0,0,0,0.04)",
+        "&:hover": {
+          backgroundColor: "#e6f0fb", // azul clarito al pasar el mouse
+          borderColor: "#91c3f2",
+        },
+      }}
+    >
+      Ingresar a Casilla electrónica MTC
+    </Button>
+  </Box>
+
+  <Box sx={{ mt: 1.5 }}>
+    <Link
+      href="#"
+      sx={{
+        color: "#1e5ba8",
+        fontSize: "0.875rem",
+        display: "flex",
+        alignItems: "center",
+        gap: 0.5,
+        "&:hover": { textDecoration: "underline" },
+      }}
+    >
+      <HelpOutlineIcon sx={{ fontSize: "1rem" }} />
+      ¿Qué es una casilla electrónica?
+    </Link>
+  </Box>
+</Box></Box>
           
           {/* Quick Actions */}
           {/*
