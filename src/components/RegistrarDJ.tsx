@@ -156,8 +156,8 @@ useEffect(() => {
   
 
   const sidebarItems = [
-    { icon: <HomeIcon />, label: 'Inicio', active: true },
-    { icon: <AssignmentIcon />, label: 'Trámites', active: false },
+    { icon: <HomeIcon />, label: 'Inicio', active: false },
+    { icon: <AssignmentIcon />, label: 'Trámites', active: true },
     { icon: <DescriptionIcon />, label: 'Consultas', active: false },
     { icon: <AccountCircleIcon />, label: 'Mi Perfil', active: false },
     { icon: <HelpOutlineIcon />, label: 'Ayuda', active: false },
@@ -988,14 +988,22 @@ useEffect(() => {
 
 
 
-
+const isLaptop2 = useMediaQuery("(min-width:1200px)");
 
 
 
 
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f5f7fa' }}>
+    <Box 
+      sx={{
+   display: 'flex',
+    minHeight: '100vh',
+    bgcolor: '#f5f7fa',
+    overflowX: 'hidden', // evita scroll horizontal
+
+    }}
+    >
       {/* ======= APPBAR ======= */}
       <AppBar
         position="fixed"
@@ -1006,7 +1014,7 @@ useEffect(() => {
         }}
       >
         <Toolbar sx={{ minHeight: '64px!important' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.5rem', mr: 3 }}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold', fontSize: '1.5rem', mr: 3 }} translate="no">
             SAT
           </Typography>
 
@@ -1015,6 +1023,7 @@ useEffect(() => {
   <Typography
     variant="body2"
     sx={{ fontSize: "0.875rem", textTransform: "capitalize" }}
+    translate="no"
   >
     {formattedDateTime}
   </Typography>
@@ -1124,23 +1133,21 @@ useEffect(() => {
           <Box
  component="main"
   sx={{
-    display: 'flex',
+       display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'stretch',
     bgcolor: '#f5f7fa',
-   // ml: `${drawerWidth - 2}px`, // 🔹 más pegado al sidebar
-    mt: '64px',
+    mt: '64px', // mantiene alineación con AppBar y Drawer
     flexGrow: 1,
     flexWrap: 'nowrap',
-    height: 'calc(100vh - 96px)', // 🔹 altura ajustada sin pasar el footer
+    height: 'calc(100vh - 96px)',
     overflow: 'auto',
     transition: 'all 0.4s ease',
-    pl: 0, // sin padding izquierdo
+    pl: 0,
     pr: showChat ? 0 : 2,
     pt: 0,
     pb: 0,
-    //pr: showChat ? 0 : 4,
   }}
 >
   {/* ========== WIZARD PRINCIPAL ========== */}

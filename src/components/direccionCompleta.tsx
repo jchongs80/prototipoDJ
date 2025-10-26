@@ -265,7 +265,9 @@ const DireccionCompleta: React.FC<DireccionCompletaProps> = ({
               variant="caption"
               sx={{ color: "#2e7d32", fontWeight: 500 }}
             >
-              ✅ Archivo válido — Autenticado con inteligencia artificial
+              ✅ Archivo válido — <span style={{ color: "#555", fontStyle: "italic", marginLeft: 4 }}>
+              (Autenticado con inteligencia artificial)
+            </span>
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
   {formData.urlRecibo && (

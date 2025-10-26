@@ -268,7 +268,7 @@ const simulateAIValidation = (file: File, tipo: "Condicion" | "Recibo") => {
             variant="caption"
             sx={{ color: "#2e7d32", fontWeight: 500, display: "flex", alignItems: "center" }}
           >
-            ✅ Archivo válido — N° Folios: 2{" "}
+            ✅ Archivo válido - {" "}
             <span style={{ color: "#555", fontStyle: "italic", marginLeft: 4 }}>
               (Autenticado con inteligencia artificial)
             </span>
