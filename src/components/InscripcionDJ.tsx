@@ -6,7 +6,6 @@ import {
   AppBar,
   Toolbar,
   Typography,
-  IconButton,
   Drawer,
   List,
   ListItem,
@@ -24,7 +23,7 @@ import {
   Button,
   Fade,
   useTheme,
-  useMediaQuery,
+  Snackbar,
 } from "@mui/material";
 import {
   Home as HomeIcon,
@@ -49,6 +48,12 @@ interface InfoButtonProps {
   color: string;
   items: string[];
 }
+
+
+
+
+
+
 
 const InfoButton: React.FC<InfoButtonProps> = ({ title, color, items }) => {
   const [open, setOpen] = useState(false);
@@ -197,6 +202,31 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
           anio: "2025",
         }))
       : [];
+
+
+
+        const [snackbar, setSnackbar] = useState({
+  open: false,
+  message: "",
+  type: "success" as "success" | "info",
+});
+
+const handleDescargarPDF = (codigo: string) => {
+    setSnackbar({
+      open: true,
+      message: `📄 Descargando DJ ${codigo}...`,
+      type: "info",
+    });
+    const fileURL = `${process.env.PUBLIC_URL}/PU.pdf`;
+    const link = document.createElement("a");
+    link.href = fileURL;
+    link.setAttribute("download", `DJ_${codigo}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f7fa" }}>
@@ -495,6 +525,7 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
                             color: "#bf360c",
                             "&:hover": { backgroundColor: "#fff3e0" },
                           }}
+                          onClick={() => handleDescargarPDF("10001")}
                         >
                           Descargar DJ
                         </Button>
