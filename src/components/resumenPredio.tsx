@@ -71,9 +71,9 @@ const ResumenPredios: React.FC = () => {
   });
 
   const sidebarItems = [
-    { icon: <HomeIcon />, label: "Inicio", active: true },
+    { icon: <HomeIcon />, label: "Inicio", active: false },
     { icon: <AssignmentIcon />, label: "Trámites", active: false },
-    { icon: <DescriptionIcon />, label: "Consultas", active: false },
+    { icon: <DescriptionIcon />, label: "Consultas", active: true },
     { icon: <AccountCircleIcon />, label: "Mi Perfil", active: false },
     { icon: <HelpOutlineIcon />, label: "Ayuda", active: false },
   ];
@@ -101,10 +101,40 @@ const ResumenPredios: React.FC = () => {
       message: `📄 Descargando DJ ${codigo}...`,
       type: "info",
     });
-    const fileURL = `${process.env.PUBLIC_URL}/DJ_${codigo}.pdf`;
+    const fileURL = `${process.env.PUBLIC_URL}/PU.pdf`;
     const link = document.createElement("a");
     link.href = fileURL;
     link.setAttribute("download", `DJ_${codigo}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDescargarLiqPredial = (codigo: string) => {
+    setSnackbar({
+      open: true,
+      message: `📄 Descargando LP ${codigo}...`,
+      type: "info",
+    });
+    const fileURL = `${process.env.PUBLIC_URL}/LiquidacionPredial.pdf`;
+    const link = document.createElement("a");
+    link.href = fileURL;
+    link.setAttribute("download", `LP_${codigo}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDescargarLiqArb = (codigo: string) => {
+    setSnackbar({
+      open: true,
+      message: `📄 Descargando LP ${codigo}...`,
+      type: "info",
+    });
+    const fileURL = `${process.env.PUBLIC_URL}/LiquidacionArbitrios2025.pdf`;
+    const link = document.createElement("a");
+    link.href = fileURL;
+    link.setAttribute("download", `LA_${codigo}.pdf`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -229,14 +259,14 @@ const ResumenPredios: React.FC = () => {
             <Box
               sx={{
                 textAlign: "center",
-                mb: 4,
-                py: 3,
+                mb: 2,
+                py: 1,
                 borderRadius: 2,
                 backgroundColor: "#e6f4ea",
                 boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
               }}
             >
-              <CheckCircleOutlineIcon sx={{ color: "#2e7d32", fontSize: 50 }} />
+              <CheckCircleOutlineIcon sx={{ color: "#2e7d32", fontSize: 40 }} />
               <Typography variant="h5" sx={{ fontWeight: 700, color: "#2e7d32", mt: 1 }}>
                 Declaración Jurada registrada con éxito
               </Typography>
@@ -439,15 +469,9 @@ const ResumenPredios: React.FC = () => {
                 color="success"
                 startIcon={<PictureAsPdfIcon />}
                 sx={{ textTransform: "none", fontWeight: 600 }}
-                onClick={() =>
-                  setSnackbar({
-                    open: true,
-                    message: "📄 Liquidación descargada correctamente.",
-                    type: "success",
-                  })
-                }
+               onClick={() => handleDescargarLiqPredial("10001")}
               >
-                Descargar Liquidación Predial
+                Liquidación Predial
               </Button>
             </Box>
           </Paper>
@@ -603,14 +627,14 @@ const ResumenPredios: React.FC = () => {
   >
     <colgroup>
       <col style={{ width: "8%" }} />
-      <col style={{ width: "22%" }} />
+      <col style={{ width: "17%" }} />
       <col style={{ width: "10%" }} />
       <col style={{ width: "9%" }} />
       <col style={{ width: "11%" }} />
       <col style={{ width: "11%" }} />
       <col style={{ width: "9%" }} />
       <col style={{ width: "10%" }} />
-      <col style={{ width: "10%" }} />
+      <col style={{ width: "15%" }} />
     </colgroup>
 
     <TableHead>
@@ -675,11 +699,9 @@ const ResumenPredios: React.FC = () => {
                   backgroundColor: "#2e7d32",
                   "&:hover": { backgroundColor: "#256528" },
                 }}
-                onClick={() =>
-                  alert(`Descargando arbitrios del predio ${p.codigoDJ}`)
-                }
+                onClick={() => handleDescargarLiqArb("10001")}
               >
-                Liquidación
+                Liquidación Arbitrios
               </Button>
             ) : (
               <Typography variant="body2" color="text.secondary">

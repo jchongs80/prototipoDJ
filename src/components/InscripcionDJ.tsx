@@ -330,9 +330,6 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
     mt: '64px',
     p: 4,
     bgcolor: '#f5f7fa',
-    maxWidth: { lg: '85%', xl: '80%' }, // 🔹 reduce ancho en pantallas grandes
-    mx: 'auto',                        // 🔹 centra el contenido
-    transition: 'all 0.3s ease',
           }}
       >
         <Typography variant="h6" sx={{ fontWeight: "bold", color: "#003366", mb: 3 }}>

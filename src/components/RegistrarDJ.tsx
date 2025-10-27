@@ -1133,21 +1133,23 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
           <Box
  component="main"
   sx={{
-       display: 'flex',
+    display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'stretch',
     bgcolor: '#f5f7fa',
-    mt: '64px', // mantiene alineación con AppBar y Drawer
+   // ml: `${drawerWidth - 2}px`, // 🔹 más pegado al sidebar
+    mt: '64px',
     flexGrow: 1,
     flexWrap: 'nowrap',
-    height: 'calc(100vh - 96px)',
+    height: 'calc(100vh - 96px)', // 🔹 altura ajustada sin pasar el footer
     overflow: 'auto',
     transition: 'all 0.4s ease',
-    pl: 0,
+    pl: 0, // sin padding izquierdo
     pr: showChat ? 0 : 2,
     pt: 0,
     pb: 0,
+    //pr: showChat ? 0 : 4,
   }}
 >
   {/* ========== WIZARD PRINCIPAL ========== */}
@@ -1551,8 +1553,6 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
     <Button
       variant="contained"
       color="primary"
-      size="large"
-      sx={{ px: 4, py: 1.2, fontSize: "1rem" }}
       onClick={handlePresentarDeclaracion}
     >
       Presentar Declaración Jurada
