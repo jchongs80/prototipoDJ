@@ -40,6 +40,9 @@ import {
   ArrowDropDown as ArrowDropDownIcon,
 } from "@mui/icons-material";
 
+import TributitoBubble from "./tributitoBubble";
+
+
 /* ======================
    COMPONENTE INFOBUTTON
 ====================== */
@@ -391,26 +394,29 @@ const handleDescargarPDF = (codigo: string) => {
             title="¿Cuándo puedes registrarla?"
             color="#ffb300"
             items={[
-              "Puedes declarar hasta el último día hábil del mes de febrero del año siguiente a la adquisición del bien. De no hacerlo, incurrirás en infracción y se le sancionará con multa; sin embargo, al estar obligado al pago de los arbitrios del mes siguiente de producida la transferencia, se recomienda presentar su declaración jurada hasta antes del último día hábil del mes siguiente de ejecutada la transferencia.",
-              "Puedes realizar el registro virtual las 24 horas de los 7 días de la semana",
+              "Puedes declarar hasta el último día hábil del mes de febrero, del año siguiente a la adquisición del bien. De no hacerlo, incurrirás en infracción y se te sancionará con multa; sin embargo, al estar obligado al pago de los arbitrios del mes siguiente de producida la transferencia, se recomienda presentar tu declaración jurada, hasta antes del último día hábil del mes siguiente de ejecutada la transferencia.",
+              "Puedes realizar el registro virtual, las 24 horas de los 7 días de la semana",
             ]}
           />
 
-          {/* Tributito */}
           <Box
-            sx={{
-              position: "absolute",
-              right: { xs: "10px", md: "40px" },
-              top: { xs: "120px", md: "20px" },
-              animation: "float 3s ease-in-out infinite",
-              "@keyframes float": {
-                "0%, 100%": { transform: "translateY(0)" },
-                "50%": { transform: "translateY(-10px)" },
-              },
-            }}
-          >
-            <img src={require("../assets/tributito2.png")} alt="Tributito" style={{ height: "200px" }} />
-          </Box>
+  sx={{
+    position: "absolute",
+    right: { xs: 10, md: 40 },
+    top:   { xs: 120, md: 400 },
+    width: 900, minWidth: 900,     // 👈 caja ancha
+    overflow: "visible",
+  }}
+>
+  {/* Imagen a la derecha */}
+  <Box sx={{ position: "absolute", right: 0, bottom: 0, zIndex: 20 }}>
+    <img src={require("../assets/tributito2.png")} alt="Tributito" style={{ height: 200 }} />
+  </Box>
+
+  {/* Bubble a la izquierda dentro de la misma caja */}
+  <TributitoBubble anchorRight={120} anchorBottom={120} maxWidth={220} />
+</Box>
+
         </Box>
 
         {/* ==== TABLAS ==== */}
@@ -426,7 +432,7 @@ const handleDescargarPDF = (codigo: string) => {
             }}
           >
             <Typography variant="h6" sx={{ color: "#1e5ba8", mb: 2, fontWeight: 600 }}>
-              🏠 Predios Declarados en Años Anteriores
+              🏠 Predios que ya tiene declarados
             </Typography>
             <Table>
               <TableHead>
@@ -550,8 +556,7 @@ const handleDescargarPDF = (codigo: string) => {
             mx: "auto",
           }}
         >
-          ℹ️ Recuerda que la confirmación de tu registro se enviará a tu correo registrado en la
-          Agencia Virtual y Casilla Electrónica.
+          ℹ️ La confirmación de su registro se enviará al correo registrado en Agencia Virtual y casilla electrónica SICESAT.
         </Typography>
 
         <Box sx={{ display: "flex", gap: 2, mt: 4, justifyContent: "center" }}>

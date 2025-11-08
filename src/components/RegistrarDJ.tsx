@@ -18,7 +18,14 @@ import {
   Step,
   StepLabel,
   Fade,
-  TextField
+  TextField,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider,
+  Chip,
+  Stack
 } from '@mui/material';
 
 import { Snackbar, Alert } from "@mui/material";
@@ -210,7 +217,7 @@ useEffect(() => {
 
 
 
-  const [showChat, setShowChat] = useState(true);
+  const [showChat, setShowChat] = useState(false);
   const [messages, setMessages] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState("");
 
@@ -992,7 +999,14 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
 
 
 
+const [openConfirm, setOpenConfirm] = useState(false);
 
+const formatoMoneda = (n: number) =>
+  (Number(n) || 0).toLocaleString("es-PE", { style: "currency", currency: "PEN" });
+
+// Totales ya existentes: totalConstruccion, totalObrasComplementarias
+const valorTotalTerrenoNum = Number(2) || 0;
+const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplementarias;
 
   return (
     <Box 
@@ -1508,17 +1522,23 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
 
       
       {/* 🔹 BOTONES */}
-      <Box sx={{
-          position: "sticky",
-          bottom: 0,
-          bgcolor: "#fff",
-          borderTop: "1px solid #ECEFF1",
-          py: 1,
-          px: 2,
-          display: "flex",
-          justifyContent: "space-between",
-          zIndex: 2,
-        }}
+      <Box 
+        sx={{
+            position: "sticky",
+            bottom: 0,
+            bgcolor: "#fff",
+            borderTop: "1px solid #ECEFF1",
+            py: 1,
+            px: 2,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            gap: 2,
+            flexWrap: "nowrap",            // 👈 no permitir salto
+            zIndex: 2,
+            "& > *": { whiteSpace: "nowrap" }, // 👈 que el texto largo no rompa fila
+          }}
     >
   {/* Botón Anterior */}
   <Button
@@ -1526,6 +1546,7 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
     onClick={handleBack}
     variant="outlined"
     color="inherit"
+    sx={{ flexShrink: 0 }}          // 👈 que no se comprima
   >
     Anterior
   </Button>
@@ -1541,6 +1562,7 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
                 '&:hover': {
                   borderColor: '#43a047',
                   bgcolor: 'rgba(76,175,80,0.08)',
+                  flexShrink: 0,               // 👈 que no se comprima
                 },
               }}
             >
@@ -1553,7 +1575,8 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
     <Button
       variant="contained"
       color="primary"
-      onClick={handlePresentarDeclaracion}
+      onClick={() => setOpenConfirm(true)}
+      sx={{ flexShrink: 0 }}          // 👈 que no se comprima
     >
       Presentar Declaración Jurada
     </Button>
@@ -1562,6 +1585,7 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
       variant="contained"
       color="primary"
       onClick={handleNext}
+      sx={{ flexShrink: 0 }}          // 👈 que no se comprima
     >
       Siguiente
     </Button>
@@ -1849,6 +1873,7 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
         mt: 0.5,
       }}
     />
+    
     <Box
       sx={{
         bgcolor: "#fff",
@@ -1949,7 +1974,7 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
         zIndex: 1500,
       }}
     >
-      Ver Chat
+      Preguntar a Tributito
     </Button>
   )}
 </Box>
@@ -1980,11 +2005,145 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
       </Box>
 
 
+
+<Dialog
+  open={openConfirm}
+  onClose={() => setOpenConfirm(false)}
+  fullWidth
+  maxWidth="sm"
+>
+  <DialogTitle sx={{ fontWeight: 700, color: "#1e497d" }}>
+    Validar datos antes de presentar
+  </DialogTitle>
+
+  <DialogContent dividers>
+    <Stack spacing={1.2}>
+      <Chip
+        label="Resumen del Predio"
+        size="small"
+        sx={{ alignSelf: "flex-start", bgcolor: "#e6f0fb", color: "#1e497d", fontWeight: 600 }}
+      />
+
+      {/* Fila: Tipo Persona */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>Tipo de Persona</Typography>
+        <Typography sx={{ fontWeight: 700 }}>{resumenPredio.tipoPersona || formData.tipoPersona}</Typography>
+      </Box>
+      <Divider />
+
+      {/* Dirección */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>Dirección del Predio</Typography>
+        <Typography sx={{ fontWeight: 700, textAlign: "right" }}>
+          {resumenPredio.direccion}
+        </Typography>
+      </Box>
+
+      {/* Uso */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>Uso del Predio</Typography>
+        <Typography sx={{ fontWeight: 700 }}>
+          {resumenPredio.uso || resumenPredio.subClaseUso || ""}
+        </Typography>
+      </Box>
+
+      {/* Condición / % propiedad */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>Condición de Propiedad</Typography>
+        <Typography sx={{ fontWeight: 700 }}>{resumenPredio.condicionPropiedad}</Typography>
+      </Box>
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>% de Propiedad</Typography>
+        <Typography sx={{ fontWeight: 700 }}>
+          {(resumenPredio.porcentajePropiedad ?? 100).toFixed(2)}%
+        </Typography>
+      </Box>
+
+      {/* Área total */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>Área Total (m²)</Typography>
+        <Typography sx={{ fontWeight: 700 }}>
+          {(Number(resumenPredio.areaTotal) || 0).toFixed(2)}
+        </Typography>
+      </Box>
+      <Divider />
+
+      <Chip
+        label="Valores"
+        size="small"
+        sx={{ alignSelf: "flex-start", bgcolor: "#e6f0fb", color: "#1e497d", fontWeight: 600 }}
+      />
+
+      {/* Totales monetarios */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>Total Terreno</Typography>
+        <Typography sx={{ fontWeight: 700 }}>{formatoMoneda(valorTotalTerrenoNum)}</Typography>
+      </Box>
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>Total Construcción</Typography>
+        <Typography sx={{ fontWeight: 700 }}>{formatoMoneda(totalConstruccion)}</Typography>
+      </Box>
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>Total Obras Complementarias</Typography>
+        <Typography sx={{ fontWeight: 700 }}>{formatoMoneda(totalObrasComplementarias)}</Typography>
+      </Box>
+
+      {/* Autovalúo */}
+      <Box
+        sx={{
+          mt: 1,
+          p: 1.2,
+          borderRadius: 1.5,
+          bgcolor: "rgba(25,118,210,0.06)",
+          border: "1px solid rgba(25,118,210,0.18)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <Typography sx={{ color: "#0b4a8b", fontWeight: 700 }}>Autovalúo</Typography>
+        <Typography sx={{ color: "#0b4a8b", fontWeight: 800, fontSize: "1.05rem" }}>
+          {formatoMoneda(autovaluo)}
+        </Typography>
+      </Box>
+    </Stack>
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2 }}>
+    <Button
+      onClick={() => setOpenConfirm(false)}
+      variant="outlined"
+      color="inherit"
+    >
+      Cancelar
+    </Button>
+    <Button
+      onClick={() => {
+        setOpenConfirm(false);
+        handlePresentarDeclaracion(); // ⬅️ continúa con tu flujo existente
+      }}
+      variant="contained"
+      color="primary"
+    >
+      Presentar Declaración
+    </Button>
+  </DialogActions>
+</Dialog>
+
+
+
+
+
 <Snackbar
   open={openSnackbar}
   autoHideDuration={4000}
   onClose={() => setOpenSnackbar(false)}
   anchorOrigin={{ vertical: "top", horizontal: "center" }}
+  sx={{
+    position: "fixed",
+    top: "50% !important",
+    transform: "translateY(-50%)",
+  }}
 >
   <Alert
     onClose={() => setOpenSnackbar(false)}
@@ -2051,6 +2210,10 @@ const isLaptop2 = useMediaQuery("(min-width:1200px)");
 
 
     </Box>
+
+
+
+
     
   );
 };

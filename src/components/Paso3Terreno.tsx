@@ -1,372 +1,307 @@
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Typography,
-  TextField,
-  Divider,
-} from "@mui/material";
-import terrenoIcon from "./../assets/medicion_casa.png";
-import medicionIcon from "./../assets/medida.png";
-import areaIcon from "./../assets/construccion-de-edificio.png";
-import valorIcon from "./../assets/sol-peruano.png";
-import InfoCallout from "./InfoCallout";
-import HelpTooltip from "./helpTooltip";
+import React from "react";
+import { Box, Paper, Typography, TextField, InputAdornment } from "@mui/material";
+import HelpTooltip from "../components/helpTooltip";
 
-interface Paso3TerrenoProps {
-  formData: any;
-  handleChange: (
-    e:
-      | React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-      | import("@mui/material/Select").SelectChangeEvent
-  ) => void;
-}
+// ⬇️ Ajusta las rutas a tus íconos anteriores
+import iconDatos from "./../assets/medicion_casa.png";
+import iconArea  from "./../assets/medida.png";
+import iconValor from "./../assets/comprar-casa.png";
+import InfoCallout from "../components/InfoCallout"; // ✅ se mantiene el InfoCallout
 
-const Paso3Terreno: React.FC<Paso3TerrenoProps> = ({ formData, handleChange }) => {
-  const [errorArea, setErrorArea] = useState(false);
+type Props = {
+  formData: {
+    areaMatriz?: number | string | null;
+    porcentajeBienComun?: number | string | null;
+    frontis?: number | string | null;
+    areaPropia?: number | string | null;
+    areaComun?: number | string | null;
+    areaTotal?: number | string | null;
+    valorArancelario?: number | string | null;
+    valorTotalTerreno?: number | string | null;
+  };
+  handleChange?: (e: any) => void; // <- opcional
+};
 
-  useEffect(() => {
-    const areaMatriz = parseFloat(formData.areaMatriz) || 0;
-    const areaPropia = parseFloat(formData.areaPropia) || 0;
-    const areaComun = parseFloat(formData.areaComun) || 0;
-    const valorArancelario = parseFloat(formData.valorArancelario) || 0;
-    const areaTotal = areaPropia + areaComun;
+// === Paleta / estilos consistentes ===
+const COLOR_LABEL = "#1976d2";      // Azul SAT para títulos/labels
+const COLOR_VALUE = "#0a0a0a";      // Texto de valor (alto contraste)
+const COLOR_BORDER = "#b0c8e8";     // Borde base
+const COLOR_BORDER_HOVER = "#1a73e8";
+const BG_PANEL = "#f9fbff";         // Fondo paneles
+const BG_CARD = "#ffffff";
 
-    setErrorArea(areaTotal > areaMatriz && areaMatriz > 0);
-    const valorTotal = areaTotal * valorArancelario;
+// Fuerza lectura nítida en TextField disabled
+const valueInputSx = {
+  fontSize: "1rem",
+  fontWeight: 700,
+  color: COLOR_VALUE,
+  backgroundColor: BG_CARD,
+  borderRadius: 1,
+  "& .MuiOutlinedInput-notchedOutline": { borderColor: COLOR_BORDER },
+  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: COLOR_BORDER_HOVER },
+  "& input.Mui-disabled": { WebkitTextFillColor: COLOR_VALUE as any },
+};
 
-    handleChange({ target: { name: "areaTotal", value: areaTotal.toFixed(2) } } as any);
-    handleChange({ target: { name: "valorTotalTerreno", value: valorTotal.toFixed(2) } } as any);
-  }, [formData.areaMatriz, formData.areaPropia, formData.areaComun, formData.valorArancelario]);
+const labelSx = {
+  color: COLOR_LABEL,
+  fontWeight: 700,
+  mb: 1,
+  display: "flex",
+  alignItems: "center",
+  gap: 1,
+} as const;
 
+// Devuelve string con decimales visibles. Si no hay dato -> "0.00"
+const toFixedStr = (v: any, decimals = 2) => {
+  if (v === null || v === undefined || v === "") return (0).toFixed(decimals);
+  const n = Number(v);
+  if (!Number.isFinite(n)) return (0).toFixed(decimals);
+  return n.toFixed(decimals);
+};
+
+const Paso3Terreno: React.FC<Props> = ({ formData }) => {
   return (
-    <Box sx={{ p: 1 }}>
+    <Box sx={{ mt: 1 }}>
+
+      {/* 🟦 Info superior */}
       <InfoCallout
         title="¿Qué registrarás aquí?"
-        body="Ingresa las áreas, el porcentaje de bien común y el frontis. El valor del terreno se calculará automáticamente según el arancel vigente."
+        body="Ingresa las áreas, el porcentaje de bien común y el frontis. 
+        El valor del terreno se calculará automáticamente según el arancel vigente."
       />
 
-      <Typography
-        variant="h6"
+      {/* CONTENEDOR HORIZONTAL: tres columnas en una sola fila */}
+      <Box
         sx={{
-          fontWeight: 600,
-          color: "#003366",
-          mb: 3,
           display: "flex",
-          alignItems: "center",
+          flexDirection: { xs: "column", md: "row" },
+          gap: 2,
+          alignItems: "stretch",
+          justifyContent: "space-between",
         }}
       >
-        <img src={terrenoIcon} alt="Terreno" style={{ width: 32, height: 32, marginRight: 8 }} />
-        Valorización del Terreno
-      </Typography>
-
-      {/* 🔹 CONTENEDOR PRINCIPAL FLEXIBLE */}
-<Box
-  sx={{
-   display: "flex",
-    flexDirection: { xs: "column", md: "row" }, // 🔹 en tablet se apilan, en laptop se alinean
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    gap: 2,
-    flexWrap: "nowrap", // 🔹 evita que la caja derecha se baje
-    width: "100%",
-  }}
->
-  {/* IZQUIERDA */}
-    <Box
-        sx={{
-        flex: { xs: "1 1 100%", md: "1 1 68%" },
-        minWidth: 0, // 🔹 evita overflow horizontal
-        display: "flex",
-        flexDirection: "column",
-        gap: 1,
-        }}
-        >
-          {/* Terreno Matriz */}
-          <Box
+        {/* 1) DATOS DEL TERRENO MATRIZ (solo lectura) */}
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <Paper
+            variant="outlined"
             sx={{
-              border: "1px solid #e0e0e0",
+              p: 2,
               borderRadius: 2,
-              bgcolor: "#fff",
-              px: 3,
-              py: 2.5,
+              bgcolor: BG_PANEL,
+              border: "1px solid #e0e7ef",
+              height: "100%",
             }}
           >
-            <Typography
-              variant="subtitle1"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                fontWeight: 600,
-                color: "#003366",
-                mb: 2,
-              }}
-            >
-              <img src={medicionIcon} alt="Área matriz" style={{ width: 25, height: 25, marginRight: 8 }} />
+            <Typography variant="subtitle1" sx={labelSx}>
+              <img src={iconDatos} alt="Datos del terreno matriz" width={22} height={22} />
               Datos del Terreno Matriz
             </Typography>
 
-           {/* === DATOS DEL TERRENO MATRIZ === */}
-<Box
-  sx={{
-    display: "flex",
-    flexDirection: { xs: "column", md: "row" },
-    flexWrap: "nowrap",
-    justifyContent: "space-between",
-    gap: 1.5,
-  }}
->
-  {/* Área del terreno matriz */}
-  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
-    <TextField
-      fullWidth
-      label="Área del terreno matriz (m²)"
-      name="areaMatriz"
-      size="small"
-      value={formData.areaMatriz}
-      onChange={handleChange}
-      error={!!formData.errors?.areaMatriz}
-      helperText={formData.errors?.areaMatriz}
-      InputProps={{
-        endAdornment: (
-          <HelpTooltip text="Área total del terreno matriz expresada en metros cuadrados." />
-        ),
-      }}
-    />
-  </Box>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <TextField
+                size="small"
+                fullWidth
+                label="Área del terreno matriz (m²)"
+                value={toFixedStr(formData.areaMatriz, 2)}
+                disabled
+                InputProps={{
+                  readOnly: true,
+                  sx: valueInputSx,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <HelpTooltip text="Área del terreno matriz registrada para el predio (m²)." />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-  {/* % de bien común */}
-  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
-    <TextField
-      fullWidth
-      label="% de bien común"
-      name="porcBienComun"
-      size="small"
-      value={formData.porcBienComun}
-      onChange={handleChange}
-      error={!!formData.errors?.porcBienComun}
-      helperText={formData.errors?.porcBienComun}
-      InputProps={{
-        endAdornment: (
-          <HelpTooltip text="Porcentaje de participación de áreas comunes." />
-        ),
-      }}
-    />
-  </Box>
+              <TextField
+                size="small"
+                fullWidth
+                label="% de bien común"
+                value={toFixedStr(formData.porcentajeBienComun, 2)}
+                disabled
+                InputProps={{
+                  readOnly: true,
+                  sx: valueInputSx,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <HelpTooltip text="Porcentaje de alícuota de bien común asociado al predio." />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-  {/* Frontis del predio */}
-  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
-    <TextField
-      fullWidth
-      label="Frontis del predio (m)"
-      name="frontis"
-      size="small"
-      value={formData.frontis}
-      onChange={handleChange}
-      error={!!formData.errors?.frontis}
-      helperText={formData.errors?.frontis}
-      InputProps={{
-        endAdornment: (
-          <HelpTooltip text="Longitud del frente del predio expresada en metros lineales." />
-        ),
-      }}
-    />
-  </Box>
-</Box>
-          </Box>
+              <TextField
+                size="small"
+                fullWidth
+                label="Frontis del predio (m)"
+                value={toFixedStr(formData.frontis, 2)}
+                disabled
+                InputProps={{
+                  readOnly: true,
+                  sx: valueInputSx,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <HelpTooltip text="Longitud del frente del predio (m)." />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+          </Paper>
+        </Box>
 
-          {/* Área del Terreno */}
-          <Box
+        {/* 2) ÁREA DEL TERRENO (solo lectura) */}
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <Paper
+            variant="outlined"
             sx={{
-              border: "1px solid #e0e0e0",
+              p: 2,
               borderRadius: 2,
-              bgcolor: "#fff",
-              px: 3,
-              py: 2.5,
+              bgcolor: BG_PANEL,
+              border: "1px solid #e0e7ef",
+              height: "100%",
             }}
           >
-            <Typography
-              variant="subtitle1"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                fontWeight: 600,
-                color: "#003366",
-                mb: 2,
-              }}
-            >
-              <img src={areaIcon} alt="Área Propia" style={{ width: 28, height: 28, marginRight: 8 }} />
+            <Typography variant="subtitle1" sx={labelSx}>
+              <img src={iconArea} alt="Área del terreno" width={22} height={22} />
               Área del Terreno
             </Typography>
 
-           <Box
-  sx={{
-    display: "flex",
-    flexDirection: { xs: "column", md: "row" },
-    flexWrap: "nowrap",
-    justifyContent: "space-between",
-    gap: 1.5,
-  }}
->
-  {/* Área Propia */}
-  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
-    <TextField
-      fullWidth
-      label="Área Propia (m²)"
-      name="areaPropia"
-      size="small"
-      value={formData.areaPropia}
-      onChange={handleChange}
-      error={!!formData.errors?.areaPropia}
-      helperText={formData.errors?.areaPropia}
-      InputProps={{
-        endAdornment: (
-          <HelpTooltip text="Área propia del terreno según el título de propiedad." />
-        ),
-      }}
-    />
-  </Box>
-
-  {/* Área Común */}
-  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
-    <TextField
-      fullWidth
-      label="Área Común (m²)"
-      name="areaComun"
-      size="small"
-      value={formData.areaComun}
-      onChange={handleChange}
-      error={!!formData.errors?.areaComun}
-      helperText={formData.errors?.areaComun}
-      InputProps={{
-        endAdornment: (
-          <HelpTooltip text="Área compartida con otros copropietarios (m²)." />
-        ),
-      }}
-    />
-  </Box>
-
-  {/* Área Total */}
-  <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
-    <TextField
-      fullWidth
-      label="Área Total (m²)"
-      name="areaTotal"
-      size="small"
-      value={formData.areaTotal}
-      disabled
-      error={!!formData.errors?.areaTotal}
-      helperText={formData.errors?.areaTotal}
-      InputProps={{
-        endAdornment: (
-          <HelpTooltip text="Suma de área propia y común. Calculada automáticamente." />
-        ),
-      }}
-    />
-  </Box>
-</Box>
-
-            {errorArea && (
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "#d32f2f",
-                  mt: 1.5,
-                  display: "block",
-                  fontSize: "0.8rem",
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <TextField
+                size="small"
+                fullWidth
+                label="Área Propia (m²)"
+                value={toFixedStr(formData.areaPropia, 2)}
+                disabled
+                InputProps={{
+                  readOnly: true,
+                  sx: valueInputSx,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <HelpTooltip text="Área propia del predio (m²)." />
+                    </InputAdornment>
+                  ),
                 }}
-              >
-                El área total no puede ser mayor que el área del terreno matriz.
+              />
+
+              <TextField
+                size="small"
+                fullWidth
+                label="Área Común (m²)"
+                value={toFixedStr(formData.areaComun, 2)}
+                disabled
+                InputProps={{
+                  readOnly: true,
+                  sx: valueInputSx,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <HelpTooltip text="Área de bien común computable (m²)." />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                size="small"
+                fullWidth
+                label="Área Total (m²)"
+                value={toFixedStr(formData.areaTotal, 2)}
+                disabled
+                InputProps={{
+                  readOnly: true,
+                  sx: valueInputSx,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <HelpTooltip text="Suma de área propia + área común (m²)." />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+
+            <Typography variant="body2" sx={{ mt: 1, color: "#6b778c" }}>
+              El área total corresponde a la suma del área propia y el área común.
+            </Typography>
+          </Paper>
+        </Box>
+
+        {/* 3) VALOR DEL TERRENO (solo lectura) */}
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <Paper
+            variant="outlined"
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              bgcolor: BG_PANEL,
+              border: "1px solid #c5d9f5",
+              borderLeft: "6px solid #1a73e8",
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
+            <Box>
+              <Typography variant="subtitle1" sx={labelSx}>
+                <img src={iconValor} alt="Valor del terreno" width={22} height={22} />
+                Valor del Terreno
               </Typography>
-            )}
+
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                <TextField
+                  label="Valor arancelario (S/.)"
+                  value={toFixedStr(formData.valorArancelario, 2)}
+                  size="small"
+                  fullWidth
+                  disabled
+                  InputProps={{
+                    readOnly: true,
+                    sx: valueInputSx,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <HelpTooltip text="Valor unitario del terreno según el arancel vigente." />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <TextField
+                  label="Valor total del terreno (S/.)"
+                  value={toFixedStr(formData.valorTotalTerreno, 2)}
+                  size="small"
+                  fullWidth
+                  disabled
+                  InputProps={{
+                    readOnly: true,
+                    sx: valueInputSx,
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <HelpTooltip text="Cálculo: área total × valor arancelario." />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+            </Box>
 
             <Typography
               variant="body2"
               sx={{
-                mt: 2,
+                color: "#003366",
                 textAlign: "right",
-                color: "#666",
                 fontStyle: "italic",
+                fontSize: "0.85rem",
+                mt: 3,
               }}
             >
-              El área total corresponde a la suma del área propia y el área común.
+              Los valores se calculan automáticamente según el arancel vigente.
             </Typography>
-          </Box>
+          </Paper>
         </Box>
-
-       {/* DERECHA */}
-  <Box
-    sx={{
-      flex: { xs: "1 1 100%", md: "1 1 32%" }, // 🔹 ocupa el resto del espacio
-    minWidth: { xs: "100%", md: "300px" },   // 🔹 tamaño mínimo para estabilidad
-    maxWidth: { md: "360px", lg: "380px" },
-    border: "1px solid #c5d9f5",
-    borderLeft: "6px solid #1a73e8",
-    borderRadius: 2,
-    bgcolor: "#f9fafc",
-    px: { xs: 2, md: 3 },
-    py: { xs: 2, md: 3 },
-    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-    }}
-  >
-    <Typography
-      variant="subtitle1"
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        fontWeight: 600,
-        color: "#003366",
-        mb: 2,
-      }}
-    >
-      <img
-        src={valorIcon}
-        alt="Valor del Terreno"
-        style={{ width: 28, height: 28, marginRight: 8 }}
-      />
-      Valor del Terreno
-    </Typography>
-
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <TextField
-        label="Valor arancelario (S/.)"
-        name="valorArancelario"
-        value={formData.valorArancelario}
-        onChange={handleChange}
-        size="small"
-        fullWidth
-        disabled
-        InputProps={{
-          endAdornment: (
-            <HelpTooltip text="Valor unitario del terreno según el arancel vigente publicado por el SAT." />
-          ),
-          sx: { fontSize: "0.85rem" },
-        }}
-      />
-      <TextField
-        label="Valor total del terreno (S/.)"
-        name="valorTotalTerreno"
-        value={formData.valorTotalTerreno}
-        size="small"
-        fullWidth
-        disabled
-        InputProps={{
-          endAdornment: (
-            <HelpTooltip text="Valor total calculado automáticamente: área total × valor arancelario." />
-          ),
-          sx: { fontSize: "0.85rem" },
-        }}
-      />
-    </Box>
-
-    <Divider sx={{ my: 2 }} />
-    <Typography
-      variant="body2"
-      sx={{ color: "#555", textAlign: "right", fontStyle: "italic" }}
-    >
-      Los valores se calculan automáticamente según el arancel vigente.
-    </Typography>
-  </Box>
-</Box>
+      </Box>
     </Box>
   );
 };

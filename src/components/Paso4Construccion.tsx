@@ -37,6 +37,7 @@ import { ListaPuertasVentanas } from "./ListaPuertasVentanas";
 import InfoCallout from "./InfoCallout";
 import HelpTooltip from "./helpTooltip";
 import { TableContainer } from "@mui/material";
+import ResumenPredios from "./resumenPredio";
 
 // ✅ 1️⃣ INTERFACE CORRECTA
 type Paso4ConstruccionProps ={
@@ -507,6 +508,12 @@ const handleObraChange = (
 const [openModalCancelar, setOpenModalCancelar] = useState(false);
 const [openCancelModal, setOpenCancelModal] = useState(false);
 
+
+const [initialPisosCount, setInitialPisosCount] = useState(0);
+const [initialObrasCount, setInitialObrasCount] = useState(0);
+
+
+
 // Valores vacíos iniciales de obra
 const obraInicial = {
     descripcion: "",
@@ -608,6 +615,11 @@ useEffect(() => {
   }else {
     setObras(props.obras);
   }
+
+    // ✅ marca cuántos registros son "base" al cargar
+  setInitialPisosCount((!props.pisos || props.pisos.length === 0) ? nuevosPisos.length : props.pisos.length);
+  setInitialObrasCount((!props.obras || props.obras.length === 0) ? nuevasObras.length : props.obras.length);
+
   props.onActualizarConstruccion?.(nuevosPisos, nuevasObras);
 }, []); // 👈 ejecuta solo al montar
 
@@ -615,8 +627,6 @@ useEffect(() => {
 // Busca la descripción correspondiente según el valor (A, B, C...)
 const obtenerDescripcion = (lista: any[], valor: string) =>
   lista.find((item) => item.value === valor)?.label || "Sin descripción";
-
-
 
   return (
     <Box sx={{ p: 1}}>
@@ -796,26 +806,26 @@ const obtenerDescripcion = (lista: any[], valor: string) =>
                         p: 0.3,
                         width: 40,
                       }}>
-                      <Tooltip title="Eliminar">
-                        <Button
-                          color="error"
-                          size="small"
-                          onClick={() => {
-                            const nuevosPisos = pisos.filter((_, idx) => idx !== i);
-                            setPisos(nuevosPisos);
-
-                            // 🔹 Avisar al componente padre (RegistrarDJ)
-                            props.onActualizarConstruccion?.(nuevosPisos, obras);
-                          }}
-                          sx={{
-                            minWidth: "auto",
-                            p: 0.3,
-                            "&:hover": { bgcolor: "rgba(211, 47, 47, 0.08)" },
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </Button>
-                      </Tooltip>
+                      {i >= initialPisosCount ? (
+                        <Tooltip title="Eliminar">
+                          <Button
+                            color="error"
+                            size="small"
+                            onClick={() => {
+                              const nuevosPisos = pisos.filter((_, idx) => idx !== i);
+                              setPisos(nuevosPisos);
+                              props.onActualizarConstruccion?.(nuevosPisos, obras);
+                            }}
+                            sx={{
+                              minWidth: "auto",
+                              p: 0.3,
+                              "&:hover": { bgcolor: "rgba(211, 47, 47, 0.08)" },
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </Button>
+                        </Tooltip>
+                      ) : null}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -1208,26 +1218,26 @@ const obtenerDescripcion = (lista: any[], valor: string) =>
                         p: 0.3,
                         width: 40,
                       }}>
-                      <Tooltip title="Eliminar">
-                        <Button
-                          color="error"
-                          size="small"
-                          onClick={() => {
-                            const nuevasObras = obras.filter((_, idx) => idx !== i);
-                            setObras(nuevasObras);
-
-                            // 🔹 Notificar al padre (RegistrarDJ)
-                            props.onActualizarConstruccion?.(pisos, nuevasObras);
-                          }}
-                          sx={{
-                            minWidth: "auto",
-                            p: 0.3,
-                            "&:hover": { bgcolor: "rgba(211, 47, 47, 0.08)" },
-                          }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </Button>
-                      </Tooltip>
+                        {i >= initialObrasCount ? (
+                          <Tooltip title="Eliminar">
+                            <Button
+                              color="error"
+                              size="small"
+                              onClick={() => {
+                                const nuevasObras = obras.filter((_, idx) => idx !== i);
+                                setObras(nuevasObras);
+                                props.onActualizarConstruccion?.(pisos, nuevasObras);
+                              }}
+                              sx={{
+                                minWidth: "auto",
+                                p: 0.3,
+                                "&:hover": { bgcolor: "rgba(211, 47, 47, 0.08)" },
+                              }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </Button>
+                          </Tooltip>
+                        ) : null}
                     </TableCell>
                   </TableRow>
                 ))}

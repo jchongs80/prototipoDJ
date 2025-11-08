@@ -639,7 +639,7 @@ const handleAutoCompleteChange = (name: string, value: any) => {
 {mostrarDireccionDetallada && (
   <Box
     sx={{
-      mt: 4,
+      mt: 2,
       p: 3,
       bgcolor: "#ffffff",
       borderRadius: 2,
@@ -674,7 +674,7 @@ const handleAutoCompleteChange = (name: string, value: any) => {
         alignItems: "center",
         fontWeight: 600,
         color: "#003366",
-        mb: 3,
+        mb: 1,
       }}
     >
       <img
@@ -699,6 +699,15 @@ const handleAutoCompleteChange = (name: string, value: any) => {
     */}
 
     {/* PRIMERA FILA */}
+
+
+    <Typography
+      variant="body2"
+      sx={{ color: "#666", textAlign: "right", fontStyle: "italic", marginTop:0, marginBottom:2 }}
+    >
+      ✎ Actualiza solo si la dirección fiscal del contribuyente ha cambiado.
+    </Typography>
+
     <Box
       sx={{
         display: "grid",
@@ -942,13 +951,7 @@ const handleAutoCompleteChange = (name: string, value: any) => {
       ))}
     </Box>
 
-    <Divider sx={{ mt: 3, mb: 2 }} />
-    <Typography
-      variant="body2"
-      sx={{ color: "#666", textAlign: "right", fontStyle: "italic" }}
-    >
-      ✎ Actualiza solo si la dirección fiscal del contribuyente ha cambiado.
-    </Typography>
+   
   </Box>
 )}
 

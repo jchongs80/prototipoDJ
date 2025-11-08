@@ -118,7 +118,13 @@ useImperativeHandle(ref, () => ({
   const [loadingArchivoAdquisicion, setLoadingArchivoAdquisicion] = useState(false);
   const [debeValidar, setDebeValidar] = useState(false); // ✅ controla si se debe mostrar error
 
-
+  const [openBuscarDNI, setOpenBuscarDNI] = useState(false);
+  const [tipoDocDNI, setTipoDocDNI] = useState<"DNI" | "CE" | "">("");
+  const [numDocDNI, setNumDocDNI] = useState("");
+  const [loadingBusquedaDNI, setLoadingBusquedaDNI] = useState(false);
+  const [resultadosBusquedaDNI, setResultadosBusquedaDNI] = useState<any[]>([]);
+  const [errorTipoDocDNI, setErrorTipoDocDNI] = useState("");
+  const [errorNumDocDNI, setErrorNumDocDNI] = useState("");
 
   // Util para mostrar "—" cuando no hay valor
   const view = (v?: string) => (v && `${v}`.trim() !== "" ? v : "—");
@@ -225,6 +231,70 @@ const handleBuscarPU = () => {
 
   setMostrarDetallePredio(true);
 };
+
+
+
+const handleBuscarPorDNI = () => {
+  // Validaciones simples
+  let valido = true;
+  if (!tipoDocDNI) {
+    setErrorTipoDocDNI("Seleccione el tipo de documento.");
+    valido = false;
+  }
+  if (!numDocDNI.trim()) {
+    setErrorNumDocDNI("Ingrese el número de documento.");
+    valido = false;
+  } else {
+    // Validación básica: DNI 8 dígitos, CE 9-12 alfanum.
+    if (tipoDocDNI === "DNI" && !/^\d{8}$/.test(numDocDNI)) {
+      setErrorNumDocDNI("El DNI debe tener 8 dígitos.");
+      valido = false;
+    }
+    if (tipoDocDNI === "CE" && !/^[A-Za-z0-9]{9,12}$/.test(numDocDNI)) {
+      setErrorNumDocDNI("Carné de Extranjería inválido (9-12 caracteres).");
+      valido = false;
+    }
+  }
+  if (!valido) return;
+
+  setErrorTipoDocDNI("");
+  setErrorNumDocDNI("");
+  setLoadingBusquedaDNI(true);
+
+  setTimeout(() => {
+    // Datos demo: SIEMPRE 3 predios
+    const calles = ["Camaná", "Arequipa", "Tacna", "Colonial", "Brasil", "Salaverry", "La Mar", "Sucre"];
+    const usos = ["Vivienda", "Comercio", "Cochera", "Depósito de Vivienda", "Tienda / Supermercado"];
+    const duenos = ["Juan Pérez", "Ana Torres", "Carlos Vega", "María Salas", "Lucía Gutiérrez"];
+    const imagenes = [predio1, predio2, predio3, predio4, predio5, predio6, predio7, predio8, predio9, predio10]
+      .sort(() => Math.random() - 0.5);
+
+    const resultados = Array.from({ length: 3 }).map((_, i) => {
+      const calle = calles[Math.floor(Math.random() * calles.length)];
+      const numero = Math.floor(Math.random() * (1500 - 100) + 100);
+      return {
+        codigo: (20001 + i).toString(),
+        direccion: `Cercado de Lima, Jr. ${calle}, ${numero}, Lima`,
+        uso: usos[Math.floor(Math.random() * usos.length)],
+        propietario: duenos[Math.floor(Math.random() * duenos.length)],
+        tipoVia: "Jirón",
+        descripcionVia: calle,
+        numero,
+        imagen: imagenes[i],
+      };
+    });
+
+    setResultadosBusquedaDNI(resultados);
+    setLoadingBusquedaDNI(false);
+  }, 900);
+};
+
+
+
+
+
+
+
 
 
 // Limpia errores al buscar predio o cargar datos automáticos
@@ -413,6 +483,22 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
   >
     Buscar por Dirección
   </Button>
+
+    <Button
+  variant="outlined"
+  startIcon={<SearchIcon />}
+  onClick={() => setOpenBuscarDNI(true)}
+  sx={{
+    borderColor: "#003366",
+    color: "#003366",
+    height: 40,
+    "&:hover": { bgcolor: "rgba(0,51,102,0.05)" },
+  }}
+>
+  Buscar por DNI
+</Button>
+
+
 </Box>
 
       {/* DETALLE VISUAL (solo si ya se buscó/seleccionó) */}
@@ -695,97 +781,177 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
           mt: 1,
         }}
       >
-        {/* ✅ Predio ubicado en edificio */}
-        <Box>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              color: "#1976d2",
-              fontWeight: 600,
-              mb: 0.5,
-            }}
-          >
-            Predio ubicado en edificio:
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              variant={
-                formData.predioUbicadoEnEdificio === true
-                  ? "contained"
-                  : "outlined"
-              }
-              size="small"
-              onClick={() =>
-                handleChange({
-                  target: { name: "predioUbicadoEnEdificio", value: true },
-                } as any)
-              }
-              sx={{
-                textTransform: "none",
-                borderColor: "#90caf9",
-                color: "#1565c0",
-                "&.MuiButton-contained": {
-                  backgroundColor: "#1565c0",
-                  color: "#fff",
-                },
-              }}
-            >
-              Sí
-            </Button>
-            <Button
-              variant={
-                formData.predioUbicadoEnEdificio === false ||
-                formData.predioUbicadoEnEdificio === undefined
-                  ? "contained"
-                  : "outlined"
-              }
-              size="small"
-              onClick={() =>
-                handleChange({
-                  target: { name: "predioUbicadoEnEdificio", value: false },
-                } as any)
-              }
-              sx={{
-                textTransform: "none",
-                borderColor: "#90caf9",
-                color: "#1565c0",
-                "&.MuiButton-contained": {
-                  backgroundColor: "#1565c0",
-                  color: "#fff",
-                },
-              }}
-            >
-              No
-            </Button>
-          </Box>
-        </Box>
+     
+{/* 🔘 Datos de ubicación y condición del predio */}
+<Paper
+  variant="outlined"
+  sx={{
+    mt: 1.5,
+    p: 2,
+    borderRadius: 2,
+    bgcolor: "#f9fafc",
+    border: "1px solid #e0e7ef",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+    width: "100%",              // 👈 ocupa todo el ancho disponible
+    maxWidth: "none",           // 👈 elimina cualquier límite
+    alignSelf: "stretch",       // 👈 si está dentro de un Grid o Flex, se estira
+  }}
+>
+  <Typography
+    variant="subtitle1"
+    sx={{
+      fontWeight: 700,
+      color: "#003366",
+      mb: 1.5,
+      display: "flex",
+      alignItems: "center",
+      gap: 1,
+    }}
+  >
+    <img
+      src={require("./../assets/edificio.png")}
+      alt="Predio"
+      style={{ width: 24, height: 24 }}
+    />
+    Información registral y condición especial
+  </Typography>
 
-        {/* 📄 Partida registral */}
-        <Box sx={{ flex: 1 }}>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              color: "#1976d2",
-              fontWeight: 600,
-              mb: 0.5,
-              display: "flex",
-              alignItems: "center",
-              gap: 0.5,
-            }}
-          >
-            Partida registral
-            <HelpTooltip text="Ingrese el número de partida registral del predio, según SUNARP." />
-          </Typography>
-          <TextField
-            size="small"
-            name="partidaRegistral"
-            fullWidth
-            value={formData.partidaRegistral || ""}
-            onChange={handleChange}
-            placeholder="Ingrese N° de partida registral"
-          />
-        </Box>
+  <Box
+    sx={{
+      display: "flex",
+      flexWrap: "nowrap",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 2,
+      width: "100%",           // 👈 garantiza que las tres columnas se expandan
+    }}
+  >
+    {/* ✅ Predio ubicado en edificio */}
+    <Box sx={{ minWidth: 220, flex: "0 0 auto" }}>
+      <Typography
+        variant="subtitle2"
+        sx={{ color: "#1976d2", fontWeight: 600, mb: 0.5 }}
+      >
+        Predio ubicado en edificio:
+      </Typography>
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <Button
+          variant={
+            formData.predioUbicadoEnEdificio === true ? "contained" : "outlined"
+          }
+          size="small"
+          onClick={() =>
+            handleChange({
+              target: { name: "predioUbicadoEnEdificio", value: true },
+            } as any)
+          }
+          sx={{
+            textTransform: "none",
+            borderColor: "#90caf9",
+            color: "#1565c0",
+            "&.MuiButton-contained": {
+              backgroundColor: "#1565c0",
+              color: "#fff",
+            },
+          }}
+        >
+          Sí
+        </Button>
+        <Button
+          variant={
+            formData.predioUbicadoEnEdificio === false ||
+            formData.predioUbicadoEnEdificio === undefined
+              ? "contained"
+              : "outlined"
+          }
+          size="small"
+          onClick={() =>
+            handleChange({
+              target: { name: "predioUbicadoEnEdificio", value: false },
+            } as any)
+          }
+          sx={{
+            textTransform: "none",
+            borderColor: "#90caf9",
+            color: "#1565c0",
+            "&.MuiButton-contained": {
+              backgroundColor: "#1565c0",
+              color: "#fff",
+            },
+          }}
+        >
+          No
+        </Button>
       </Box>
+    </Box>
+
+    {/* 📄 Partida registral */}
+    <Box sx={{ flex: 1 }}>
+      <Typography
+        variant="subtitle2"
+        sx={{
+          color: "#1976d2",
+          fontWeight: 600,
+          mb: 0.5,
+          display: "flex",
+          alignItems: "center",
+          gap: 0.5,
+        }}
+      >
+        Partida registral
+        <HelpTooltip text="Ingrese el número de partida registral del predio, según SUNARP." />
+      </Typography>
+      <TextField
+        size="small"
+        name="partidaRegistral"
+        fullWidth
+        value={formData.partidaRegistral || ""}
+        onChange={handleChange}
+        placeholder="Ingrese N° de partida registral"
+      />
+    </Box>
+
+    {/* 🏢 Condición especial del predio */}
+    <Box
+      sx={{
+        minWidth: 250,
+        flex: "0 0 auto",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+      }}
+    >
+      <Typography
+        variant="subtitle2"
+        sx={{ color: "#1976d2", fontWeight: 600, mb: 0.5 }}
+      >
+        Condición especial del predio:
+      </Typography>
+      <Box
+        sx={{
+          px: 1.5,
+          py: 0.7,
+          borderRadius: 1.5,
+          bgcolor: "rgba(25,118,210,0.06)",
+          border: "1px solid rgba(25,118,210,0.18)",
+          color: "#0b4a8b",
+          fontWeight: 700,
+          minWidth: 160,
+          textAlign: "center",
+        }}
+      >
+        {formData.condicionEspecialPredio || "Ninguno"}
+      </Box>
+    </Box>
+  </Box>
+</Paper>
+      
+        
+      </Box>
+
+     
+
+
     </Box>
   </Box>
 </Paper>
@@ -1042,40 +1208,89 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
 )}
     </Paper>
 
-    {/* 🏢 Condición Especial del Predio */}
-    <Paper
-      variant="outlined"
+    
+
+  {/* ▶️ Panel derecho: USO DEL PREDIO (solo lectura) */}
+<Paper
+  variant="outlined"
+  sx={{
+    p: 2,
+    borderRadius: 2,
+    bgcolor: "#f4f7fb",
+    border: "1px solid #e0e0e0",
+  }}
+>
+  <Typography variant="subtitle1" sx={{ color: "#003366", fontWeight: 700, mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+    <img src={usoPredioIcon} alt="Uso del predio" style={{ width: 22, height: 22 }} />
+    Uso del Predio
+  </Typography>
+
+  <Box
+  sx={{
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "stretch",
+    gap: 1.2,
+    flexWrap: "nowrap",
+  }}
+>
+  {[
+    ["Clase de uso", formData.claseUso],
+    ["Subclase de uso", formData.subClaseUso],
+    ["Uso", formData.uso],
+    ["Inicio de uso", formData.fechaInicioUso],
+  ].map(([label, value]) => (
+    <Box
+      key={label as string}
       sx={{
-        p: 2,
-        bgcolor: "#f4f6f8",
-        borderRadius: 2,
-        border: "1px solid #e0e0e0",
+        flex: "1 1 0",
+        p: 1,
+        borderRadius: 1.5,
+        bgcolor: "#fff",
+        border: "1px solid #e6ebf2",
         display: "flex",
         flexDirection: "column",
         justifyContent: "center",
-        alignItems: "center",
       }}
     >
-      <Typography
-        variant="subtitle1"
-        sx={{ color: "#003366", fontWeight: 600, mb: 1 }}
-      >
-        🏢 Condición Especial del Predio
+      <Typography variant="caption" sx={{ color: "#6b778c" }}>
+        {label}
       </Typography>
       <Typography
-        variant="body1"
-        sx={{ fontWeight: 700, color: "#000" }}
+        variant="body2"
+        sx={{
+          mt: 0.3,
+          fontWeight: 600,
+          color: value ? "#1a1f36" : "#9ea7b3",
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas",
+        }}
       >
-        Ninguno
+        {value && String(value).trim() !== "" ? String(value) : "—"}
       </Typography>
-    </Paper>
-  </Box>
+    </Box>
+  ))}
+</Box>
+
+  <Typography variant="caption" sx={{ mt: 1, display: "block", color: "#7a8aa0" }}>
+    * Este resumen es informativo. Puedes actualizar el uso de tu predio acercándote presencialmente al SAT.
+  </Typography>
 </Paper>
 
 
 
 
+
+
+
+  </Box>
+</Paper>
+
+
+
 {/* ====================== 🏢 USO DEL PREDIO ====================== */}
+
+{/*
 <Paper
   sx={{
     p: 3,
@@ -1106,7 +1321,7 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
     Uso del Predio
   </Typography>
 
-  {/* === Fila: 4 columnas === */}
+
   <Box
     sx={{
       display: "grid",
@@ -1118,7 +1333,7 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       gap: 2,
     }}
   >
-    {/* 1️⃣ Clase de Uso */}
+
     <FormControl size="small" fullWidth>
       <InputLabel>Clase de Uso</InputLabel>
       <Select
@@ -1144,7 +1359,6 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       </Select>
     </FormControl>
 
-    {/* 2️⃣ Subclase de Uso */}
     <FormControl size="small" fullWidth>
       <InputLabel>Subclase de Uso</InputLabel>
       <Select
@@ -1169,7 +1383,7 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       </Select>
     </FormControl>
 
-    {/* 3️⃣ Uso */}
+
     <FormControl size="small" fullWidth>
       <InputLabel>Uso</InputLabel>
       <Select
@@ -1193,7 +1407,6 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       </Select>
     </FormControl>
 
-    {/* 4️⃣ Fecha de Inicio de Uso */}
     <TextField
       label="Fecha de Inicio de Uso"
       type="date"
@@ -1214,6 +1427,7 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
     />
   </Box>
 </Paper>
+*/}
 
 </>
 )}
@@ -1568,7 +1782,163 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
 </Dialog>
 
 
+    <Dialog
+  open={openBuscarDNI}
+  onClose={() => setOpenBuscarDNI(false)}
+  fullWidth
+  maxWidth="lg"
+>
+  <DialogTitle sx={{ fontWeight: 600, color: "#003366" }}>
+    Búsqueda de Predio por DNI / CE
+  </DialogTitle>
 
+  <DialogContent dividers>
+    {/* Filtros */}
+    <Box
+      sx={{
+        display: "flex",
+        flexWrap: "wrap",
+        alignItems: "flex-start",
+        gap: 1.5,
+        mb: 2,
+      }}
+    >
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <FormControl size="small" sx={{ minWidth: 160 }}>
+          <InputLabel>Tipo de Documento</InputLabel>
+          <Select
+            label="Tipo de Documento"
+            value={tipoDocDNI}
+            onChange={(e) => {
+              setTipoDocDNI(e.target.value as any);
+              setErrorTipoDocDNI("");
+            }}
+          >
+            <MenuItem value="">--Seleccione--</MenuItem>
+            <MenuItem value="DNI">DNI</MenuItem>
+            <MenuItem value="CE">Carné de Extranjería</MenuItem>
+          </Select>
+        </FormControl>
+        {errorTipoDocDNI && (
+          <Typography variant="caption" sx={{ color: "red", mt: 0.3, fontSize: "0.75rem" }}>
+            {errorTipoDocDNI}
+          </Typography>
+        )}
+      </Box>
+
+      <Box sx={{ display: "flex", flexDirection: "column" }}>
+        <TextField
+          label="N° Documento"
+          size="small"
+          value={numDocDNI}
+          onChange={(e) => {
+            setNumDocDNI(e.target.value);
+            setErrorNumDocDNI("");
+          }}
+          sx={{ minWidth: 220 }}
+        />
+        {errorNumDocDNI && (
+          <Typography variant="caption" sx={{ color: "red", mt: 0.3, fontSize: "0.75rem" }}>
+            {errorNumDocDNI}
+          </Typography>
+        )}
+      </Box>
+
+      <Button
+        variant="contained"
+        color="success"
+        startIcon={<SearchIcon />}
+        onClick={handleBuscarPorDNI}
+        disabled={loadingBusquedaDNI}
+        sx={{ height: 40 }}
+      >
+        {loadingBusquedaDNI ? "Buscando..." : "Buscar"}
+      </Button>
+    </Box>
+
+    {/* Resultados: SIEMPRE 3 */}
+    {loadingBusquedaDNI ? (
+      <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+        <CircularProgress />
+      </Box>
+    ) : resultadosBusquedaDNI.length > 0 ? (
+      <>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell>Imagen</TableCell>
+              <TableCell>Código</TableCell>
+              <TableCell>Dirección</TableCell>
+              <TableCell>Uso</TableCell>
+              <TableCell>Dueño</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {resultadosBusquedaDNI.map((r, i) => (
+              <TableRow
+                key={i}
+                hover
+                sx={{ cursor: "pointer", "& td": { py: 0.3, px: 1.5 } }}
+                onClick={() => {
+                  // Setear selección al formulario (igual que por dirección)
+                  handleChange({ target: { name: "codigoPredio", value: r.codigo } } as any);
+                  handleChange({ target: { name: "direccionCompletaPredio", value: r.direccion } } as any);
+                  handleChange({ target: { name: "tipoViaPredio", value: r.tipoVia } } as any);
+                  handleChange({ target: { name: "descViaPredio", value: r.descripcionVia } } as any);
+                  handleChange({ target: { name: "numMun1", value: r.numero } } as any);
+                  handleChange({ target: { name: "imagenPredio", value: r.imagen } } as any);
+
+                  setCodigoPU(r.codigo);
+                  setMostrarDetallePredio(true);
+                  setOpenBuscarDNI(false);
+                }}
+              >
+                <TableCell>
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPredio(r);
+                      setOpenImagen(true);
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={r.imagen}
+                      alt="Predio"
+                      sx={{
+                        width: 80,
+                        height: 60,
+                        borderRadius: 1,
+                        border: "1px solid #ddd",
+                        objectFit: "cover",
+                      }}
+                      onError={(e: any) => (e.target.src = predio1)}
+                    />
+                  </IconButton>
+                </TableCell>
+                <TableCell>{r.codigo}</TableCell>
+                <TableCell>{r.direccion}</TableCell>
+                <TableCell>{r.uso}</TableCell>
+                <TableCell>{r.propietario}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+        <Typography variant="caption" sx={{ color: "text.secondary", display: "block", mt: 1 }}>
+          *Se muestran 3 predios representativos del titular.
+        </Typography>
+      </>
+    ) : (
+      <Typography variant="body2" sx={{ color: "text.secondary", fontStyle: "italic" }}>
+        Ingrese el documento y presione Buscar.
+      </Typography>
+    )}
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setOpenBuscarDNI(false)}>Cerrar</Button>
+  </DialogActions>
+</Dialog>
 
 
 

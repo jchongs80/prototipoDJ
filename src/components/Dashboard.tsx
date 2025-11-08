@@ -500,7 +500,7 @@ const Dashboard: React.FC<Props> = ({onLogout}) => {
         },
       }}
     >
-      Ingresar a Casilla electrónica MTC
+      Ingresar a Casilla electrónica SAT (SICESAT)
     </Button>
   </Box>
 
