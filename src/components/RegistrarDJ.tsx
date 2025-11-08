@@ -67,9 +67,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import StraightenIcon from "@mui/icons-material/Straighten";
 import ConstructionIcon from "@mui/icons-material/Construction";
-import DescripIcon from "@mui/icons-material/Description";
 import VolumeUpIcon from "@mui/icons-material/VolumeUp";
-import CircularProgress from "@mui/material/CircularProgress";
 import sonidoMensaje from "../assets/sonidoMensaje.mp3";
 import audioTributito from "../assets/audio-tributito.mp3";
 import usuario from './../assets/usuario.png';
@@ -119,7 +117,6 @@ const RegistrarDJ: React.FC<Props> = ({ onLogout }) => {
 
   const [darkMode, setDarkMode] = useState(false);
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const drawerWidth = 80;
 
 const [validarPaso2, setValidarPaso2] = useState<(() => boolean) | null>(null);
@@ -130,8 +127,6 @@ const [puedeReproducir, setPuedeReproducir] = useState(false);
 const [puedeReproducirSonido, setPuedeReproducirSonido] = useState(false);
 const [mensajeInicialEscrito, setMensajeInicialEscrito] = useState(false); // ✅ nuevo
 
-const audioMensajeRef = useRef<HTMLAudioElement | null>(null);
-const audioTributitoRef = useRef<HTMLAudioElement | null>(null);
 const typingIntervalRef = useRef<NodeJS.Timeout | null>(null); // ✅ nuevo
 
 const location = useLocation();

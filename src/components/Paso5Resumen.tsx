@@ -88,19 +88,6 @@ interface Paso5ResumenProps {
   theme: Theme;
 }
 
-/* ------------------- Función para obtener descripciones ------------------- */
-const obtenerLabel = (lista: { value: string; label: string }[], valor?: string) => {
-  const item = lista.find((op) => op.value === valor);
-  return item ? item.label : valor || "-";
-};
-
-// 🔹 Función auxiliar para buscar una obra
-const obtenerObra = (descripcion: string) => {
-  const obra = ListaobrasCatalogo.find((o) => o.descripcion === descripcion);
-  return obra || null;
-};
-
-
 
 const obtenerDescripcion = (lista: any[], valor: string) =>
   lista.find((item) => item.value === valor)?.label || "Sin descripción";

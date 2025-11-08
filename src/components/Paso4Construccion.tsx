@@ -21,7 +21,6 @@ import {
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import WorkIcon from "@mui/icons-material/Work";
 import ApartmentIcon from "@mui/icons-material/Apartment";
@@ -37,7 +36,6 @@ import { ListaPuertasVentanas } from "./ListaPuertasVentanas";
 import InfoCallout from "./InfoCallout";
 import HelpTooltip from "./helpTooltip";
 import { TableContainer } from "@mui/material";
-import ResumenPredios from "./resumenPredio";
 
 // ✅ 1️⃣ INTERFACE CORRECTA
 type Paso4ConstruccionProps ={
@@ -52,50 +50,7 @@ type Paso4ConstruccionProps ={
 const tipoNivelList = ["Piso", "Mezzanine", "Sótano", "Azotea", "Aires"];
 const materialList = ["Concreto", "Ladrillo", "Adobe"];
 const estadoConservList = ["Muy bueno", "Bueno", "Regular", "Malo"];
-const unidadMedidaList = ["m2", "m3", "litros", "metros"];
 
-
-
-
-const descripcionesObra = [
-  "Muro de concreto armado que incluye armadura y cimentacion.",
-  "Muro traslucido de concreto armado (tipo UNI) y/o metálico que incluye cimentación. h: 2.40 m.",
-  "Muro de ladrillo con columnas de concreto armado y/o metálicas que incluye cimentacion h. (altura) mayor a 2.40 m.",
-  "Muro de ladrillo con columnas de concreto armado y/o metálicas que incluye cimentacion. h. hasta 2.40 m.",
-  "Muro de ladrillo con columnas de concreto armado Solaqueados h. hasta 2.40 m.",
-  "Pasamano Metalico de Tubo Redondo Galvanizado de 3\"",
-  "Pasamano Metalico de Tubo Redondo Galvanizado de 2\"",
-  "Pasamano Metalico de Tubo Redondo Galvanizado de 1\"",
-  "Cerco Metalico; Tubo Redondo 2\" Ang 1\" Malla 2x2 Alam #8",
-  "Cerco Metalico; Tubo Redondo 2\" Ang 1\" Malla 2x2 Alam #10",
-  "Cerco Metalico; Tubo Redondo 2\" Ang 1\" Malla 2x2 Alam #12",
-  "Poste/Estructura de fierro h=4mt",
-  "Poste/Estructura de fierro h=2.50mt",
-  "Sardinell de concreto e=0,15m; h=0,65m",
-  "Pista o Losa de Concreto de 6\"",
-  "Trampa de Grasa de concreto armado",
-  "Plataforma de Estacionamiento hasta 2 niveles.",
-];
-
-const categoriasObra = [
-  "Muros perimétricos o cercos",
-  "Portones y puertas",
-  "Tanques elevados",
-  "Cisternas, pozos sumideros, tanques septicos",
-  "Piscinas, espejos de agua",
-  "Losas deportivas, estacionamientos...",
-  "Hornos, chimeneas, incineradores",
-  "Torres de vigilancia",
-  "Bovedas",
-  "Balanzas industriales",
-  "Postes de alumbrado",
-  "Bases de soporte de maquinas",
-  "Cajas de Registro de Concreto",
-  "Buzón de Concreto",
-  "Parapeto",
-  "Rampas, Gradas y Escaleras de Concreto",
-  "Muro de Contención de Concreto Armado",
-];
 
 const getColorByLetra = (letra: string) => {
   switch (letra) {
@@ -468,13 +423,6 @@ const handleAgregarPiso = () => {
   setMostrarFormObra(false);
   setOpenSnackbar(true);
 };
-
-
-const handleActualizarConstruccion = (pisosActualizados: any[], obrasActualizadas: any[]) => {
-  setPisos(pisosActualizados);
-  setObras(obrasActualizadas);
-};
-
 
 
   const totalConstruccion = pisos.reduce(
