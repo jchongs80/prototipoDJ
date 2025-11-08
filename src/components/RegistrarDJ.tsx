@@ -941,23 +941,6 @@ const totalObrasComplementarias = obras.reduce(
   0
 );
 
-// Estado para el spinner y mensaje
-const [procesando, setProcesando] = useState(false);
-const [exito, setExito] = useState(false);
-
-
-// ------------------- FUNCIÓN AL PRESENTAR LA DJ -------------------
-const handlePresentarDJ = () => {
-  setProcesando(true);
-  setTimeout(() => {
-    setProcesando(false);
-    setExito(true);
-    setTimeout(() => navigate("/inicio"), 2500);
-  }, 2500);
-};
-
-
-
 
 
 // 🔄 Actualizar resumenPredio cuando cambian los datos del formulario (pasos 2 o 3)
@@ -986,11 +969,6 @@ useEffect(() => {
     nombreConyuge: formData.apellidosConyuge || "",
   });
 }, [formData]);
-
-
-
-
-const isLaptop2 = useMediaQuery("(min-width:1200px)");
 
 
 
@@ -1695,8 +1673,7 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
        {/* 🔹 MENSAJES DEL CHAT */}
 {messages.map((msg, index) => {
   const esTributito = msg.startsWith("Tributito:");
-  const esUsuario = msg.startsWith("Tú:");
-
+  
   return (
     <Box
       key={index}

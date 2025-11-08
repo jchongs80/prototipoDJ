@@ -15,10 +15,7 @@ import {
   Card,
   CardContent,
   Button,
-  Container,
-  Chip,
   Link,
-  Divider,
   useTheme,
   useMediaQuery
 } from '@mui/material';
@@ -108,15 +105,10 @@ interface Props {
 
 const Dashboard: React.FC<Props> = ({onLogout}) => {
   const [darkMode, setDarkMode] = useState(false);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const drawerWidth = 80;
 
   const location = useLocation();
   const navigate = useNavigate();
-
-  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "lg")); // 600–1200 px
-  const isDesktop = useMediaQuery(theme.breakpoints.up("lg")); // >=1200 px
 
   const nuevosPredios = location.state?.nuevosPredios || 0;
 

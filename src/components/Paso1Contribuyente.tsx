@@ -15,10 +15,8 @@ import {
   TodayOutlined,
   PhoneIphoneOutlined,
   EmailOutlined,
-  PhoneOutlined,
 } from "@mui/icons-material";
 
-import contribuyenteIcon from './../assets/contribuyente.png';
 import conyugeIcon from './../assets/conyuge.png';
 import condicionEspecialIcon from './../assets/anciano.png';
 import direccionCompletaIcon from './../assets/localizacion.png';

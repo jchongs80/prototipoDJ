@@ -23,7 +23,6 @@ import {
   Button,
   Fade,
   useTheme,
-  Snackbar,
 } from "@mui/material";
 import {
   Home as HomeIcon,
@@ -138,7 +137,7 @@ const InfoButton: React.FC<InfoButtonProps> = ({ title, color, items }) => {
    COMPONENTE PRINCIPAL
 ====================== */
 const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) => {
-  const theme = useTheme();
+
   const drawerWidth = 80;
   const navigate = useNavigate();
   const location = useLocation();
@@ -156,16 +155,6 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
   const handleOpen = () => setOpenModal(true);
   const handleClose = () => setOpenModal(false);
 
-  const handleAceptar = () => {
-    if (!numPredios || !tipoPersona) return alert("Completa todos los campos.");
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      setOpenModal(false);
-      navigate("/registrar-dj", { state: { numPredios, tipoPersona } });
-    }, 2500);
-  };
 
   // 🕒 Fecha y hora en vivo
   const [dateTime, setDateTime] = useState(new Date());

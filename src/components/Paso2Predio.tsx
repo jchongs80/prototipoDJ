@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useImperativeHandle, forwardRef, useRef } from "react";
+import React, { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import {
   Box,
   Typography,
@@ -21,22 +21,16 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Divider,
 } from "@mui/material";
 
 import HelpTooltip from "./helpTooltip";
 import TipoTransferencia from "./tipoTransferencia";
 
-import UploadFileIcon from "@mui/icons-material/UploadFile";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 
 import datosPredioIcon from './../assets/casa.png';
 import condicionPropiedadIcon from './../assets/contrato.png';
-import valorAdquisicionIcon from './../assets/comprar-casa.png';
 import solesIcon from './../assets/sol-peruano.png';
 import dolaresIcon from './../assets/bolsa-de-dinero.png';
 import usoPredioIcon from './../assets/edificio.png';
@@ -313,11 +307,6 @@ const inicio = (paginaActual - 1) * resultadosPorPagina;
 const fin = inicio + resultadosPorPagina;
 const resultadosPagina = resultadosBusqueda.slice(inicio, fin);
 
-
-const [errorTipoTransferencia, setErrorTipoTransferencia] = useState(false);
-const [errorCondicionProp, setErrorCondicionProp] = useState(false);
-const [errorPorcentaje, setErrorPorcentaje] = useState(false);
-const [errorFechaAdq, setErrorFechaAdq] = useState(false);
 const [errorValorAdq, setErrorValorAdq] = useState(false);
 
 const [openImagenPredio, setOpenImagenPredio] = useState(false);
