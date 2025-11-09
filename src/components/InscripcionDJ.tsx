@@ -196,18 +196,8 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
 
 
 
-        const [snackbar, setSnackbar] = useState({
-  open: false,
-  message: "",
-  type: "success" as "success" | "info",
-});
-
 const handleDescargarPDF = (codigo: string) => {
-    setSnackbar({
-      open: true,
-      message: `📄 Descargando DJ ${codigo}...`,
-      type: "info",
-    });
+
     const fileURL = `${process.env.PUBLIC_URL}/PU.pdf`;
     const link = document.createElement("a");
     link.href = fileURL;

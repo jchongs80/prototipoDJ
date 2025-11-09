@@ -497,7 +497,7 @@ useEffect(() => {
   let nuevasObras: any[] = props.obras ? [...props.obras] : [];
 
   if (!props.pisos || props.pisos.length === 0) {
-    nuevosPisos = [
+    const nuevosPisos = [
       {
         tipoNivel: "Piso",
         nroPiso: "1",
@@ -539,7 +539,7 @@ useEffect(() => {
   }
 
   if (!props.obras || props.obras.length === 0) {
-    nuevasObras =[
+    const nuevasObras =[
       {
         descripcion: "Puerta de fierro o aluminio h=2.20m, ancho ≤2.00m.",
         tipoNivel: "Piso",

@@ -148,7 +148,7 @@ useEffect(() => {
     setPrediosDeclarados(declaradosDesdeRuta);
     sessionStorage.setItem("prediosDeclarados", declaradosDesdeRuta.toString());
   }
-}, [declaradosDesdeRuta]);
+}, [declaradosDesdeRuta, prediosDeclarados]);
   
 
   const sidebarItems = [
