@@ -109,7 +109,6 @@ useImperativeHandle(ref, () => ({
   const [mostrarDetallePredio, setMostrarDetallePredio] = useState(false);
 
   const [errorArchivoAdquisicion, setErrorArchivoAdquisicion] = useState("");
-  const [loadingArchivoAdquisicion, setLoadingArchivoAdquisicion] = useState(false);
   const [debeValidar, setDebeValidar] = useState(false); // ✅ controla si se debe mostrar error
 
   const [openBuscarDNI, setOpenBuscarDNI] = useState(false);

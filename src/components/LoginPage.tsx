@@ -40,7 +40,6 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin }) => {
   const theme = useTheme();
   const isTablet = useMediaQuery(theme.breakpoints.between("sm", "lg")); // 600–1200 px
   const isLaptop = useMediaQuery(theme.breakpoints.up("lg")); // ≥1200 px
-  const isPhone = useMediaQuery(theme.breakpoints.down("sm")); // ≤600 px
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const navigate = useNavigate(); // 👈 agregado

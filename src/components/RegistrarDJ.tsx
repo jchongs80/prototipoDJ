@@ -54,7 +54,6 @@ import { useLocation } from "react-router-dom";
 
 import tributito from './../assets/tributito.png';
 import CloseIcon from "@mui/icons-material/Close";
-import ChatIcon from "@mui/icons-material/Chat";
 import SendIcon from "@mui/icons-material/Send";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import Paso1Contribuyente from './Paso1Contribuyente';
@@ -330,12 +329,6 @@ const formattedDateTime = dateTime.toLocaleString("es-PE", {
   second: "2-digit",
 });
 
-useEffect(() => {
-  // Si estoy en laptop y el chat está abierto, ciérralo
-  if (isLaptop && showChat) setShowChat(false);
-  // Si vuelvo a pantallas grandes y estaba cerrado, no lo fuerces a abrir
-}, [isLaptop]);
-
 
 useEffect(() => {
   const habilitarSonido = () => setPuedeReproducir(true);
@@ -373,18 +366,6 @@ const mensajesPorPaso = [
     descripcion: "Aquí podrás revisar toda la información registrada antes de presentar tu Declaración Jurada."
   }
 ];
-
-
-// Respuestas breves del bot (demo)
-const respuestasDemo = [
-  "😊 ¡Muy bien! Si necesitas ayuda con tus datos personales, revisa los campos obligatorios antes de avanzar.",
-  "🏠 Recuerda adjuntar el documento de transferencia para continuar correctamente.",
-  "📏 Asegúrate de ingresar correctamente el área y el valor arancelario del terreno.",
-  "🔨 No olvides agregar al menos un piso o una obra complementaria si aplica.",
-  "✅ Todo listo. Revisa tus datos y presenta la declaración."
-];
-
-
 
 const [errorCondicionFile, setErrorCondicionFile] = useState("");
 const [errorReciboFile, setErrorReciboFile] = useState("");

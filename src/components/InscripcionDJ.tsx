@@ -22,7 +22,6 @@ import {
   CircularProgress,
   Button,
   Fade,
-  useTheme,
 } from "@mui/material";
 import {
   Home as HomeIcon,
