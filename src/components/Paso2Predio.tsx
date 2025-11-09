@@ -109,7 +109,7 @@ useImperativeHandle(ref, () => ({
   const [mostrarDetallePredio, setMostrarDetallePredio] = useState(false);
 
   const [errorArchivoAdquisicion, setErrorArchivoAdquisicion] = useState("");
-  const [debeValidar, setDebeValidar] = useState(false); // ✅ controla si se debe mostrar error
+ // const [debeValidar, setDebeValidar] = useState(false); // ✅ controla si se debe mostrar error
 
   const [openBuscarDNI, setOpenBuscarDNI] = useState(false);
   const [tipoDocDNI, setTipoDocDNI] = useState<"DNI" | "CE" | "">("");
@@ -290,7 +290,7 @@ const handleBuscarPorDNI = () => {
 
 // Limpia errores al buscar predio o cargar datos automáticos
 const resetValidacionArchivo = () => {
-  setDebeValidar(false);
+  //setDebeValidar(false);
   setErrorArchivoAdquisicion("");
 };
 
@@ -544,8 +544,8 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       >
         <iframe
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1950.9719709145008!2d-77.03470702140892!3d-12.047378097912183!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8c9e3ae9203%3A0x9c33f80e960a0b0!2sJr.%20Caman%C3%A1%20499%2C%20Lima!5e0!3m2!1ses-419!2spe!4v1759029434785!5m2!1ses-419!2spe"
+           title="vista-previa-documento"
           style={{ border: 0, width: "100%", height: "180px" }}
-          title="Visor"
           loading="lazy"
         />
        

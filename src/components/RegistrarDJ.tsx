@@ -117,7 +117,6 @@ const RegistrarDJ: React.FC<Props> = ({ onLogout }) => {
   const theme = useTheme();
   const drawerWidth = 80;
 
-const [validarPaso2, setValidarPaso2] = useState<(() => boolean) | null>(null);
   
 // 🎧 Estados y referencias para sonido y efecto de carga
 const [isThinking, setIsThinking] = useState(false);
@@ -278,14 +277,6 @@ if (activeStep === 1) {
   }
 }
 
- if (activeStep === 1) { // Paso 2: Datos del Predio y Condición de Propiedad
-  if (validarPaso2 && !validarPaso2()) {
-    setSeveritySnackbar("info");
-    setMensajeSnackbar("⚠️ Por favor, revise los datos en Condición de Propiedad antes de continuar.");
-    setOpenSnackbar(true);
-    return; // 🚫 Detiene el avance si algo falla
-  }
-}
 
   // ✅ Si todo bien, avanzar
   setActiveStep((prev) => prev + 1);
@@ -847,7 +838,7 @@ useEffect(() => {
     resizeObserver.disconnect();
     chatContainer.removeEventListener("scroll", actualizarPosicion);
   };
-}, [activeStep]);
+}, [activeStep, messages.length]);
 
 
   // 🧹 Limpieza al desmontar el componente
