@@ -176,7 +176,79 @@ useEffect(() => {
   //  };
   //}, []);
 
+// Mensajes automáticos del asistente por paso
+const mensajesPorPaso = React.useMemo(() => ([
+  {
+    descripcion: "¡Hola! Soy Tributito, tu asistente virtual. Te guiaré en el proceso de tu Declaración Jurada.. En este paso debes registrar tus datos personales y, si corresponde, los de tu cónyuge. Además, adjunta los documentos solicitados como el recibo de servicio y tu condición especial si aplica."
+  },
+  {
+    descripcion: "Aquí registrarás la información de tu predio: su código, dirección, tipo de transferencia y documento de adquisición (PDF)."
+  },
+  {
+    descripcion: "En este paso ingresa los valores y características del terreno: área, frontis y valor arancelario del predio."
+  },
+  {
+    descripcion: "Registra las características de construcción y obras complementarias como pisos, materiales, y detalles de edificación."
+  },
+  {
+    descripcion: "Aquí podrás revisar toda la información registrada antes de presentar tu Declaración Jurada."
+  }
+]), []);
 
+
+const escribirMensajeTributito = React.useCallback((texto: string) => {
+  // 🧹 Limpieza absoluta de intervalos anteriores
+  if (typingIntervalRef.current) {
+    clearInterval(typingIntervalRef.current);
+    typingIntervalRef.current = null;
+  }
+
+  // Reinicia estados
+  setIsThinking(false);
+  setIsTyping(false);
+  setTypedText("");
+
+  let cancelado = false; // ⚠️ bandera para prevenir loops infinitos
+
+  // Delay breve antes de comenzar a escribir
+  setTimeout(() => {
+    if (cancelado) return;
+    setIsTyping(true);
+
+    const letras = texto.split("");
+    let currentIndex = 0;
+
+    typingIntervalRef.current = setInterval(() => {
+      if (cancelado) return;
+
+      // Cuando termina de escribir
+      if (currentIndex >= letras.length) {
+        clearInterval(typingIntervalRef.current!);
+        typingIntervalRef.current = null;
+        setIsTyping(false);
+        setMessages((prev) => [...prev, `Tributito: ${texto}`]);
+
+        // Reproducir sonido una sola vez
+        const audio = new Audio(sonidoMensaje);
+        audio.play().catch(() => {});
+        return;
+      }
+
+      // Escribir letra por letra
+      setTypedText(letras.slice(0, currentIndex + 1).join(""));
+      currentIndex++;
+    }, 50);
+  }, 100);
+
+  // 🧹 Asegurar que si el usuario cambia de paso o desmonta, se cancela
+  return () => {
+    cancelado = true;
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+      typingIntervalRef.current = null;
+    }
+  };
+}, []);
 
 useEffect(() => {
   // Si es el primer paso y aún no se ha mostrado el mensaje inicial
@@ -200,7 +272,7 @@ useEffect(() => {
       ultimoPasoMostradoRef.current = activeStep; // Marca que ya se mostró
     }
   }
-}, [activeStep, mensajeInicialEscrito]);
+}, [activeStep, mensajeInicialEscrito, mensajesPorPaso, escribirMensajeTributito]);
 
 
 
@@ -334,24 +406,6 @@ useEffect(() => {
 
 
 
-// Mensajes automáticos del asistente por paso
-const mensajesPorPaso = React.useMemo(() => ([
-  {
-    descripcion: "¡Hola! Soy Tributito, tu asistente virtual. Te guiaré en el proceso de tu Declaración Jurada.. En este paso debes registrar tus datos personales y, si corresponde, los de tu cónyuge. Además, adjunta los documentos solicitados como el recibo de servicio y tu condición especial si aplica."
-  },
-  {
-    descripcion: "Aquí registrarás la información de tu predio: su código, dirección, tipo de transferencia y documento de adquisición (PDF)."
-  },
-  {
-    descripcion: "En este paso ingresa los valores y características del terreno: área, frontis y valor arancelario del predio."
-  },
-  {
-    descripcion: "Registra las características de construcción y obras complementarias como pisos, materiales, y detalles de edificación."
-  },
-  {
-    descripcion: "Aquí podrás revisar toda la información registrada antes de presentar tu Declaración Jurada."
-  }
-]), []);
 
 const [errorCondicionFile, setErrorCondicionFile] = useState("");
 const [errorReciboFile, setErrorReciboFile] = useState("");
@@ -676,59 +730,7 @@ const obtenerRespuestaAleatoria = (paso: number): string => {
 const [isTyping, setIsTyping] = useState(false);
 const [typedText, setTypedText] = useState("");
 
-const escribirMensajeTributito = React.useCallback((texto: string) => {
-  // 🧹 Limpieza absoluta de intervalos anteriores
-  if (typingIntervalRef.current) {
-    clearInterval(typingIntervalRef.current);
-    typingIntervalRef.current = null;
-  }
 
-  // Reinicia estados
-  setIsThinking(false);
-  setIsTyping(false);
-  setTypedText("");
-
-  let cancelado = false; // ⚠️ bandera para prevenir loops infinitos
-
-  // Delay breve antes de comenzar a escribir
-  setTimeout(() => {
-    if (cancelado) return;
-    setIsTyping(true);
-
-    const letras = texto.split("");
-    let currentIndex = 0;
-
-    typingIntervalRef.current = setInterval(() => {
-      if (cancelado) return;
-
-      // Cuando termina de escribir
-      if (currentIndex >= letras.length) {
-        clearInterval(typingIntervalRef.current!);
-        typingIntervalRef.current = null;
-        setIsTyping(false);
-        setMessages((prev) => [...prev, `Tributito: ${texto}`]);
-
-        // Reproducir sonido una sola vez
-        const audio = new Audio(sonidoMensaje);
-        audio.play().catch(() => {});
-        return;
-      }
-
-      // Escribir letra por letra
-      setTypedText(letras.slice(0, currentIndex + 1).join(""));
-      currentIndex++;
-    }, 50);
-  }, 100);
-
-  // 🧹 Asegurar que si el usuario cambia de paso o desmonta, se cancela
-  return () => {
-    cancelado = true;
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current);
-      typingIntervalRef.current = null;
-    }
-  };
-}, []);;
 
 const handleSendMessage = () => {
   if (!inputValue.trim()) return;
