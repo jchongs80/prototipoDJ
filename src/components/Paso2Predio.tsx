@@ -119,8 +119,6 @@ useImperativeHandle(ref, () => ({
   const [errorTipoDocDNI, setErrorTipoDocDNI] = useState("");
   const [errorNumDocDNI, setErrorNumDocDNI] = useState("");
 
-  // Util para mostrar "—" cuando no hay valor
-  const view = (v?: string) => (v && `${v}`.trim() !== "" ? v : "—");
 
   // ✅ Mantener visible el detalle del predio cuando se regresa al paso 2
 useEffect(() => {
