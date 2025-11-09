@@ -157,8 +157,6 @@ const obrasCatalogo = [
 
 const Paso4Construccion: React.FC<Paso4ConstruccionProps> = ( props) => {
 
-const { pisos: pisosProp, obras: obrasProp, onActualizarConstruccion } = props;
-
 const { onChatMessage } = props; // 🔹 evita sombrear el tipo
   
   // ✅ 3️⃣ FUNCIONES AUXILIARES (no confundir con el tipo)
@@ -492,6 +490,7 @@ const handleCancelarConfirmado = () => {
   setMostrarFormObra(false);
 };
 
+const { pisos: pisosProp, obras: obrasProp, onActualizarConstruccion } = props;
 
 useEffect(() => {
 
@@ -567,7 +566,7 @@ useEffect(() => {
 
   // notifica al padre
   onActualizarConstruccion?.(nuevosPisos, nuevasObras);
-}, [pisos, obras, onActualizarConstruccion]); // 👈 ejecuta solo al montar
+}, [pisosProp, obrasProp, onActualizarConstruccion]); // 👈 ejecuta solo al montar
 
 
 // Busca la descripción correspondiente según el valor (A, B, C...)
