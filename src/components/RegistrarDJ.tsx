@@ -120,7 +120,7 @@ const RegistrarDJ: React.FC<Props> = ({ onLogout }) => {
   
 // 🎧 Estados y referencias para sonido y efecto de carga
 const [isThinking, setIsThinking] = useState(false);
-const [puedeReproducir, setPuedeReproducir] = useState(false);
+//const [puedeReproducir, setPuedeReproducir] = useState(false);
 const [puedeReproducirSonido, setPuedeReproducirSonido] = useState(false);
 const [mensajeInicialEscrito, setMensajeInicialEscrito] = useState(false); // ✅ nuevo
 
@@ -161,20 +161,20 @@ useEffect(() => {
 
   const [activeStep, setActiveStep] = useState(0);
 
-  const [usuarioInteraccion, setUsuarioInteraccion] = useState(false);
+  //const [usuarioInteraccion, setUsuarioInteraccion] = useState(false);
 
-  useEffect(() => {
-    const activar = () => setUsuarioInteraccion(true);
-    window.addEventListener("click", activar, { once: true });
-    window.addEventListener("keydown", activar, { once: true });
-    window.addEventListener("scroll", activar, { once: true });
+  //useEffect(() => {
+  //  const activar = () => setUsuarioInteraccion(true);
+  //  window.addEventListener("click", activar, { once: true });
+  //  window.addEventListener("keydown", activar, { once: true });
+  //  window.addEventListener("scroll", activar, { once: true });
 
-    return () => {
-      window.removeEventListener("click", activar);
-      window.removeEventListener("keydown", activar);
-      window.removeEventListener("scroll", activar);
-    };
-  }, []);
+  //  return () => {
+  //    window.removeEventListener("click", activar);
+  //    window.removeEventListener("keydown", activar);
+  //    window.removeEventListener("scroll", activar);
+  //  };
+  //}, []);
 
 
 
@@ -316,11 +316,11 @@ const formattedDateTime = dateTime.toLocaleString("es-PE", {
 });
 
 
-useEffect(() => {
-  const habilitarSonido = () => setPuedeReproducir(true);
-  document.addEventListener("click", habilitarSonido, { once: true });
-  return () => document.removeEventListener("click", habilitarSonido);
-}, []);
+//useEffect(() => {
+//  const habilitarSonido = () => setPuedeReproducir(true);
+//  document.addEventListener("click", habilitarSonido, { once: true });
+//  return () => document.removeEventListener("click", habilitarSonido);
+//}, []);
 
 // 🟢 Reproduce el sonido del primer mensaje en cuanto el usuario habilite audio
 useEffect(() => {
@@ -330,12 +330,12 @@ useEffect(() => {
       audio.play().catch(() => {});
     }, 300); // ligero retardo para sincronizar con el texto
   }
-}, [puedeReproducirSonido]);
+}, [puedeReproducirSonido, activeStep, messages.length]);
 
 
 
 // Mensajes automáticos del asistente por paso
-const mensajesPorPaso = [
+const mensajesPorPaso = React.useMemo(() => ([
   {
     descripcion: "¡Hola! Soy Tributito, tu asistente virtual. Te guiaré en el proceso de tu Declaración Jurada.. En este paso debes registrar tus datos personales y, si corresponde, los de tu cónyuge. Además, adjunta los documentos solicitados como el recibo de servicio y tu condición especial si aplica."
   },
@@ -351,7 +351,7 @@ const mensajesPorPaso = [
   {
     descripcion: "Aquí podrás revisar toda la información registrada antes de presentar tu Declaración Jurada."
   }
-];
+]), []);
 
 const [errorCondicionFile, setErrorCondicionFile] = useState("");
 const [errorReciboFile, setErrorReciboFile] = useState("");
@@ -676,7 +676,7 @@ const obtenerRespuestaAleatoria = (paso: number): string => {
 const [isTyping, setIsTyping] = useState(false);
 const [typedText, setTypedText] = useState("");
 
-const escribirMensajeTributito = (texto: string) => {
+const escribirMensajeTributito = React.useCallback((texto: string) => {
   // 🧹 Limpieza absoluta de intervalos anteriores
   if (typingIntervalRef.current) {
     clearInterval(typingIntervalRef.current);
@@ -728,7 +728,7 @@ const escribirMensajeTributito = (texto: string) => {
       typingIntervalRef.current = null;
     }
   };
-};
+}, []);;
 
 const handleSendMessage = () => {
   if (!inputValue.trim()) return;
@@ -797,39 +797,25 @@ useEffect(() => {
   if (!chatContainer) return;
 
   let iniciado = false;
-
   const actualizarPosicion = () => {
     requestAnimationFrame(() => {
       if (!chatContainer) return;
-
       const alturaTotal = chatContainer.scrollHeight;
       const alturaVisible = chatContainer.clientHeight;
-      const distanciaAlFinal =
-        alturaTotal - chatContainer.scrollTop - alturaVisible;
-
-      if (!iniciado) {
-        iniciado = true;
-        return;
-      }
-
-      // 🔒 Solo actualiza si realmente cambió
+      const distanciaAlFinal = alturaTotal - chatContainer.scrollTop - alturaVisible;
+      if (!iniciado) { iniciado = true; return; }
       setPosicionTributito((prev) => {
-        const nueva =
-          alturaTotal > alturaVisible * 1.1 && distanciaAlFinal < 120
-            ? "arriba"
-            : "abajo";
-        return prev === nueva ? prev : nueva; // ❗ Evita re-render innecesario
+        const nueva = alturaTotal > alturaVisible * 1.1 && distanciaAlFinal < 120 ? "arriba" : "abajo";
+        return prev === nueva ? prev : nueva;
       });
     });
   };
 
   const mutationObserver = new MutationObserver(actualizarPosicion);
   mutationObserver.observe(chatContainer, { childList: true, subtree: true });
-
   chatContainer.addEventListener("scroll", actualizarPosicion);
   const resizeObserver = new ResizeObserver(actualizarPosicion);
   resizeObserver.observe(chatContainer);
-
   const timer = setTimeout(actualizarPosicion, 500);
 
   return () => {
