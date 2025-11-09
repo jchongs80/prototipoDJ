@@ -493,6 +493,8 @@ const handleCancelarConfirmado = () => {
 
 useEffect(() => {
 
+  const {pisos, obras, onActualizarConstruccion} = props;
+
    let nuevosPisos: any[] = props.pisos ? [...props.pisos] : [];
   let nuevasObras: any[] = props.obras ? [...props.obras] : [];
 
@@ -569,7 +571,7 @@ useEffect(() => {
   setInitialObrasCount((!props.obras || props.obras.length === 0) ? nuevasObras.length : props.obras.length);
 
   props.onActualizarConstruccion?.(nuevosPisos, nuevasObras);
-}, [pisos, obras]); // 👈 ejecuta solo al montar
+}, [props.pisos, props.obras, props.onActualizarConstruccion]); // 👈 ejecuta solo al montar
 
 
 // Busca la descripción correspondiente según el valor (A, B, C...)
