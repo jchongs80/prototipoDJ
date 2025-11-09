@@ -495,10 +495,10 @@ useEffect(() => {
 
   const {pisos, obras, onActualizarConstruccion} = props;
 
-   let nuevosPisos: any[] = props.pisos ? [...props.pisos] : [];
-  let nuevasObras: any[] = props.obras ? [...props.obras] : [];
+   let nuevosPisos: any[] = pisos ? [...pisos] : [];
+  let nuevasObras: any[] = obras ? [...obras] : [];
 
-  if (!props.pisos || props.pisos.length === 0) {
+  if (!pisos || pisos.length === 0) {
     const nuevosPisos = [
       {
         tipoNivel: "Piso",
@@ -537,10 +537,10 @@ useEffect(() => {
     ];
     setPisos(nuevosPisos);
   }else{
-    setPisos(props.pisos);
+    setPisos(pisos);
   }
 
-  if (!props.obras || props.obras.length === 0) {
+  if (!obras || obras.length === 0) {
     const nuevasObras =[
       {
         descripcion: "Puerta de fierro o aluminio h=2.20m, ancho ≤2.00m.",
@@ -563,12 +563,12 @@ useEffect(() => {
     ];
     setObras(nuevasObras);
   }else {
-    setObras(props.obras);
+    setObras(obras);
   }
 
     // ✅ marca cuántos registros son "base" al cargar
-  setInitialPisosCount((!props.pisos || props.pisos.length === 0) ? nuevosPisos.length : props.pisos.length);
-  setInitialObrasCount((!props.obras || props.obras.length === 0) ? nuevasObras.length : props.obras.length);
+  setInitialPisosCount((!pisos || pisos.length === 0) ? nuevosPisos.length : pisos.length);
+  setInitialObrasCount((!obras || obras.length === 0) ? nuevasObras.length : obras.length);
 
   props.onActualizarConstruccion?.(nuevosPisos, nuevasObras);
 }, [props.pisos, props.obras, props.onActualizarConstruccion]); // 👈 ejecuta solo al montar
