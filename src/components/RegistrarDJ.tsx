@@ -200,7 +200,7 @@ useEffect(() => {
       ultimoPasoMostradoRef.current = activeStep; // Marca que ya se mostró
     }
   }
-}, [activeStep]);
+}, [activeStep, mensajeInicialEscrito]);
 
 
 

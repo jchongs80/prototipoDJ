@@ -569,7 +569,7 @@ useEffect(() => {
   setInitialObrasCount((!props.obras || props.obras.length === 0) ? nuevasObras.length : props.obras.length);
 
   props.onActualizarConstruccion?.(nuevosPisos, nuevasObras);
-}, []); // 👈 ejecuta solo al montar
+}, [pisos, obras]); // 👈 ejecuta solo al montar
 
 
 // Busca la descripción correspondiente según el valor (A, B, C...)
