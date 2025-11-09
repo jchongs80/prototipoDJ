@@ -570,7 +570,7 @@ useEffect(() => {
   setInitialPisosCount((!pisos || pisos.length === 0) ? nuevosPisos.length : pisos.length);
   setInitialObrasCount((!obras || obras.length === 0) ? nuevasObras.length : obras.length);
 
-  props.onActualizarConstruccion?.(nuevosPisos, nuevasObras);
+  onActualizarConstruccion?.(nuevosPisos, nuevasObras);
 }, [props.pisos, props.obras, props.onActualizarConstruccion]); // 👈 ejecuta solo al montar
 
 
