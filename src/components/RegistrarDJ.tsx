@@ -13,7 +13,6 @@ import {
   ListItemButton,
   Button,
   useTheme,
-  useMediaQuery,
   Stepper,
   Step,
   StepLabel,
