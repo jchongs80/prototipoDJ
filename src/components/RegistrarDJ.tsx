@@ -131,10 +131,6 @@ const typingIntervalRef = useRef<NodeJS.Timeout | null>(null); // ✅ nuevo
 const location = useLocation();
 const navigate = useNavigate();
 
-const themeMUI = useTheme();
-const isLaptop = useMediaQuery(themeMUI.breakpoints.down("lg")); // lg≈1280-1366
-
-
 
   const { numPredios, tipoPersona, predioDeclarados: declaradosDesdeRuta = 0, tipoDocConyuge,
   nroDocConyuge,
