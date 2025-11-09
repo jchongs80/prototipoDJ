@@ -567,7 +567,7 @@ useEffect(() => {
 
   // notifica al padre
   onActualizarConstruccion?.(nuevosPisos, nuevasObras);
-}, [props.pisos, props.obras, props.onActualizarConstruccion]); // 👈 ejecuta solo al montar
+}, [pisos, obras, onActualizarConstruccion]); // 👈 ejecuta solo al montar
 
 
 // Busca la descripción correspondiente según el valor (A, B, C...)
