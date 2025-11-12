@@ -2093,8 +2093,8 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
 {/* 🔹 Imagen flotante de Tributito (parte superior derecha) */}
 
 {[0].includes(activeStep) && (
-  <Box sx={{ position: "absolute", left: 120, bottom:220 }}>
-                    <TributitoBubble anchorLeft={1400} anchorBottom={0} maxWidth={280} />
+  <Box sx={{ position: "absolute", left: 100, bottom:220 }}>
+                    <TributitoBubble anchorLeft={1100} anchorBottom={0} maxWidth={280} />
                   </Box>
 )}
 <Box
