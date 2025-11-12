@@ -69,7 +69,7 @@ import VolumeUpIcon from "@mui/icons-material/VolumeUp";
 import sonidoMensaje from "../assets/sonidoMensaje.mp3";
 import audioTributito from "../assets/audio-tributito.mp3";
 import usuario from './../assets/usuario.png';
-
+import TributitoBubble from "./tributitoBubble";
 
 interface Props {
   onLogout?: () => void;
@@ -2092,7 +2092,11 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
 
 {/* 🔹 Imagen flotante de Tributito (parte superior derecha) */}
 
-
+{[0].includes(activeStep) && (
+  <Box sx={{ position: "absolute", left: 120, bottom:220 }}>
+                    <TributitoBubble anchorLeft={1400} anchorBottom={0} maxWidth={280} />
+                  </Box>
+)}
 <Box
   component="img"
   src={require("../assets/tributito2.png")}
