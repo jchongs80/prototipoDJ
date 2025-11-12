@@ -15,7 +15,7 @@ type Props = {
 };
 
 const DEFAULT_TEXT =
-  "Soy Tributito. Durante el proceso de tu Declaración Jurada puedo guiarte para que lo hagas fácilmente. " +
+  "Soy Tributito, tu asistente virtual con Inteligencia Artificial. Durante el proceso de tu Declaración Jurada puedo guiarte para que lo hagas fácilmente. " +
   "Solo pregúntame lo que no entiendes y yo te diré qué hacer.";
 
 export default function TributitoBubble({
