@@ -520,7 +520,7 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
               width: "100%",
             }}
           >
-            <WarningAmberIcon sx={{ mr: 1 }} />
+
             <Typography sx={{ fontSize: "0.95rem" }}>
               ⚠️ Este formulario está disponible únicamente en la versión web del SAT Lima. Actualmente no se encuentra optimizado para dispositivos móviles. Le recomendamos utilizar una computadora o laptop para completar el registro sin inconvenientes.
             </Typography>
