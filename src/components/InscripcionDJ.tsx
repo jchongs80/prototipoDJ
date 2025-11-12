@@ -38,7 +38,6 @@ import {
   Language as LanguageIcon,
   NotificationsNone as NotificationsIcon,
   ArrowDropDown as ArrowDropDownIcon,
-  WarningAmber as WarningAmberIcon,
 } from "@mui/icons-material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
