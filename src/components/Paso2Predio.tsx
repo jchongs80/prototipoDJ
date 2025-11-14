@@ -49,6 +49,8 @@ import predio8 from '../assets/predio8.png';
 import predio9 from '../assets/predio9.png';
 import predio10 from '../assets/predio10.png';
 import InfoCallout from "./InfoCallout";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
 
 interface Paso2PredioProps {
   formData: any;
@@ -481,7 +483,7 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
     "&:hover": { bgcolor: "rgba(0,51,102,0.05)" },
   }}
 >
-  Buscar por DNI
+  Buscar por DNI del Vendedor
 </Button>
 
 
@@ -631,132 +633,161 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
     {/* 📋 Columna derecha: datos del predio */}
     <Box sx={{ flex: 1.5 }}>
       {/* Dirección completa */}
-      <Typography
-        variant="subtitle2"
-        sx={{
-          color: "#1976d2",
-          fontWeight: 600,
-          mb: 0.5,
-        }}
-      >
-        Dirección Completa
-      </Typography>
-      <Box
-        sx={{
-          bgcolor: "#f3f6fa",
-          p: 1,
-          px: 1.5,
-          borderRadius: 2,
-          border: "1px solid #e0e0e0",
-          mb: 2,
-          fontSize: "0.9rem",
-          color: "#333",
-          fontWeight: 500,
-        }}
-      >
-        {formData.direccionCompletaPredio || "—"}
-      </Box>
+      
+      
 
       {/* Datos principales (4 columnas por fila) */}
+      
+      {/* Dirección completa del predio - solo lectura */}
+<Box sx={{ mb: 2 }}>
+  {/* Encabezado con icono + chip de “no editable” */}
+  <Box
+    sx={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      mb: 1,
+      gap: 1,
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <LocationOnOutlinedIcon sx={{ fontSize: 20, color: "#1565c0" }} />
+      <Typography
+        variant="subtitle2"
+        sx={{ color: "#1565c0", fontWeight: 700 }}
+      >
+        Dirección completa del predio
+      </Typography>
+    </Box>
+
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        px: 1.3,
+        py: 0.5,
+        borderRadius: 999,
+        border: "1px solid rgba(21,101,192,0.25)",
+        bgcolor: "rgba(21,101,192,0.04)",
+        gap: 0.7,
+      }}
+    >
+      <LockOutlinedIcon sx={{ fontSize: 16, color: "#0b4a8b" }} />
+      <Typography
+        variant="caption"
+        sx={{ color: "#0b4a8b", fontWeight: 600 }}
+      >
+        Datos importados — no editables
+      </Typography>
+    </Box>
+  </Box>
+
+  {/* Línea de dirección completa */}
+  <Paper
+    variant="outlined"
+    sx={{
+      p: 1.2,
+      px: 1.6,
+      mb: 1.5,
+      borderRadius: 2,
+      borderStyle: "dashed",
+      borderColor: "#c5d0e6",
+      bgcolor: "#f5f8ff",
+    }}
+  >
+    <Typography
+      variant="body2"
+      sx={{
+        fontWeight: 600,
+        color: "#1a1f36",
+        wordBreak: "break-word",
+      }}
+    >
+      {formData.direccionCompletaPredio || "—"}
+    </Typography>
+  </Paper>
+
+  {/* Grilla de componentes de la dirección (solo lectura) */}
+  <Box
+    sx={{
+      display: "grid",
+      gridTemplateColumns: {
+        xs: "1fr",
+        sm: "repeat(2, 1fr)",
+        md: "repeat(4, 1fr)",
+      },
+      gap: 1,
+    }}
+  >
+    {(
+      [
+        ["Tipo de Vía", formData.tipoViaPredio],
+        ["Vía", formData.descViaPredio],
+        ["Tipo Denom. Urb.", formData.tipoDenomUrbPredio],
+        ["Denom. Urb.", formData.descDenomUrbPredio],
+        ["Número", formData.numMun1],
+        [
+          "Lote / SubLote",
+          `${formData.lotePredio || "—"} / ${
+            formData.subLote || "—"
+          }`,
+        ],
+        ["Int.", formData.interiorPredio],
+        ["Piso", formData.piso],
+        ["Edif.", formData.edificioPredio],
+        ["Dpto.", formData.dpto],
+        ["Ingreso", formData.ingreso],
+        ["Letra", formData.letra],
+      ] as [string, any][]
+    ).map(([label, value]) => (
       <Box
+        key={label}
         sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "1fr 1fr",
-            md: "repeat(4, 1fr)",
-          },
-          gap: 1,
-          mb: 2,
+          borderRadius: 1.5,
+          p: 1,
+          bgcolor: "#f7f9fc",
+          border: "1px dashed #c5d0e6",
+          display: "flex",
+          flexDirection: "column",
+          gap: 0.2,
+          cursor: "default",
         }}
       >
-        {/* Fila 1: Vía y Denominación */}
-        {[
-          ["Tipo de Vía", formData.tipoViaPredio],
-          ["Vía", formData.descViaPredio],
-          ["Tipo Denom. Urb.", formData.tipoDenomUrbPredio],
-          ["Denom. Urb.", formData.descDenomUrbPredio],
-        ].map(([label, value]) => (
-          <Box
-            key={label}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              p: 1,
-              borderRadius: 1.5,
-              bgcolor: "#fff",
-              border: "1px solid #e0e0e0",
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{ color: "#555", fontWeight: 500, fontSize: "0.85rem" }}
-            >
-              {label}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color:
-                  value && String(value).trim() !== "" ? "#1a1a1a" : "#9e9e9e",
-                fontFamily: "monospace",
-                fontSize: "0.85rem",
-              }}
-            >
-              {value && String(value).trim() !== "" ? value : "—"}
-            </Typography>
-          </Box>
-        ))}
-
-        {/* Fila 2 y 3: Número, Lote/SubLote, etc */}
-        {[
-          ["Número", formData.numMun1],
-          [
-            "Lote / SubLote",
-            (formData.lotePredio
-              ? formData.lotePredio
-              : "—") +
-              " / " +
-              (formData.subLote ? formData.subLote : "—"),
-          ],
-          ["Int.", formData.interiorPredio],
-          ["Piso", formData.piso],
-          ["Edif.", formData.edificioPredio],
-          ["Dpto.", formData.dpto],
-          ["Ingreso", formData.ingreso],
-          ["Letra", formData.letra],
-        ].map(([label, value]) => (
-          <Box
-            key={label}
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              p: 1,
-              borderRadius: 1.5,
-              bgcolor: "#fff",
-              border: "1px solid #e0e0e0",
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{ color: "#555", fontWeight: 500, fontSize: "0.85rem" }}
-            >
-              {label}
-            </Typography>
-            <Typography
-              variant="body2"
-              sx={{
-                color:
-                  value && String(value).trim() !== "" ? "#1a1a1a" : "#9e9e9e",
-                fontFamily: "monospace",
-                fontSize: "0.85rem",
-              }}
-            >
-              {value && String(value).trim() !== "" ? value : "—"}
-            </Typography>
-          </Box>
-        ))}
+        <Typography
+          variant="caption"
+          sx={{
+            color: "#616e7c",
+            textTransform: "uppercase",
+            fontSize: "0.72rem",
+            letterSpacing: 0.4,
+          }}
+        >
+          {label}
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            color:
+              value && String(value).trim() !== ""
+                ? "#1f2933"
+                : "#9e9e9e",
+            fontFamily: "monospace",
+            fontSize: "0.9rem",
+            fontWeight: 600,
+          }}
+        >
+          {value && String(value).trim() !== "" ? value : "—"}
+        </Typography>
       </Box>
+    ))}
+  </Box>
+</Box>
+
+
+
+
+
+
 
       {/* 🔘 Predio en edificio + Partida registral */}
       <Box
@@ -1776,7 +1807,7 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
   maxWidth="lg"
 >
   <DialogTitle sx={{ fontWeight: 600, color: "#003366" }}>
-    Búsqueda de Predio por DNI / CE
+    Búsqueda de Predio por DNI / CE del Vendedor
   </DialogTitle>
 
   <DialogContent dividers>
@@ -1791,7 +1822,7 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       }}
     >
       <Box sx={{ display: "flex", flexDirection: "column" }}>
-        <FormControl size="small" sx={{ minWidth: 160 }}>
+        <FormControl size="small" sx={{ minWidth: 180 }}>
           <InputLabel>Tipo de Documento</InputLabel>
           <Select
             label="Tipo de Documento"

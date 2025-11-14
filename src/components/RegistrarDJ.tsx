@@ -2092,20 +2092,11 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
 
 {/* 🔹 Imagen flotante de Tributito (parte superior derecha) */}
 
-{[0].includes(activeStep) && (
-  <Box sx={{ position: "absolute", left: 100, bottom:220 }}>
-                    <TributitoBubble anchorLeft={1100} anchorBottom={0} maxWidth={280} />
-                  </Box>
-)}
 <Box
-  component="img"
-  src={require("../assets/tributito2.png")}
-  alt="Tributito"
   sx={{
     position: "fixed",
     right: 10,
     width: 120,
-    height: "auto",
     zIndex: 2000,
     cursor: "pointer",
     userSelect: "none",
@@ -2115,14 +2106,14 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
       bottom 1.3s cubic-bezier(0.19, 1, 0.22, 1),
       transform 0.4s ease-in-out
     `,
-    // 🔽 Posición inteligente:
+    // 👉 misma lógica de arriba/abajo que tenías
     bottom:
       !showChat || posicionTributito === "abajo"
-        ? 110 // siempre abajo cuando chat está oculto o abajo
+        ? 110
         : "unset",
     top:
       showChat && posicionTributito === "arriba"
-        ? 140 // arriba solo cuando chat visible y lleno
+        ? 140
         : "unset",
     "@keyframes flotar": {
       "0%, 100%": { transform: "translateY(0)" },
@@ -2133,9 +2124,35 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
     },
   }}
   onClick={() => {
-    if (!showChat) setShowChat(true); // 👈 Abre chat si está cerrado
+    if (!showChat) setShowChat(true);
   }}
-/>
+>
+  <Box sx={{ position: "relative", width: "100%" }}>
+    {/* Imagen de Tributito */}
+    <Box
+      component="img"
+      src={require("../assets/tributito2.png")}
+      alt="Tributito"
+      sx={{
+        width: "100%",
+        height: "auto",
+        display: "block",
+      }}
+    />
+
+    {/* Globo solo en el paso 0, pegado a la cabeza */}
+    {[0].includes(activeStep) && (
+      <Box sx={{ position: "absolute", left: 35, bottom: 120 }}>
+        <TributitoBubble
+          anchorLeft={-300}      // igual que InscripcionDJ.tsx
+          anchorBottom={0}
+          maxWidth={280}
+          posicionTributito="derecha"  // flecha hacia Tributito
+        />
+      </Box>
+    )}
+  </Box>
+</Box>
 
 
 

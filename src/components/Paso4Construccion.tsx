@@ -493,80 +493,92 @@ const handleCancelarConfirmado = () => {
 const { pisos: pisosProp, obras: obrasProp, onActualizarConstruccion } = props;
 
 useEffect(() => {
+  let nuevosPisos =
+    pisosProp && pisosProp.length > 0
+      ? [...pisosProp]
+      : [
+          {
+            tipoNivel: "Piso",
+            nroPiso: "1",
+            fechaConstruccion: "2025-10",
+            areaPropia: "30",
+            areaComun: "0",
+            material: "Concreto",
+            estadoConserv: "Bueno",
+            muros: "A",
+            techos: "A",
+            puertasVentanas: "B",
+            valorUnitario: "100",
+            incremento: "5",
+            depreciacion: "15",
+            valorDepreciado: "15",
+            valorFinal: "90",
+          },
+          {
+            tipoNivel: "Piso",
+            nroPiso: "2",
+            fechaConstruccion: "2025-10",
+            areaPropia: "30",
+            areaComun: "0",
+            material: "Concreto",
+            estadoConserv: "Bueno",
+            muros: "A",
+            techos: "A",
+            puertasVentanas: "B",
+            valorUnitario: "100",
+            incremento: "5",
+            depreciacion: "15",
+            valorDepreciado: "15",
+            valorFinal: "90",
+          },
+        ];
 
-  let nuevosPisos = (pisosProp && pisosProp.length > 0)
-    ? [...pisosProp]
-    : [
-        {
-          tipoNivel: "Piso",
-          nroPiso: "1",
-          fechaConstruccion: "2025-10",
-          areaPropia: "30",
-          areaComun: "0",
-          material: "Concreto",
-          estadoConserv: "Bueno",
-          muros: "A",
-          techos: "A",
-          puertasVentanas: "B",
-          valorUnitario: "100",
-          incremento: "5",
-          depreciacion: "15",
-          valorDepreciado: "15",
-          valorFinal: "90",
-        },
-        {
-          tipoNivel: "Piso",
-          nroPiso: "2", // ← distinto al primero
-          fechaConstruccion: "2025-10",
-          areaPropia: "30",
-          areaComun: "0",
-          material: "Concreto",
-          estadoConserv: "Bueno",
-          muros: "A",
-          techos: "A",
-          puertasVentanas: "B",
-          valorUnitario: "100",
-          incremento: "5",
-          depreciacion: "15",
-          valorDepreciado: "15",
-          valorFinal: "90",
-        },
-      ];
+  let nuevasObras =
+    obrasProp && obrasProp.length > 0
+      ? [...obrasProp]
+      : [
+          {
+            descripcion: "Puerta de fierro o aluminio h=2.20m, ancho ≤2.00m.",
+            tipoNivel: "Piso",
+            nroPiso: "1",
+            material: "Concreto",
+            estadoConserv: "Bueno",
+            categoria: "Portones y puertas",
+            cantidad: "1",
+            unidadMedida: "m2",
+            metrado: "4",
+            mesAnio: "2024-10",
+            valorObra: "601.80",
+            incremento: "0",
+            depreciacion: "0",
+            valorObraDepreciada: "0",
+            factorOfic: "0.68",
+            valorTotalObras: "2407.44",
+          },
+        ];
 
-  let nuevasObras = (obrasProp && obrasProp.length > 0)
-    ? [...obrasProp]
-    : [
-        {
-          descripcion: "Puerta de fierro o aluminio h=2.20m, ancho ≤2.00m.",
-          tipoNivel: "Piso",
-          nroPiso: "1",
-          material: "Concreto",
-          estadoConserv: "Bueno",
-          categoria: "Portones y puertas",
-          cantidad: "1",
-          unidadMedida: "m2",
-          metrado: "4",
-          mesAnio: "2024-10",
-          valorObra: "601.80",
-          incremento: "0",
-          depreciacion: "0",
-          valorObraDepreciada: "0",
-          factorOfic: "0.68",
-          valorTotalObras: "2407.44",
-        },
-      ];
-
-  // setea estados una sola vez con los arreglos efectivos
   setPisos(nuevosPisos);
   setObras(nuevasObras);
 
-  // contadores “base” coherentes
-  setInitialPisosCount(pisosProp && pisosProp.length > 0 ? pisosProp.length : nuevosPisos.length);
-  setInitialObrasCount(obrasProp && obrasProp.length > 0 ? obrasProp.length : nuevasObras.length);
+  // 👇 Solo se setea la PRIMERA vez
+  setInitialPisosCount((prev) =>
+    prev === 0
+      ? pisosProp && pisosProp.length > 0
+        ? pisosProp.length
+        : nuevosPisos.length
+      : prev
+  );
 
-  // notifica al padre
+  setInitialObrasCount((prev) =>
+    prev === 0
+      ? obrasProp && obrasProp.length > 0
+        ? obrasProp.length
+        : nuevasObras.length
+      : prev
+  );
+
   onActualizarConstruccion?.(nuevosPisos, nuevasObras);
-}, [pisosProp, obrasProp, onActualizarConstruccion]); // 👈 ejecuta solo al montar
+}, [pisosProp, obrasProp, onActualizarConstruccion]);
 
 
 // Busca la descripción correspondiente según el valor (A, B, C...)

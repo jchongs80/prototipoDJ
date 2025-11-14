@@ -368,7 +368,7 @@ const ResumenPredios: React.FC = () => {
                           }}
                           onClick={() => handleDescargarPDF(p.codigoDJ)}
                         >
-                          DJ
+                          Visualizar DJ
                         </Button>
                       ) : (
                         <Typography variant="body2" color="text.secondary">
