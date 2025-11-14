@@ -65,9 +65,8 @@ const Paso3Terreno: React.FC<Props> = ({ formData }) => {
 
       {/* 🟦 Info superior */}
       <InfoCallout
-        title="¿Qué registrarás aquí?"
-        body="Ingresa las áreas, el porcentaje de bien común y el frontis. 
-        El valor del terreno se calculará automáticamente según el arancel vigente."
+        title="Qué harás en esta sección"
+        body="Los datos cargados en esta sección no pueden modificarse. Cualquier modificación debe ser realizado de forma presencial."
       />
 
       {/* CONTENEDOR HORIZONTAL: tres columnas en una sola fila */}
