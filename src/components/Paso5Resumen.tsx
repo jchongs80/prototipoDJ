@@ -121,6 +121,8 @@ function Paso5Resumen(props: Paso5ResumenProps) {
   const autovaluoTotal =
     totalTerreno + Number(totalConstruccion) + Number(totalObrasComplementarias);
 
+  const baseImponible = autovaluoTotal;
+
   const [openImagenPredio, setOpenImagenPredio] = useState(false);
   const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
 
@@ -561,19 +563,23 @@ function Paso5Resumen(props: Paso5ResumenProps) {
               S/ {totalTerreno.toFixed(2)}
             </span>
           </Typography>
+
           <Typography sx={{ fontWeight: 700, mb: 0.5 }}>
             Total Construcción:
             <span style={{ float: "right" }}>
               S/ {Number(totalConstruccion).toFixed(2)}
             </span>
           </Typography>
+
           <Typography sx={{ fontWeight: 700, mb: 1 }}>
             Total Obras Complementarias:
             <span style={{ float: "right" }}>
               S/ {Number(totalObrasComplementarias).toFixed(2)}
             </span>
           </Typography>
+
           <Divider sx={{ my: 1 }} />
+
           <Typography
             sx={{
               fontWeight: 800,
@@ -584,6 +590,21 @@ function Paso5Resumen(props: Paso5ResumenProps) {
             Autovalúo Total:
             <span style={{ float: "right" }}>
               S/ {autovaluoTotal.toFixed(2)}
+            </span>
+          </Typography>
+
+          {/* 🆕 BASE IMPONIBLE (por ahora igual al autovalúo total) */}
+          <Typography
+            sx={{
+              fontWeight: 800,
+              fontSize: "1.05rem",
+              color: "#37474f",
+              mt: 0.5,
+            }}
+          >
+            Base Imponible:
+            <span style={{ float: "right" }}>
+              S/ {baseImponible.toFixed(2)}
             </span>
           </Typography>
         </Paper>

@@ -24,7 +24,10 @@ import {
   DialogActions,
   Divider,
   Chip,
-  Stack
+  Stack,
+  Checkbox,           // 🆕
+  FormGroup,          // 🆕
+  FormControlLabel,   // 🆕
 } from '@mui/material';
 
 import { Snackbar, Alert } from "@mui/material";
@@ -929,6 +932,19 @@ useEffect(() => {
 
 
 const [openConfirm, setOpenConfirm] = useState(false);
+
+ // 🆕 Checks obligatorios del modal de validación
+  const [validChecks, setValidChecks] = useState({
+    direccion: false,
+    uso: false,
+    condicion: false,
+    porcentaje: false,
+    transferencia: false,
+    fechaAdquisicion: false,  // 🆕 nuevo check
+  });
+
+  // 🆕 True solo si TODOS los checks están marcados
+  const allChecksOk = Object.values(validChecks).every(Boolean);
 
 const formatoMoneda = (n: number) =>
   (Number(n) || 0).toLocaleString("es-PE", { style: "currency", currency: "PEN" });
@@ -1944,7 +1960,7 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
     Validar datos antes de presentar
   </DialogTitle>
 
-  <DialogContent dividers>
+   <DialogContent dividers>
     <Stack spacing={1.2}>
       <Chip
         label="Resumen del Predio"
@@ -1955,7 +1971,9 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
       {/* Fila: Tipo Persona */}
       <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
         <Typography sx={{ color: "#546e7a" }}>Tipo de Persona</Typography>
-        <Typography sx={{ fontWeight: 700 }}>{resumenPredio.tipoPersona || formData.tipoPersona}</Typography>
+        <Typography sx={{ fontWeight: 700 }}>
+          {resumenPredio.tipoPersona || formData.tipoPersona}
+        </Typography>
       </Box>
       <Divider />
 
@@ -1984,6 +2002,14 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
         <Typography sx={{ color: "#546e7a" }}>% de Propiedad</Typography>
         <Typography sx={{ fontWeight: 700 }}>
           {(resumenPredio.porcentajePropiedad ?? 100).toFixed(2)}%
+        </Typography>
+      </Box>
+
+      {/* 🆕 Fecha de adquisición */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", gap: 2 }}>
+        <Typography sx={{ color: "#546e7a" }}>Fecha de Adquisición</Typography>
+        <Typography sx={{ fontWeight: 700 }}>
+          {resumenPredio.fechaAdquisicion || formData.fechaAdquisicion || "-"}
         </Typography>
       </Box>
 
@@ -2034,6 +2060,95 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
           {formatoMoneda(autovaluo)}
         </Typography>
       </Box>
+
+      {/* 🆕 Sección de checks obligatorios */}
+      <Chip
+        label="Confirmaciones antes de presentar"
+        size="small"
+        sx={{
+          alignSelf: "flex-start",
+          mt: 1.5,
+          bgcolor: "#e8f5e9",
+          color: "#2e7d32",
+          fontWeight: 600,
+        }}
+      />
+
+      <FormGroup sx={{ pl: 1 }}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={validChecks.direccion}
+              onChange={(e) =>
+                setValidChecks((prev) => ({ ...prev, direccion: e.target.checked }))
+              }
+            />
+          }
+          label="Declaro que la dirección del predio es correcta."
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={validChecks.uso}
+              onChange={(e) =>
+                setValidChecks((prev) => ({ ...prev, uso: e.target.checked }))
+              }
+            />
+          }
+          label="Declaro que el uso del predio es correcto."
+        />
+        <FormControlLabel
+          control=
+          {
+            <Checkbox
+              checked={validChecks.condicion}
+              onChange={(e) =>
+                setValidChecks((prev) => ({ ...prev, condicion: e.target.checked }))
+              }
+            />
+          }
+          label="Declaro que la condición de propiedad es correcta."
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={validChecks.porcentaje}
+              onChange={(e) =>
+                setValidChecks((prev) => ({ ...prev, porcentaje: e.target.checked }))
+              }
+            />
+          }
+          label="Declaro que el porcentaje de propiedad es correcto."
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={validChecks.transferencia}
+              onChange={(e) =>
+                setValidChecks((prev) => ({ ...prev, transferencia: e.target.checked }))
+              }
+            />
+          }
+          label="Declaro que el tipo de transferencia del predio es correcto."
+        />
+
+        {/* 🆕 Check de fecha de adquisición */}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={validChecks.fechaAdquisicion}
+              onChange={(e) =>
+                setValidChecks((prev) => ({
+                  ...prev,
+                  fechaAdquisicion: e.target.checked,
+                }))
+              }
+            />
+          }
+          label="Declaro que la fecha de adquisición declarada del predio es correcta."
+        />
+
+      </FormGroup>
     </Stack>
   </DialogContent>
 
@@ -2045,13 +2160,25 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
     >
       Cancelar
     </Button>
+
     <Button
-      onClick={() => {
-        setOpenConfirm(false);
-        handlePresentarDeclaracion(); // ⬅️ continúa con tu flujo existente
-      }}
       variant="contained"
       color="primary"
+      disabled={!allChecksOk}   // 🆕 deshabilitado si faltan checks
+      onClick={() => {
+        if (!allChecksOk) {
+          // 🆕 Mensaje de advertencia si intenta forzar
+          setSeveritySnackbar("warning");
+          setMensajeSnackbar(
+            "Debe marcar todas las casillas de verificación antes de presentar la declaración."
+          );
+          setOpenSnackbar(true);
+          return;
+        }
+
+        setOpenConfirm(false);
+        handlePresentarDeclaracion(); // flujo original
+      }}
     >
       Presentar Declaración
     </Button>
