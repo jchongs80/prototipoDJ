@@ -66,7 +66,7 @@ const Paso3Terreno: React.FC<Props> = ({ formData }) => {
       {/* 🟦 Info superior */}
       <InfoCallout
         title="Qué harás en esta sección"
-        body="Los datos cargados en esta sección no pueden modificarse. Cualquier modificación debe ser realizado de forma presencial."
+        body="La información visualizada en esta sección es informativa y no podrá ser modificada. Cualquier Cambio en los valores debe ser realizado de forma presencial."
       />
 
       {/* CONTENEDOR HORIZONTAL: tres columnas en una sola fila */}

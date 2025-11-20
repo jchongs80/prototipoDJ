@@ -185,30 +185,28 @@ resetValidacionArchivo(); // 🧹 limpia validación antes de buscar
 };
 
 
-// 🔍 Buscar por PU (demo con validación)
 const handleBuscarPU = () => {
+  resetValidacionArchivo();
 
-  //setDebeValidar(false); // 🔹 evita mostrar error por validación anterior
- resetValidacionArchivo(); // 🧹 limpia validación antes de buscar
-  // Eliminar espacios
   const codigo = codigoPU.trim();
 
-  // Validar si está vacío
   if (!codigo) {
     setErrorCodigoPU("El código de PU es obligatorio.");
     return;
   }
 
-  // Validar formato numérico de 5 dígitos
   if (!/^\d{5}$/.test(codigo)) {
-    setErrorCodigoPU("Valor numérico de 5 dígitos.");
+    setErrorCodigoPU("Debe ser un valor numérico de 5 dígitos.");
     return;
   }
 
-  // Si todo está correcto, limpiar error
   setErrorCodigoPU("");
 
-  // Setea valores demo y muestra detalle
+  // Generar imagen aleatoria
+  const imagenes = [predio1, predio2, predio3, predio4, predio5, predio6, predio7, predio8, predio9, predio10];
+  const imagen = imagenes[Math.floor(Math.random() * imagenes.length)];
+
+  // Guardar datos
   handleChange({ target: { name: "codigoPredio", value: codigo } } as any);
   handleChange({
     target: {
@@ -218,13 +216,13 @@ const handleBuscarPU = () => {
   } as any);
   handleChange({ target: { name: "tipoViaPredio", value: "Jirón" } } as any);
   handleChange({ target: { name: "descViaPredio", value: "Camaná" } } as any);
-  handleChange({ target: { name: "tipoDenomUrbPredio", value: "" } } as any);
-  handleChange({ target: { name: "descDenomUrbPredio", value: "" } } as any);
   handleChange({ target: { name: "numMun1", value: "499" } } as any);
+
+  // 👈 Guardar imagen del predio permanentemente
+  handleChange({ target: { name: "imagenPredio", value: imagen } } as any);
 
   setMostrarDetallePredio(true);
 };
-
 
 
 const handleBuscarPorDNI = () => {
@@ -394,24 +392,22 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       </Typography>
 
       {/* CABECERA DE BÚSQUEDA */}
-      <Box
+      {/* CABECERA DE BÚSQUEDA — SOLO PU */}
+<Box
   sx={{
     border: "1px solid #e0e0e0",
     bgcolor: "#fff",
     display: "flex",
-    alignItems: "flex-start", // 👈 mantiene la alineación superior
+    alignItems: "flex-start",
     p: 2.5,
     gap: 2,
     flexWrap: "wrap",
     mb: 3,
   }}
 >
-  {/* Contenedor del campo + error */}
+  {/* Campo Código PU */}
   <Box sx={{ display: "flex", flexDirection: "column", minWidth: 220 }}>
-    <Tooltip
-      title="Ingrese el código de PU (Predio Urbano) que aparece en el PU de la cuponera."
-      arrow
-    >
+    <Tooltip title="Ingrese el código de PU (Predio Urbano) indicado en la cuponera." arrow>
       <TextField
         label="Código PU"
         value={codigoPU}
@@ -432,13 +428,12 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       />
     </Tooltip>
 
-    {/* Mensaje de error controlado */}
     <Typography
       variant="caption"
       sx={{
         color: "red",
         fontSize: "0.75rem",
-        minHeight: 18, // 👈 asegura altura fija del espacio
+        minHeight: 18,
         mt: 0.3,
         ml: 0.5,
       }}
@@ -447,7 +442,7 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
     </Typography>
   </Box>
 
-  {/* Botones de acción */}
+  {/* Botón buscar */}
   <Button
     variant="contained"
     color="success"
@@ -455,38 +450,8 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
     onClick={handleBuscarPU}
     sx={{ height: 40 }}
   >
-    Buscar por PU
+    Buscar Predio
   </Button>
-
-  <Button
-    variant="outlined"
-    startIcon={<SearchIcon />}
-    onClick={() => setOpenBuscarDireccion(true)}
-    sx={{
-      borderColor: "#003366",
-      color: "#003366",
-      height: 40,
-      "&:hover": { bgcolor: "rgba(0,51,102,0.05)" },
-    }}
-  >
-    Buscar por Dirección
-  </Button>
-
-    <Button
-  variant="outlined"
-  startIcon={<SearchIcon />}
-  onClick={() => setOpenBuscarDNI(true)}
-  sx={{
-    borderColor: "#003366",
-    color: "#003366",
-    height: 40,
-    "&:hover": { bgcolor: "rgba(0,51,102,0.05)" },
-  }}
->
-  Buscar por DNI del Vendedor
-</Button>
-
-
 </Box>
 
       {/* DETALLE VISUAL (solo si ya se buscó/seleccionó) */}
@@ -992,21 +957,22 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       alt="Valor Adquisicion"
       style={{ width: 30, height: 30, marginRight: 8 }}
     /> 
-    Condición de Propiedad
+    Información de la propiedad
   </Typography>
 
   {/* === Fila 1: Distribución 50%-50% === */}
  
-  {/* === Nueva distribución visual === */}
+
 <Box
   sx={{
     display: "grid",
-    gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+    gridTemplateColumns: { xs: "1fr", md: "1.1fr 1.1fr" },
     gap: 3,
     alignItems: "stretch",
+    mt: 2,
   }}
 >
-  {/* 🔹 Bloque 1: Tipo de transferencia (izquierda, ancho grande) */}
+  {/* 🔹 Bloque 1: Tipo de transferencia (izquierda) */}
   <Paper
     variant="outlined"
     sx={{
@@ -1027,7 +993,7 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
     />
   </Paper>
 
-  {/* 🔹 Bloque 2: Condición de Propiedad (derecha) */}
+  {/* 🔹 Bloque 2: Condición de la Propiedad + Valor de adquisición + Uso del predio (derecha) */}
   <Paper
     variant="outlined"
     sx={{
@@ -1035,108 +1001,141 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       borderRadius: 2,
       bgcolor: "#f4f6f8",
       border: "1px solid #e0e0e0",
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+      display: "flex",
+      flexDirection: "column",
       gap: 2,
     }}
   >
-    {/* Condición de la Propiedad */}
-    <TextField
-      select
-      fullWidth
-      size="small"
-      label={
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          Condición de la Propiedad
-          <HelpTooltip text="Seleccione la condición bajo la cual figura el contribuyente como titular del predio (propietario, condominio, concesionario, etc.)." />
-        </Box>
-      }
-      name="condicionPropiedad"
-      value={formData.condicionPropiedad || "Propietario único"}
-      onChange={handleChange}
-      InputProps={{ sx: { fontSize: "0.85rem" } }}
-    >
-      <MenuItem value="Propietario único">Propietario único</MenuItem>
-      <MenuItem value="Condominio">Condominio</MenuItem>
-      <MenuItem value="Concesionario">Concesionario</MenuItem>
-      <MenuItem value="Responsable">Responsable</MenuItem>
-    </TextField>
-
-    {/* % de Propiedad */}
-    <TextField
-      label={
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          % de Propiedad
-          <HelpTooltip text="Indique el porcentaje del predio que le pertenece al contribuyente (por ejemplo, 100 si es propietario único)." />
-        </Box>
-      }
-      name="porcentajePropiedad"
-      value={formData.porcentajePropiedad || ""}
-      onChange={handleChange}
-      size="small"
-      placeholder="100"
-      fullWidth
-      InputProps={{ sx: { fontSize: "0.85rem" } }}
-    />
-
-    {/* Fecha de Adquisición */}
-    <TextField
-      label={
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          Fecha de Adquisición
-          <HelpTooltip text="Seleccione la fecha en que se efectuó la adquisición o inscripción del predio." />
-        </Box>
-      }
-      type="date"
-      name="fechaAdquisicion"
-      value={formData.fechaAdquisicion || ""}
-      onChange={handleChange}
-      size="small"
-      InputLabelProps={{ shrink: true }}
-      fullWidth
-      InputProps={{ sx: { fontSize: "0.85rem" } }}
-    />
-  </Paper>
-</Box>
-  
-
-  {/* === Fila 2: Valor de adquisición + Condición especial === */}
-  <Box
-    sx={{
-      display: "grid",
-      gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
-      gap: 3,
-      alignItems: "stretch",
-      mt: 3,
-    }}
-  >
-    {/* 💰 Valor de adquisición */}
-    <Paper
-      variant="outlined"
-      sx={{
-        p: 2,
-        bgcolor: "#f9f9f9",
-        borderRadius: 2,
-        border: "1px solid #e0e0e0",
-      }}
-    >
+    {/* 🧾 Condición de la Propiedad */}
+    <Box>
       <Typography
         variant="subtitle1"
         sx={{
           color: "#003366",
-          fontWeight: 600,
+          fontWeight: 700,
           mb: 1.5,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
         }}
       >
+        {/*
+        <img
+          src={condicionPropiedadIcon}
+          alt="Condición de la propiedad"
+          style={{ width: 22, height: 22 }}
+        />
+        */}
+        Condición de la Propiedad
+        <HelpTooltip
+          text="Seleccione la condición bajo la cual figura el contribuyente como titular del predio (propietario, condominio, concesionario, etc.)."
+          placement="top"
+        />
+      </Typography>
+
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1.1fr 0.7fr 0.9fr",
+          },
+          gap: 2,
+        }}
+      >
+        {/* Condición */}
+        <TextField
+          select
+          fullWidth
+          size="small"
+          label="Condición de la Propiedad"
+          name="condicionPropiedad"
+          value={formData.condicionPropiedad || "Propietario único"}
+          onChange={handleChange}
+          InputProps={{ sx: { fontSize: "0.85rem" } }}
+        >
+          <MenuItem value="Propietario único">Propietario único</MenuItem>
+          <MenuItem value="Condominio">Condominio</MenuItem>
+          <MenuItem value="Concesionario">Concesionario</MenuItem>
+          <MenuItem value="Responsable">Responsable</MenuItem>
+        </TextField>
+
+        {/* % de Propiedad */}
+        <TextField
+          label="% de Propiedad"
+          name="porcentajePropiedad"
+          value={formData.porcentajePropiedad || ""}
+          onChange={handleChange}
+          size="small"
+          placeholder="100"
+          fullWidth
+          InputProps={{ sx: { fontSize: "0.85rem" } }}
+        />
+
+        {/* Fecha de Adquisición */}
+        <TextField
+          label="Fecha de Adquisición"
+          type="date"
+          name="fechaAdquisicion"
+          value={formData.fechaAdquisicion || ""}
+          onChange={handleChange}
+          size="small"
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+          InputProps={{ sx: { fontSize: "0.85rem" } }}
+        />
+      </Box>
+    </Box>
+
+    {/* Separador visual */}
+    <Box
+      sx={{
+        borderTop: "1px solid #dde3ea",
+        mt: 2,
+        pt: 2,
+      }}
+    />
+
+    {/* 💰 Valor de Adquisición */}
+    <Box>
+      <Typography
+        variant="subtitle1"
+        sx={{
+          color: "#003366",
+          fontWeight: 700,
+          mb: 1,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        {/*
+        <img
+          src={solesIcon}
+          alt="Valor de adquisición"
+          style={{ width: 24, height: 24 }}
+        />
+        */}
         Valor de Adquisición
+        <HelpTooltip
+          text="Ingrese el valor por el cual adquirió el predio. Puede hacerlo en soles o en dólares."
+          placement="top"
+        />
+      </Typography>
+
+      <Typography
+        variant="caption"
+        sx={{ color: "#6b778c", display: "block", mb: 1 }}
+      >
+        Registra el monto de adquisición. Basta con que completes uno de los dos campos (S/ o US$).
       </Typography>
 
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
-          gap: 4,
           flexWrap: "wrap",
+          gap: 3,
+          alignItems: "center",
         }}
       >
         {/* Soles */}
@@ -1147,15 +1146,14 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <img
               src={solesIcon}
-              alt="Valor Adquisicion"
-              style={{ width: 40, height: 40, marginRight: 8 }}
+              alt="Valor en soles"
+              style={{ width: 32, height: 32 }}
             />
             <TextField
               name="valorSoles"
               value={formData.valorSoles || ""}
-             onChange={(e) => {
+              onChange={(e) => {
                 handleChange(e);
-                // 🔹 Si el usuario ingresa un valor, limpiar error
                 const valSoles = parseFloat(e.target.value || "0");
                 const valDolares = parseFloat(formData.valorDolares || "0");
                 if (valSoles > 0 || valDolares > 0) {
@@ -1164,12 +1162,9 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
               }}
               size="small"
               placeholder="0.00"
-              sx={{ width: 120 }}
+              sx={{ width: 130 }}
               InputProps={{
                 sx: { fontSize: "0.85rem" },
-                endAdornment: (
-                  <HelpTooltip text="Ingrese el valor de adquisición en soles si la transacción fue en moneda nacional." />
-                ),
               }}
             />
           </Box>
@@ -1183,8 +1178,8 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <img
               src={dolaresIcon}
-              alt="Valor Adquisicion"
-              style={{ width: 30, height: 30, marginRight: 8 }}
+              alt="Valor en dólares"
+              style={{ width: 30, height: 30 }}
             />
             <TextField
               name="valorDolares"
@@ -1199,12 +1194,9 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
               }}
               size="small"
               placeholder="0.00"
-              sx={{ width: 120 }}
+              sx={{ width: 130 }}
               InputProps={{
                 sx: { fontSize: "0.85rem" },
-                endAdornment: (
-                  <HelpTooltip text="Ingrese el valor de adquisición en dólares si la transacción fue en moneda extranjera." />
-                ),
               }}
             />
           </Box>
@@ -1212,96 +1204,109 @@ const [imagenPredioModal, setImagenPredioModal] = useState<string | null>(null);
       </Box>
 
       {errorValorAdq && (
-  <Typography
-    variant="caption"
-    sx={{
-      color: "red",
-      fontSize: "0.75rem",
-      mt: 1,
-      display: "block",
-    }}
-  >
-    ⚠️ Debe ingresar el valor de adquisición (en soles o en dólares).
-  </Typography>
-)}
-    </Paper>
+        <Typography
+          variant="caption"
+          sx={{
+            color: "red",
+            fontSize: "0.75rem",
+            mt: 1,
+            display: "block",
+          }}
+        >
+          ⚠️ Debe ingresar el valor de adquisición (en soles o en dólares).
+        </Typography>
+      )}
+    </Box>
 
-    
-
-  {/* ▶️ Panel derecho: USO DEL PREDIO (solo lectura) */}
-<Paper
-  variant="outlined"
-  sx={{
-    p: 2,
-    borderRadius: 2,
-    bgcolor: "#f4f7fb",
-    border: "1px solid #e0e0e0",
-  }}
->
-  <Typography variant="subtitle1" sx={{ color: "#003366", fontWeight: 700, mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
-    <img src={usoPredioIcon} alt="Uso del predio" style={{ width: 22, height: 22 }} />
-    Uso del Predio
-  </Typography>
-
-  <Box
-  sx={{
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "stretch",
-    gap: 1.2,
-    flexWrap: "nowrap",
-  }}
->
-  {[
-    ["Clase de uso", formData.claseUso],
-    ["Subclase de uso", formData.subClaseUso],
-    ["Uso", formData.uso],
-    ["Inicio de uso", formData.fechaInicioUso],
-  ].map(([label, value]) => (
+    {/* Separador visual */}
     <Box
-      key={label as string}
       sx={{
-        flex: "1 1 0",
-        p: 1,
-        borderRadius: 1.5,
-        bgcolor: "#fff",
-        border: "1px solid #e6ebf2",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
+        borderTop: "1px solid #dde3ea",
+        mt: 2,
+        pt: 2,
       }}
-    >
-      <Typography variant="caption" sx={{ color: "#6b778c" }}>
-        {label}
-      </Typography>
+    />
+    
+    {/* 🏢 Uso del Predio (solo lectura) */}
+    <Box>
       <Typography
-        variant="body2"
+        variant="subtitle1"
         sx={{
-          mt: 0.3,
-          fontWeight: 600,
-          color: value ? "#1a1f36" : "#9ea7b3",
-          fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas",
+          color: "#003366",
+          fontWeight: 700,
+          mb: 1.5,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
         }}
       >
-        {value && String(value).trim() !== "" ? String(value) : "—"}
+        {/* 
+        <img
+          src={usoPredioIcon}
+          alt="Uso del predio"
+          style={{ width: 22, height: 22 }}
+        />
+        */}
+        Uso del Predio
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 1.5,
+        }}
+      >
+        {[
+          ["Clase de uso", formData.claseUso],
+          ["Subclase de uso", formData.subClaseUso],
+          ["Uso", formData.uso],
+          ["Inicio de uso", formData.fechaInicioUso],
+        ].map(([label, value]) => (
+          <Box
+            key={label as string}
+            sx={{
+              flex: "1 1 0",
+              p: 1,
+              borderRadius: 1.5,
+              bgcolor: "#fff",
+              border: "1px solid #e6ebf2",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <Typography variant="caption" sx={{ color: "#6b778c" }}>
+              {label}
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                mt: 0.3,
+                fontWeight: 600,
+                color: value ? "#1a1f36" : "#9ea7b3",
+                fontFamily:
+                  "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas",
+              }}
+            >
+              {value && String(value).trim() !== "" ? String(value) : "—"}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+
+      <Typography
+        variant="caption"
+        sx={{ mt: 1, display: "block", color: "#7a8aa0" }}
+      >
+        * Este resumen es informativo. Puedes actualizar el uso de tu predio
+        acercándote presencialmente al SAT.
       </Typography>
     </Box>
-  ))}
+  </Paper>
 </Box>
 
-  <Typography variant="caption" sx={{ mt: 1, display: "block", color: "#7a8aa0" }}>
-    * Este resumen es informativo. Puedes actualizar el uso de tu predio acercándote presencialmente al SAT.
-  </Typography>
-</Paper>
 
-
-
-
-
-
-
-  </Box>
 </Paper>
 
 

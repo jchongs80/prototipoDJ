@@ -304,18 +304,19 @@ useEffect(() => {
     let valid = true;
 
     // Validar PDF de recibo de servicio
-    if (!formData.reciboServicio) {
-      setErrorReciboFile("Debe adjuntar el PDF de un recibo de servicio (agua o luz).");
-      valid = false;
-    } else {
-      setErrorReciboFile("");
-    }
+    //if (!formData.reciboServicio) {
+    //  setErrorReciboFile("Debe adjuntar el PDF de un recibo de servicio (agua o luz).");
+    //  valid = false;
+    //} else {
+    //  setErrorReciboFile("");
+    //}
 
     // Validar PDF de condición especial
-    if (formData.tipoCondicion && formData.tipoCondicion !== "" && !formData.docCondicion) {
-      setErrorCondicionFile("No ha seleccionado el archivo que acredite la condición especial.");
+    if (formData.tipoCondicion === "pensionista" && !formData.docCondicion) {
+      setErrorCondicionFile("Debe adjuntar el PDF que acredite su condición de pensionista.");
       valid = false;
     } else {
+      // Si NO es pensionista, o si ya adjuntó doc, limpiar error
       setErrorCondicionFile("");
     }
 
