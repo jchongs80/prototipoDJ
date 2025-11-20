@@ -38,6 +38,8 @@ import {
   Language as LanguageIcon,
   NotificationsNone as NotificationsIcon,
   ArrowDropDown as ArrowDropDownIcon,
+  Person as PersonIcon,       // 🆕 Para Persona Natural
+  Groups as GroupsIcon,       // 🆕 Para Sociedad Conyugal
 } from "@mui/icons-material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
@@ -657,29 +659,125 @@ const InscripcionPredial: React.FC<{ onLogout?: () => void }> = ({ onLogout }) =
                   }}
                 />
 
-                <TextField
-                  select
-                  fullWidth
-                  label="Tipo de Persona"
-                  value={tipoPersona}
-                  onChange={(e) => {
-                    setTipoPersona(e.target.value);
-                    if (e.target.value) setErrorTipoPersona("");
-                  }}
-                  error={!!errorTipoPersona}
-                  helperText={errorTipoPersona}
-                  sx={{
-                    mb: 3,
-                    "& .MuiFormHelperText-root": {
-                      color: "#e53935",
-                      fontSize: "0.8rem",
-                      mt: 0.5,
-                    },
-                  }}
-                >
-                  <MenuItem value="Persona Natural">Persona Natural</MenuItem>
-                  <MenuItem value="Sociedad Conyugal">Sociedad Conyugal</MenuItem>
-                </TextField>
+                {/* Título de sección */}
+<Typography
+  variant="subtitle2"
+  sx={{ mb: 0.5, color: "#37474f", fontWeight: 600 }}
+>
+  Tipo de Persona
+</Typography>
+
+{/* Texto aclaratorio breve */}
+<Typography variant="body2" sx={{ mb: 1.5, color: "#607d8b" }}>
+  Selecciona quién será el titular del predio en esta declaración.
+</Typography>
+
+{/* Tarjetas seleccionables */}
+<Box
+  sx={{
+    display: "flex",
+    flexDirection: { xs: "column", sm: "row" },
+    gap: 2,
+    mb: errorTipoPersona ? 0.5 : 2,
+  }}
+>
+  {/* 🟦 TARJETA: PERSONA NATURAL */}
+  <Box
+    onClick={() => {
+      setTipoPersona("Persona Natural");
+      setErrorTipoPersona("");
+    }}
+    sx={{
+      flex: 1,
+      p: 2,
+      borderRadius: 2,
+      border: "1px solid",
+      cursor: "pointer",
+      borderColor:
+        tipoPersona === "Persona Natural" ? "#1565c0" : "#e0e0e0",
+      bgcolor:
+        tipoPersona === "Persona Natural"
+          ? "rgba(21,101,192,0.04)"
+          : "#fafafa",
+      boxShadow:
+        tipoPersona === "Persona Natural"
+          ? "0 0 0 2px rgba(21,101,192,0.15)"
+          : "none",
+      transition: "all 0.2s ease",
+      "&:hover": {
+        borderColor: "#1565c0",
+        bgcolor: "rgba(21,101,192,0.03)",
+      },
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <PersonIcon sx={{ color: "#1565c0" }} />
+      <Typography sx={{ fontWeight: 700 }}>Persona Natural</Typography>
+    </Box>
+    <Typography
+      variant="body2"
+      sx={{ mt: 0.5, fontSize: "0.85rem", color: "#455a64" }}
+    >
+      Usted es el único propietario del predio.
+    </Typography>
+
+  </Box>
+
+  {/* 🟩 TARJETA: SOCIEDAD CONYUGAL */}
+  <Box
+    onClick={() => {
+      setTipoPersona("Sociedad Conyugal");
+      setErrorTipoPersona("");
+    }}
+    sx={{
+      flex: 1,
+      p: 2,
+      borderRadius: 2,
+      border: "1px solid",
+      cursor: "pointer",
+      borderColor:
+        tipoPersona === "Sociedad Conyugal" ? "#2e7d32" : "#e0e0e0",
+      bgcolor:
+        tipoPersona === "Sociedad Conyugal"
+          ? "rgba(46,125,50,0.04)"
+          : "#fafafa",
+      boxShadow:
+        tipoPersona === "Sociedad Conyugal"
+          ? "0 0 0 2px rgba(46,125,50,0.15)"
+          : "none",
+      transition: "all 0.2s ease",
+      "&:hover": {
+        borderColor: "#2e7d32",
+        bgcolor: "rgba(46,125,50,0.03)",
+      },
+    }}
+  >
+    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <GroupsIcon sx={{ color: "#2e7d32" }} />
+      <Typography sx={{ fontWeight: 700 }}>Sociedad Conyugal</Typography>
+    </Box>
+    <Typography
+      variant="body2"
+      sx={{ mt: 0.5, fontSize: "0.85rem", color: "#455a64" }}
+    >
+      El predio pertenece a ambos esposos.
+    </Typography>
+
+  </Box>
+</Box>
+
+{/* Mensaje de error si no selecciona nada */}
+{errorTipoPersona && (
+  <Typography
+    sx={{
+      color: "#e53935",
+      fontSize: "0.8rem",
+      mb: 2,
+    }}
+  >
+    {errorTipoPersona}
+  </Typography>
+)}
 
                 <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
                   <Button onClick={handleClose}>Cancelar</Button>
