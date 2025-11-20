@@ -1961,11 +1961,17 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
   </DialogTitle>
 
    <DialogContent dividers>
-    <Stack spacing={1.2}>
+    <Stack spacing={0.6}>
       <Chip
         label="Resumen del Predio"
         size="small"
-        sx={{ alignSelf: "flex-start", bgcolor: "#e6f0fb", color: "#1e497d", fontWeight: 600 }}
+        sx={{
+    alignSelf: "flex-start",
+    bgcolor: "#e6f0fb",
+    color: "#1e497d",
+    fontWeight: 600,
+    mb: 0.5   // antes no tenía
+  }}
       />
 
       {/* Fila: Tipo Persona */}
@@ -2025,7 +2031,13 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
       <Chip
         label="Valores"
         size="small"
-        sx={{ alignSelf: "flex-start", bgcolor: "#e6f0fb", color: "#1e497d", fontWeight: 600 }}
+        sx={{
+    alignSelf: "flex-start",
+    bgcolor: "#e6f0fb",
+    color: "#1e497d",
+    fontWeight: 600,
+    mb: 0.5   // antes no tenía
+  }}
       />
 
       {/* Totales monetarios */}
@@ -2066,16 +2078,17 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
         label="Confirmaciones antes de presentar"
         size="small"
         sx={{
-          alignSelf: "flex-start",
-          mt: 1.5,
-          bgcolor: "#e8f5e9",
-          color: "#2e7d32",
-          fontWeight: 600,
-        }}
+    alignSelf: "flex-start",
+    bgcolor: "#e6f0fb",
+    color: "#1e497d",
+    fontWeight: 600,
+    mb: 0.5   // antes no tenía
+  }}
       />
 
-      <FormGroup sx={{ pl: 1 }}>
+      <FormGroup sx={{ pl: 0.5, mt: 0 }}>
         <FormControlLabel
+         sx={{ my: -0.2 }}     // 🔥 compacta cada fila
           control={
             <Checkbox
               checked={validChecks.direccion}
@@ -2087,6 +2100,7 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
           label="Declaro que la dirección del predio es correcta."
         />
         <FormControlLabel
+         sx={{ my: -0.2 }}     // 🔥 compacta cada fila
           control={
             <Checkbox
               checked={validChecks.uso}
@@ -2098,6 +2112,7 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
           label="Declaro que el uso del predio es correcto."
         />
         <FormControlLabel
+         sx={{ my: -0.2 }}     // 🔥 compacta cada fila
           control=
           {
             <Checkbox
@@ -2110,6 +2125,7 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
           label="Declaro que la condición de propiedad es correcta."
         />
         <FormControlLabel
+         sx={{ my: -0.2 }}     // 🔥 compacta cada fila
           control={
             <Checkbox
               checked={validChecks.porcentaje}
@@ -2121,6 +2137,7 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
           label="Declaro que el porcentaje de propiedad es correcto."
         />
         <FormControlLabel
+         sx={{ my: -0.2 }}     // 🔥 compacta cada fila
           control={
             <Checkbox
               checked={validChecks.transferencia}
@@ -2134,6 +2151,7 @@ const autovaluo = valorTotalTerrenoNum + totalConstruccion + totalObrasComplemen
 
         {/* 🆕 Check de fecha de adquisición */}
         <FormControlLabel
+         sx={{ my: -0.2 }}     // 🔥 compacta cada fila
           control={
             <Checkbox
               checked={validChecks.fechaAdquisicion}
